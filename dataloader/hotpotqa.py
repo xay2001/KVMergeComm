@@ -1,5 +1,6 @@
 from .base_evaluator import BaseEvaluator
 from datasets import load_dataset
+from pathlib import Path
 
 def construct_support(item):
     supporting_facts = item["supporting_facts"]
@@ -27,9 +28,15 @@ class HotpotQAEvaluator(BaseEvaluator):
             self.data = self.load_data_single_sender()
         self.name = "hotpotqa"
         self.multi_agent = multi_agent
+    
+    def load_hotpotqa_dataset(self):
+        project_root = Path(__file__).resolve().parents[1]
+        local_dataset_path = project_root / "datasets" / "hotpot_qa"
+        dataset_path = str(local_dataset_path) if local_dataset_path.exists() else "hotpotqa/hotpot_qa"
+        return load_dataset(dataset_path, "distractor")["validation"]
         
     def load_data_single_sender(self):
-        dataset = load_dataset("hotpotqa/hotpot_qa", "distractor")["validation"]
+        dataset = self.load_hotpotqa_dataset()
         dataset = self.random_sample(dataset)
         dataset = dataset.map(lambda x: {"support": construct_support(x)})
         dataset = dataset.map(lambda x: {"prompt_A": "\n".join(x["support"])})
@@ -37,7 +44,7 @@ class HotpotQAEvaluator(BaseEvaluator):
         return dataset
 
     def load_data_multi_sender(self):
-        dataset = load_dataset("hotpotqa/hotpot_qa", "distractor")["validation"]
+        dataset = self.load_hotpotqa_dataset()
         dataset = dataset.shuffle(seed=self.random_state)
         dataset = dataset.map(lambda x: {"support": construct_support(x)})
         # keep only those with at least 2 supporting facts
