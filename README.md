@@ -36,7 +36,18 @@ python com.py \
     --model_B meta-llama/Llama-3.1-8B-Instruct
 ```
 
+### Baseline Test with Local Model and Local Dataset
+```bash
+python com.py \
+    --test_task hotpotqa \
+    --do_test_baseline \
+    --model_A /sharedspace/models/Llama-3.1-8B-Instruct \
+    --model_B /sharedspace/models/Llama-3.1-8B-Instruct
+```
+
 ### Skyline Test
+
+使用HuggingFace路径的模型：
 ```bash
 python com.py \
     --test_task hotpotqa \
@@ -45,13 +56,34 @@ python com.py \
     --model_B meta-llama/Llama-3.1-8B-Instruct
 ```
 
+使用本地路径的模型：
+```bash
+CUDA_VISIBLE_DEVICES=2 python com.py \
+    --test_task hotpotqa \
+    --do_test_skyline \
+    --model_A /sharedspace/models/Llama-3.1-8B-Instruct \
+    --model_B /sharedspace/models/Llama-3.1-8B-Instruct
+```
+
 ### KVComm Communication
+
+使用 HuggingFace 路径的模型：
 ```bash
 python com.py \
     --test_task hotpotqa \
     --do_test \
     --model_A meta-llama/Llama-3.1-8B-Instruct \
     --model_B meta-llama/Llama-3.1-8B-Instruct \
+    --top_layers 0.3
+```
+
+使用本地路径的模型（指定三号卡）：
+```bash
+CUDA_VISIBLE_DEVICES=2 python com.py \
+    --test_task hotpotqa \
+    --do_test \
+    --model_A /sharedspace/models/Llama-3.1-8B-Instruct \
+    --model_B /sharedspace/models/Llama-3.1-8B-Instruct \
     --top_layers 0.3
 ```
 
