@@ -39,6 +39,11 @@ class AlignConfig:
     sigma: float = 10.0
     random_selection: bool = False
     shift_back: bool = False
+    # Merge-then-Communicate (MtC) configuration
+    merge: bool = False
+    merge_ratio: float = 0.2
+    merge_sink: int = 4
+    merge_recent: int = 8
     # Test dataset configuration
     test_task: str = "tipsheets"
     task_name: str = ""
@@ -135,32 +140,37 @@ def main(cfg: AlignConfig):
         results = baseline_evaluator.test(model_A, model_B, limit=cfg.limit)
     if cfg.do_test:
         communication_evaluator = CommunicationEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
-        if cfg.top_layers > 0:
-            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=True, shift_back=False).to(cfg.device)
-            if cfg.random_selection:
-                cfg.layers_list = random.sample(list(range(0, cv.A_num_layers)), int(cfg.top_layers * cv.A_num_layers))
-                logging.info(f"Randomly selected layers list: {cfg.layers_list}")
-            else:
-                communication_evaluator.test(model_A, cv, limit=cfg.calib_size, no_wandb=True, do_calc_layer_importance=True)
-                cfg = get_top_layers(communication_evaluator.layer_importance_total, cfg)
-        elif cfg.do_layer_curve:
-            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=True, shift_back=False).to(cfg.device)
-            communication_evaluator.test(model_A, cv, limit=cfg.calib_size, no_wandb=True, do_calc_layer_importance=True)
-            layer_ranking = get_layer_ranking(communication_evaluator.layer_importance_total, cfg)
-        if not cfg.do_layer_curve:
-            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False, shift_back=cfg.shift_back).to(cfg.device)
+        if cfg.merge:
+            # Merge-then-Communicate: keep all layers, compress tokens within each via merging
+            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False, shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent).to(cfg.device)
             results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
         else:
-            results = []
-            for i in range(len(layer_ranking)):
-                layers_list = layer_ranking[:i+1]
-                logging.info(f"Evaluating with layers_list: {layers_list}")
-                cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False, shift_back=cfg.shift_back).to(cfg.device)
-                result = communication_evaluator.test(model_A, cv, limit=cfg.limit)
-                results.append(result)
-            logging.info(f"Layer curve results: {results}")
-            if cfg.use_wandb:
-                wandb.log({f"layer_curve_results": results})
+            if cfg.top_layers > 0:
+                cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=True, shift_back=False).to(cfg.device)
+                if cfg.random_selection:
+                    cfg.layers_list = random.sample(list(range(0, cv.A_num_layers)), int(cfg.top_layers * cv.A_num_layers))
+                    logging.info(f"Randomly selected layers list: {cfg.layers_list}")
+                else:
+                    communication_evaluator.test(model_A, cv, limit=cfg.calib_size, no_wandb=True, do_calc_layer_importance=True)
+                    cfg = get_top_layers(communication_evaluator.layer_importance_total, cfg)
+            elif cfg.do_layer_curve:
+                cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=True, shift_back=False).to(cfg.device)
+                communication_evaluator.test(model_A, cv, limit=cfg.calib_size, no_wandb=True, do_calc_layer_importance=True)
+                layer_ranking = get_layer_ranking(communication_evaluator.layer_importance_total, cfg)
+            if not cfg.do_layer_curve:
+                cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False, shift_back=cfg.shift_back).to(cfg.device)
+                results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+            else:
+                results = []
+                for i in range(len(layer_ranking)):
+                    layers_list = layer_ranking[:i+1]
+                    logging.info(f"Evaluating with layers_list: {layers_list}")
+                    cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False, shift_back=cfg.shift_back).to(cfg.device)
+                    result = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+                    results.append(result)
+                logging.info(f"Layer curve results: {results}")
+                if cfg.use_wandb:
+                    wandb.log({f"layer_curve_results": results})
     if cfg.do_test_ac:
         ac = ActivationCommunicator(model_A, model_B, cfg.layer_k, cfg.layer_j, f=cfg.f).to(cfg.device)
         ac_evaluator = ACEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)

@@ -29,6 +29,10 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         layers_list: list[int] = [],
         apply_attn_tracer: bool = False,
         shift_back: bool = False,
+        merge: bool = False,
+        merge_ratio: float = 0.2,
+        merge_sink: int = 4,
+        merge_recent: int = 8,
     ) -> None:
         super().__init__(model_B.config)
         self.A = model_A
@@ -37,6 +41,11 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.layer_to = layer_to
         self.apply_attn_tracer = apply_attn_tracer
         self.shift_back = shift_back
+        self.merge = merge
+        self.merge_ratio = merge_ratio
+        self.merge_sink = merge_sink
+        self.merge_recent = merge_recent
+        self._merge_logged = False
         for p in self.A.parameters(): p.requires_grad = False
         for p in self.B.parameters(): p.requires_grad = False
 
@@ -98,7 +107,16 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         assert len(key_cache) == len(self.layer_map), "key_cache and layer_map must have the same length"
         past_key_values_new = DynamicCache()
         for i in range(len(key_cache)): # i is the layer index of model A
-            if i in self.layers_list or i == 0:
+            if self.merge:
+                # Merge-then-Communicate: keep all layers, compress tokens within each
+                # layer by merging (instead of dropping whole layers). Layer 0 is kept
+                # full to anchor the receiver's position indexing.
+                if i == 0:
+                    past_key_values_new.update(key_cache[i], value_cache[i], self.layer_map[i])
+                else:
+                    key_cache_i, value_cache_i = self.compress_merge_layer(key_cache[i], value_cache[i])
+                    past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
+            elif i in self.layers_list or i == 0:
                 past_key_values_new.update(key_cache[i], value_cache[i], self.layer_map[i])
             else:
                 # keep the first token due to attention sink
@@ -106,6 +124,48 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                 value_cache_i = value_cache[i][:, :, :1, :]
                 past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
         return past_key_values_new
+
+    @torch.no_grad()
+    def compress_merge_layer(self, K: torch.Tensor, V: torch.Tensor):
+        """Compress one layer's KV from L tokens down to k via importance selection +
+        value merging (CaM/DualKV style). Retained tokens keep their original keys
+        (RoPE intact); evicted tokens' values are distributed into the retained ones
+        by key-similarity, so information is merged rather than dropped.
+
+        K, V: [B, H_kv, L, D]
+        """
+        B, H, L, D = K.shape
+        k = max(int(round(self.merge_ratio * L)), self.merge_sink + self.merge_recent)
+        if k >= L:
+            return K, V
+
+        # token importance proxy: value vector L2-norm (no attention needed -> memory safe)
+        imp = V.float().norm(dim=-1).mean(dim=1)[0]  # [L]
+        big = torch.finfo(imp.dtype).max
+        if self.merge_sink > 0:
+            imp[: self.merge_sink] = big
+        if self.merge_recent > 0:
+            imp[L - self.merge_recent :] = big
+
+        keep = torch.topk(imp, k).indices
+        keep, _ = torch.sort(keep)
+        evict_mask = torch.ones(L, dtype=torch.bool, device=K.device)
+        evict_mask[keep] = False
+        evict = torch.nonzero(evict_mask, as_tuple=False).squeeze(-1)
+
+        Kk = K[:, :, keep, :].contiguous()
+        Vk = V[:, :, keep, :].clone()
+        if evict.numel() > 0:
+            Ke = K[:, :, evict, :]
+            Ve = V[:, :, evict, :]
+            sim = torch.matmul(Ke, Kk.transpose(-1, -2)) / (D ** 0.5)  # [B,H,e,k]
+            w = torch.softmax(sim.float(), dim=-1).to(Vk.dtype)
+            Vk = Vk + torch.matmul(w.transpose(-1, -2), Ve)  # [B,H,k,D]
+
+        if not self._merge_logged:
+            logging.info(f"[merge] layer compress: L={L} -> k={k} (ratio={self.merge_ratio}, sink={self.merge_sink}, recent={self.merge_recent})")
+            self._merge_logged = True
+        return Kk, Vk.contiguous()
 
     def forward(
         self,
