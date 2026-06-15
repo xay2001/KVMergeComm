@@ -1,4 +1,5 @@
 from typing import Literal, Optional
+import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -34,6 +35,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         merge_sink: int = 4,
         merge_recent: int = 8,
         merge_mode: str = "merge",
+        score_mode: str = "value_norm",
+        recv_window: int = 0,
     ) -> None:
         super().__init__(model_B.config)
         self.A = model_A
@@ -47,6 +50,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.merge_sink = merge_sink
         self.merge_recent = merge_recent
         self.merge_mode = merge_mode  # "merge" (normalized value merge) or "evict" (drop only)
+        self.score_mode = score_mode  # "value_norm" (query-agnostic) or "receiver" (B's question attention)
+        self.recv_window = recv_window  # 0 = all question tokens; >0 = only last N (SnapKV-style observation window)
+        self.token_importance = None  # filled per-sample by compute_receiver_importance when score_mode=="receiver"
         self._merge_logged = False
         for p in self.A.parameters(): p.requires_grad = False
         for p in self.B.parameters(): p.requires_grad = False
@@ -116,7 +122,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                 if i == 0:
                     past_key_values_new.update(key_cache[i], value_cache[i], self.layer_map[i])
                 else:
-                    key_cache_i, value_cache_i = self.compress_merge_layer(key_cache[i], value_cache[i])
+                    key_cache_i, value_cache_i = self.compress_merge_layer(key_cache[i], value_cache[i], layer_idx=i)
                     past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
             elif i in self.layers_list or i == 0:
                 past_key_values_new.update(key_cache[i], value_cache[i], self.layer_map[i])
@@ -128,7 +134,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         return past_key_values_new
 
     @torch.no_grad()
-    def compress_merge_layer(self, K: torch.Tensor, V: torch.Tensor):
+    def compress_merge_layer(self, K: torch.Tensor, V: torch.Tensor, layer_idx: int = -1):
         """Compress one layer's KV from L tokens down to k via importance selection +
         value merging (CaM/DualKV style). Retained tokens keep their original keys
         (RoPE intact); evicted tokens' values are distributed into the retained ones
@@ -141,8 +147,18 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         if k >= L:
             return K, V
 
-        # token importance proxy: value vector L2-norm (no attention needed -> memory safe)
-        imp = V.float().norm(dim=-1).mean(dim=1)[0]  # [L]
+        # token importance score
+        if (
+            self.score_mode == "receiver"
+            and self.token_importance is not None
+            and layer_idx in self.token_importance
+            and self.token_importance[layer_idx].numel() == L
+        ):
+            # receiver-aware: how much B's question attends to each A-context token
+            imp = self.token_importance[layer_idx].to(K.device).float().clone()  # [L]
+        else:
+            # query-agnostic proxy: value vector L2-norm
+            imp = V.float().norm(dim=-1).mean(dim=1)[0]  # [L]
         big = torch.finfo(imp.dtype).max
         if self.merge_sink > 0:
             imp[: self.merge_sink] = big
@@ -167,9 +183,49 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             Vk = ((Vk.float() + agg) / denom).to(V.dtype)  # normalized convex combination -> no magnitude blow-up
 
         if not self._merge_logged:
-            logging.info(f"[merge] mode={self.merge_mode} layer compress: L={L} -> k={k} (ratio={self.merge_ratio}, sink={self.merge_sink}, recent={self.merge_recent})")
+            logging.info(f"[merge] mode={self.merge_mode} score={self.score_mode} layer compress: L={L} -> k={k} (ratio={self.merge_ratio}, sink={self.merge_sink}, recent={self.merge_recent})")
             self._merge_logged = True
         return Kk, Vk.contiguous()
+
+    @torch.no_grad()
+    def compute_receiver_importance(self, input_ids_B, out_A_past_key_values):
+        """Receiver-aware token scoring (Pass 1).
+
+        Run B's prefill over its question with A's FULL (uncompressed) KV and measure
+        how much B's query attends to each A-context token. The result drives which
+        A-tokens to keep when compressing (Pass 2). This is the cross-model analogue of
+        SnapKV: the *receiver* B's queries select the *sender* A's cache.
+
+        Stores self.token_importance[A-layer i] = [L_i] importance over A's context.
+        Requires apply_attn_tracer=True and (for now) same #layers for A and B.
+        """
+        assert self.apply_attn_tracer, "receiver scoring needs apply_attn_tracer=True"
+        assert self.A_num_layers == self.B_num_layers, "receiver scoring currently supports same-depth A/B"
+
+        kv_copy = copy.deepcopy(out_A_past_key_values)  # B's prefill mutates the cache -> use a copy
+        ctx_len = [kv_copy.key_cache[i].shape[-2] for i in range(len(kv_copy.key_cache))]
+
+        # one extra parallel prefill of the (short) question -> tracer captures per-layer Q/K
+        _ = self.B(input_ids=input_ids_B, past_key_values=kv_copy, use_cache=True)
+
+        if hasattr(self.B.model, "language_model"):
+            layers = self.B.model.language_model.layers
+        else:
+            layers = self.B.model.layers
+
+        self.token_importance = {}
+        for bl, block in enumerate(layers):
+            attn_inputs = block.self_attn.attn_inputs
+            attn_weights = eager_attention_forward_without_value(block.self_attn, **attn_inputs)  # [B,H,q,kv]
+            aw = attn_weights.float().mean(dim=1)[0]  # [q, kv], mean over heads
+            # observation window: only the last recv_window question rows carry the query
+            # intent; summing over all rows dilutes it with template/function words.
+            if self.recv_window > 0 and aw.shape[0] > self.recv_window:
+                aw = aw[-self.recv_window :, :]
+            imp = aw.sum(dim=0)  # [kv], attention mass each kv token receives
+            # B-layer bl reads A-layer bl's KV (identity layer_map for same-depth);
+            # restrict to A-context columns (drop B's own appended question keys)
+            self.token_importance[bl] = imp[: ctx_len[bl]].contiguous()
 
     def forward(
         self,

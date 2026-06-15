@@ -228,6 +228,11 @@ class CommunicationEvaluator(SkylineEvaluator):
         )
         out_A_past_key_values = out_A.past_key_values
 
+        # receiver-aware scoring (Pass 1): use B's question attention over A's FULL KV
+        # to decide which A-tokens to keep, before compression happens inside generate.
+        if getattr(cv, "score_mode", "value_norm") == "receiver":
+            cv.compute_receiver_importance(input_ids_B, out_A_past_key_values)
+
         output = cv.generate(
             input_ids_B, 
             attention_mask=torch.ones_like(input_ids_B),

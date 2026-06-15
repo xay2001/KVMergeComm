@@ -45,6 +45,8 @@ class AlignConfig:
     merge_sink: int = 4
     merge_recent: int = 8
     merge_mode: str = "merge"  # "merge" (normalized value merge) or "evict" (drop only)
+    score_mode: str = "value_norm"  # "value_norm" (query-agnostic) or "receiver" (B's question attention)
+    recv_window: int = 0  # receiver scoring: 0 = all question tokens, >0 = only last N (observation window)
     # Test dataset configuration
     test_task: str = "tipsheets"
     task_name: str = ""
@@ -143,7 +145,7 @@ def main(cfg: AlignConfig):
         communication_evaluator = CommunicationEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
         if cfg.merge:
             # Merge-then-Communicate: keep all layers, compress tokens within each via merging
-            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False, shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode).to(cfg.device)
+            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=(cfg.score_mode == "receiver"), shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode, score_mode=cfg.score_mode, recv_window=cfg.recv_window).to(cfg.device)
             results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
         else:
             if cfg.top_layers > 0:
