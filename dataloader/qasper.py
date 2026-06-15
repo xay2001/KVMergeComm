@@ -1,4 +1,5 @@
 from .base_evaluator import BaseEvaluator
+from .local_loader import local_or_hub
 from datasets import load_dataset
 
 
@@ -13,7 +14,7 @@ class QaSperEvaluator(BaseEvaluator):
         self.name = "qasper"
         
     def load_data(self):
-        dataset = load_dataset("tau/scrolls", name="qasper", trust_remote_code=True)["validation"]
+        dataset = load_dataset(local_or_hub("scrolls", "tau/scrolls"), name="qasper", trust_remote_code=True)["validation"]
         dataset = self.random_sample(dataset)
         dataset = dataset.map(lambda x: {
             "prompt_A": x["input"][x["input"].index("\n\n")+2:].strip(), 

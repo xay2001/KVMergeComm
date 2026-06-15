@@ -1,4 +1,5 @@
 from .base_evaluator import BaseEvaluator
+from .local_loader import local_or_hub
 from datasets import load_dataset
 import re
 
@@ -58,7 +59,7 @@ class TwoWikiMQAEvaluator(BaseEvaluator):
         self.multi_agent = multi_agent
 
     def load_data_single_sender(self):
-        dataset = load_dataset('Xnhyacinth/LongBench', split='test', name='2wikimqa')
+        dataset = load_dataset(local_or_hub('LongBench', 'Xnhyacinth/LongBench'), split='test', name='2wikimqa')
         dataset = dataset.map(lambda x: {
             "prompt_A": x["context"], 
             "prompt_B": x["question"], 
@@ -66,7 +67,7 @@ class TwoWikiMQAEvaluator(BaseEvaluator):
         return dataset
 
     def load_data_multi_sender(self):
-        dataset = load_dataset('Xnhyacinth/LongBench', split='test', name='2wikimqa')
+        dataset = load_dataset(local_or_hub('LongBench', 'Xnhyacinth/LongBench'), split='test', name='2wikimqa')
         dataset = dataset.map(lambda x: {'passage_parts': split_passages(x['context'])})
         dataset = dataset.map(lambda x: {
             "prompt_A1": x["passage_parts"][0],

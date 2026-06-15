@@ -1,4 +1,5 @@
 from .base_evaluator import BaseEvaluator
+from .local_loader import local_or_hub
 from datasets import load_dataset
 
 def construct_support(item):
@@ -26,7 +27,7 @@ class MuSiQueEvaluator(BaseEvaluator):
         self.multi_agent = multi_agent
         
     def load_data_single_sender(self):
-        dataset = load_dataset("dgslibisey/MuSiQue", split="validation")
+        dataset = load_dataset(local_or_hub("MuSiQue", "dgslibisey/MuSiQue"), split="validation")
         dataset = self.random_sample(dataset)
         dataset = dataset.map(lambda x: {"support": construct_support(x)})
         dataset = dataset.map(lambda x: {"prompt_A": "\n".join(x["support"])})
@@ -35,7 +36,7 @@ class MuSiQueEvaluator(BaseEvaluator):
         return dataset
 
     def load_data_multi_sender(self):
-        dataset = load_dataset("dgslibisey/MuSiQue", split="validation")
+        dataset = load_dataset(local_or_hub("MuSiQue", "dgslibisey/MuSiQue"), split="validation")
         dataset = dataset.shuffle(seed=self.random_state)
         dataset = dataset.map(lambda x: {"support": construct_support(x)})
         # keep only those with at least 2 supporting facts

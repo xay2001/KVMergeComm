@@ -1,4 +1,5 @@
 from .base_evaluator import BaseEvaluator
+from .local_loader import local_or_hub
 from datasets import load_dataset
 
 
@@ -12,7 +13,7 @@ class MultiFieldQAEnEvaluator(BaseEvaluator):
         self.name = "multifieldqa_en"
         
     def load_data(self):
-        dataset = load_dataset('Xnhyacinth/LongBench', split='test', name='multifieldqa_en')
+        dataset = load_dataset(local_or_hub('LongBench', 'Xnhyacinth/LongBench'), split='test', name='multifieldqa_en')
         dataset = dataset.map(lambda x: {
             "prompt_A": x["context"], 
             "prompt_B": x["question"], 
