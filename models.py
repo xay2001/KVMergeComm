@@ -33,6 +33,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         merge_ratio: float = 0.2,
         merge_sink: int = 4,
         merge_recent: int = 8,
+        merge_mode: str = "merge",
     ) -> None:
         super().__init__(model_B.config)
         self.A = model_A
@@ -45,6 +46,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.merge_ratio = merge_ratio
         self.merge_sink = merge_sink
         self.merge_recent = merge_recent
+        self.merge_mode = merge_mode  # "merge" (normalized value merge) or "evict" (drop only)
         self._merge_logged = False
         for p in self.A.parameters(): p.requires_grad = False
         for p in self.B.parameters(): p.requires_grad = False
@@ -155,15 +157,17 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
 
         Kk = K[:, :, keep, :].contiguous()
         Vk = V[:, :, keep, :].clone()
-        if evict.numel() > 0:
+        if self.merge_mode == "merge" and evict.numel() > 0:
             Ke = K[:, :, evict, :]
             Ve = V[:, :, evict, :]
             sim = torch.matmul(Ke, Kk.transpose(-1, -2)) / (D ** 0.5)  # [B,H,e,k]
-            w = torch.softmax(sim.float(), dim=-1).to(Vk.dtype)
-            Vk = Vk + torch.matmul(w.transpose(-1, -2), Ve)  # [B,H,k,D]
+            w = torch.softmax(sim.float(), dim=-1)  # [B,H,e,k], each evicted token distributes mass 1 over kept
+            agg = torch.matmul(w.transpose(-1, -2), Ve.float())  # [B,H,k,D] sum of merged-in values
+            denom = 1.0 + w.sum(dim=-2, keepdim=True).transpose(-1, -2)  # [B,H,k,1] self + received weights
+            Vk = ((Vk.float() + agg) / denom).to(V.dtype)  # normalized convex combination -> no magnitude blow-up
 
         if not self._merge_logged:
-            logging.info(f"[merge] layer compress: L={L} -> k={k} (ratio={self.merge_ratio}, sink={self.merge_sink}, recent={self.merge_recent})")
+            logging.info(f"[merge] mode={self.merge_mode} layer compress: L={L} -> k={k} (ratio={self.merge_ratio}, sink={self.merge_sink}, recent={self.merge_recent})")
             self._merge_logged = True
         return Kk, Vk.contiguous()
 

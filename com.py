@@ -44,6 +44,7 @@ class AlignConfig:
     merge_ratio: float = 0.2
     merge_sink: int = 4
     merge_recent: int = 8
+    merge_mode: str = "merge"  # "merge" (normalized value merge) or "evict" (drop only)
     # Test dataset configuration
     test_task: str = "tipsheets"
     task_name: str = ""
@@ -142,7 +143,7 @@ def main(cfg: AlignConfig):
         communication_evaluator = CommunicationEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
         if cfg.merge:
             # Merge-then-Communicate: keep all layers, compress tokens within each via merging
-            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False, shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent).to(cfg.device)
+            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False, shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode).to(cfg.device)
             results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
         else:
             if cfg.top_layers > 0:
