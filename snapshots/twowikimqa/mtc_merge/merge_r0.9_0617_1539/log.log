@@ -1,0 +1,11 @@
+2026-06-17 15:39:14,559 - root - INFO - Logging setup completed. Log file: snapshots/twowikimqa/mtc_merge/merge_r0.9_0617_1539/log.log
+2026-06-17 15:39:14,560 - root - INFO - Log level: INFO
+2026-06-17 15:39:14,560 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/twowikimqa/mtc_merge', model_A='/sharedspace/models/Llama-3.1-8B-Instruct', model_B='/sharedspace/models/Llama-3.1-8B-Instruct', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.9, merge_sink=4, merge_recent=8, merge_mode='merge', score_mode='value_norm', recv_window=0, test_task='twowikimqa', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='merge_r0.9', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-06-17 15:39:14,560 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/twowikimqa/mtc_merge/merge_r0.9_0617_1539
+2026-06-17 15:39:14,560 - root - INFO - Log level: INFO
+2026-06-17 15:39:14,727 - root - INFO - Number of GPU: 1
+2026-06-17 15:39:14,729 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-06-17 15:39:14,729 - root - INFO - CUDA_VISIBLE_DEVICES: 1
+2026-06-17 15:39:37,190 - root - INFO - CVCommunicator initialized
+2026-06-17 15:39:39,751 - root - INFO - [merge] mode=merge score=value_norm layer compress: L=7108 -> k=6397 (ratio=0.9, sink=4, recent=8)
+2026-06-17 15:46:15,651 - root - INFO - communication result: 0.4100, communication time: 398.45s

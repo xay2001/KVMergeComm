@@ -1,0 +1,11 @@
+2026-06-17 15:46:30,454 - root - INFO - Logging setup completed. Log file: snapshots/twowikimqa/mtc_evict/evict_r0.1_0617_1546/log.log
+2026-06-17 15:46:30,454 - root - INFO - Log level: INFO
+2026-06-17 15:46:30,454 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/twowikimqa/mtc_evict', model_A='/sharedspace/models/Llama-3.1-8B-Instruct', model_B='/sharedspace/models/Llama-3.1-8B-Instruct', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.1, merge_sink=4, merge_recent=8, merge_mode='evict', score_mode='value_norm', recv_window=0, test_task='twowikimqa', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='evict_r0.1', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-06-17 15:46:30,454 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/twowikimqa/mtc_evict/evict_r0.1_0617_1546
+2026-06-17 15:46:30,454 - root - INFO - Log level: INFO
+2026-06-17 15:46:30,602 - root - INFO - Number of GPU: 1
+2026-06-17 15:46:30,607 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-06-17 15:46:30,608 - root - INFO - CUDA_VISIBLE_DEVICES: 1
+2026-06-17 15:46:44,062 - root - INFO - CVCommunicator initialized
+2026-06-17 15:46:46,504 - root - INFO - [merge] mode=evict score=value_norm layer compress: L=7108 -> k=711 (ratio=0.1, sink=4, recent=8)
+2026-06-17 15:52:34,818 - root - INFO - communication result: 0.1800, communication time: 350.75s

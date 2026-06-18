@@ -1,0 +1,11 @@
+2026-06-18 06:08:38,031 - root - INFO - Logging setup completed. Log file: snapshots/tmath/mtc_evict/evict_r0.2_0618_0608/log.log
+2026-06-18 06:08:38,031 - root - INFO - Log level: INFO
+2026-06-18 06:08:38,031 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/tmath/mtc_evict', model_A='/sharedspace/models/Llama-3.1-8B-Instruct', model_B='/sharedspace/models/Llama-3.1-8B-Instruct', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='evict', score_mode='value_norm', recv_window=0, test_task='tmath', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='evict_r0.2', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-06-18 06:08:38,031 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/tmath/mtc_evict/evict_r0.2_0618_0608
+2026-06-18 06:08:38,031 - root - INFO - Log level: INFO
+2026-06-18 06:08:38,157 - root - INFO - Number of GPU: 1
+2026-06-18 06:08:38,160 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-06-18 06:08:38,160 - root - INFO - CUDA_VISIBLE_DEVICES: 1
+2026-06-18 06:10:13,479 - root - INFO - CVCommunicator initialized
+2026-06-18 06:10:14,595 - root - INFO - [merge] mode=evict score=value_norm layer compress: L=223 -> k=45 (ratio=0.2, sink=4, recent=8)
+2026-06-18 07:12:15,446 - root - INFO - communication result: 0.3389, communication time: 3721.96s
