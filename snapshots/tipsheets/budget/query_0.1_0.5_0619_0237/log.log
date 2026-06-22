@@ -1,0 +1,12 @@
+2026-06-19 02:37:15,529 - root - INFO - Logging setup completed. Log file: snapshots/tipsheets/budget/query_0.1_0.5_0619_0237/log.log
+2026-06-19 02:37:15,529 - root - INFO - Log level: INFO
+2026-06-19 02:37:15,529 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/tipsheets/budget', model_A='/sharedspace/models/Llama-3.1-8B-Instruct', model_B='/sharedspace/models/Llama-3.1-8B-Instruct', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='evict', score_mode='receiver', recv_window=16, budget_mode='query', budget_min=0.1, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, test_task='tipsheets', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='query_0.1_0.5', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-06-19 02:37:15,529 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/tipsheets/budget/query_0.1_0.5_0619_0237
+2026-06-19 02:37:15,529 - root - INFO - Log level: INFO
+2026-06-19 02:37:15,649 - root - INFO - Number of GPU: 1
+2026-06-19 02:37:15,652 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-06-19 02:37:15,652 - root - INFO - CUDA_VISIBLE_DEVICES: 1
+2026-06-19 02:37:55,172 - root - INFO - CVCommunicator initialized
+2026-06-19 02:37:56,555 - root - INFO - [merge] mode=evict score=receiver budget=query layer compress: L=109 -> k=26 (r_eff=0.236, base_ratio=0.2, sink=4, recent=8)
+2026-06-19 02:40:10,718 - root - INFO - per-sample scores written to /home/xay/KVComm/snapshots/tipsheets/budget/query_0.1_0.5_0619_0237/per_sample.jsonl
+2026-06-19 02:40:10,718 - root - INFO - communication result: 0.8800, communication time: 135.54s
