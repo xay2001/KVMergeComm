@@ -406,6 +406,9 @@ class CommunicationEvaluator(SkylineEvaluator):
             rungs = []
             for r in ladder:
                 cv.merge_ratio = float(r)
+                # KV-sufficiency signal: B's attention over the COMPRESSED A-context
+                suff = cv.compute_context_attention(
+                    input_ids_B, cv.prepare_key_cache(copy.deepcopy(base_pkv)))
                 pkv = copy.deepcopy(base_pkv)  # generate appends to its own copy
                 resp, unc, budget = self._generate_uncertainty(cv, input_ids_B, pkv)
                 prev_total, prev_count = self.evaluator.f1_total, self.evaluator.f1_count
@@ -417,6 +420,7 @@ class CommunicationEvaluator(SkylineEvaluator):
                     "budget": round(float(budget), 6) if budget is not None else None,
                     "score": round(float(score), 6),
                     **{k: round(float(v), 6) for k, v in unc.items()},
+                    **{k: round(float(v), 6) for k, v in suff.items()},
                 })
             sid = item.get("_id", item.get("id", None)) if hasattr(item, "get") else None
             per_sample.append({"idx": i, "id": sid, "rungs": rungs})
@@ -434,7 +438,7 @@ class CommunicationEvaluator(SkylineEvaluator):
             "score_mode": getattr(cv, "score_mode", None),
             "recv_window": getattr(cv, "recv_window", None),
             "ladder": list(ladder),
-            "signals": ["ent_first", "ent_mean", "margin_first", "margin_mean"],
+            "signals": ["ent_first", "ent_mean", "margin_first", "margin_mean", "ctx_mass", "ctx_conc"],
             "n": len(per_sample),
         }
         path = os.path.join(run_dir, "per_sample_prog.jsonl")

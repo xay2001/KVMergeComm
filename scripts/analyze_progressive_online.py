@@ -29,6 +29,8 @@ SIGNALS = {
     "ent_mean": "le",
     "margin_first": "ge",  # confident if margin >= theta
     "margin_mean": "ge",
+    "ctx_mass": "ge",      # confident if B attends enough mass to transmitted KV
+    "ctx_conc": "ge",      # confident if B's context attention is concentrated (found evidence)
 }
 
 
@@ -101,6 +103,21 @@ def fixed_points(rows, tau):
     return out
 
 
+def budget_at_acc(fixed_pts, acc):
+    """Fixed-r budget needed to reach accuracy `acc` (linear interp on the fixed curve).
+    Returns None if `acc` exceeds the best fixed-r accuracy (online beats the ceiling)."""
+    pts = sorted(fixed_pts, key=lambda x: x[2])  # by acc asc -> (r, budget, acc)
+    if acc <= pts[0][2]:
+        return pts[0][1]
+    if acc > pts[-1][2] + 1e-9:
+        return None
+    for (r0, b0, a0), (r1, b1, a1) in zip(pts, pts[1:]):
+        if a0 <= acc <= a1 and a1 > a0:
+            t = (acc - a0) / (a1 - a0)
+            return b0 + t * (b1 - b0)
+    return pts[-1][1]
+
+
 def pareto_front(points):
     """points: list of (theta, acc, budget, rounds). Keep non-dominated (high acc, low budget)."""
     front = []
@@ -142,12 +159,17 @@ def report(run_dir, tau, signal):
         print(f"{th:>8.3f} {acc:>7.3f} {bud:>11.3f} {rnd:>11.2f}")
 
     front = pareto_front(pts)
+    fp = fixed_points(rows, tau)
     print("\nPareto front (theta -> acc @ budget, rounds):")
     for th, acc, bud, rnd in front:
-        # budget saving vs cheapest fixed-r matching this acc
-        fp = fixed_points(rows, tau)
-        match = min((b for r, b, a in fp if a >= 0.99 * acc), default=None)
-        save = f"{(1-bud/match)*100:+.1f}% vs fixed b{match:.3f}" if match else "n/a"
+        # honest equal-accuracy saving: budget the fixed-r curve needs to reach THIS acc
+        b_fixed = budget_at_acc(fp, acc)
+        if b_fixed is None:
+            save = "acc>fixed-ceiling"   # online exceeds best fixed-r accuracy
+        elif b_fixed <= 0:
+            save = "n/a"
+        else:
+            save = f"{(1-bud/b_fixed)*100:+.1f}% vs fixed b{b_fixed:.3f}"
         print(f"  theta={th:.3f}  acc={acc:.3f}  budget={bud:.3f}  rounds={rnd:.2f}   ({save})")
 
 

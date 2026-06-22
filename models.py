@@ -310,6 +310,49 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         # budget-aware allocation depends on the importance distribution just computed
         self._compute_budget()
 
+    @torch.no_grad()
+    def compute_context_attention(self, input_ids_B, compressed_past_key_values):
+        """KV-sufficiency signal for progressive communication.
+
+        Run B's question prefill over the *already-compressed* A KV and measure
+        how B's query attends to the surviving A-context tokens:
+          - ctx_mass: fraction of B-query attention mass landing on A-context
+                      (vs B's own question tokens). Low mass => B can't ground its
+                      query in the transmitted KV (starved) => likely needs more.
+          - ctx_conc: concentration (1 - normalized entropy) of that attention over
+                      A-context. High => B locked onto focused evidence => likely enough.
+        Both aggregated over the last recv_window query rows, mean over heads/layers.
+        """
+        assert self.apply_attn_tracer, "context-attention signal needs apply_attn_tracer=True"
+        kv_copy = copy.deepcopy(compressed_past_key_values)
+        ctx_len = [kv_copy.key_cache[i].shape[-2] for i in range(len(kv_copy.key_cache))]
+        _ = self.B(input_ids=input_ids_B, past_key_values=kv_copy, use_cache=True)
+
+        if hasattr(self.B.model, "language_model"):
+            layers = self.B.model.language_model.layers
+        else:
+            layers = self.B.model.layers
+
+        masses, concs = [], []
+        for bl, block in enumerate(layers):
+            attn_inputs = block.self_attn.attn_inputs
+            aw = eager_attention_forward_without_value(block.self_attn, **attn_inputs).float().mean(dim=1)[0]  # [q, kv]
+            if self.recv_window > 0 and aw.shape[0] > self.recv_window:
+                aw = aw[-self.recv_window:, :]
+            c = ctx_len[bl]
+            if c <= 0:
+                continue
+            ctx_aw = aw[:, :c]  # attention onto A-context columns
+            total = aw.sum(dim=-1).clamp_min(1e-9)  # [q]
+            masses.append((ctx_aw.sum(dim=-1) / total).mean())
+            p = ctx_aw / ctx_aw.sum(dim=-1, keepdim=True).clamp_min(1e-9)  # [q, c]
+            ent = -(p * (p + 1e-12).log()).sum(dim=-1)  # [q]
+            concs.append((1 - ent / math.log(max(c, 2))).mean())
+        return {
+            "ctx_mass": float(torch.stack(masses).mean()) if masses else 0.0,
+            "ctx_conc": float(torch.stack(concs).mean()) if concs else 0.0,
+        }
+
     def forward(
         self,
         input_ids: torch.LongTensor,
