@@ -6,6 +6,22 @@ import wandb
 from layer_importance import calc_layer_importance
 from collections import defaultdict
 import time
+import os
+import json
+import copy
+
+
+def _current_run_dir():
+    """Directory of the active log.log (set up in com.py via setup_logging).
+
+    Used to drop per-sample result files next to each run's log without
+    threading an extra path argument through every evaluator constructor.
+    """
+    for h in logging.getLogger().handlers:
+        base = getattr(h, "baseFilename", None)
+        if base:
+            return os.path.dirname(base)
+    return None
 
 QA_INSTRUCTION = "Directly answer the question based on the context passage, no explanation is needed."
 MATH_INSTRUCTION = "Answer the math problem step by step."
@@ -247,6 +263,9 @@ class CommunicationEvaluator(SkylineEvaluator):
     def _test(self, model_A, cv, limit=None, do_calc_layer_importance=False):
         progress_bar = tqdm(self.evaluator, desc=f"{self.name} result: 0.0000", disable=do_calc_layer_importance)
 
+        # collect per-sample scores for the real eval pass (skip calibration pass)
+        per_sample = None if do_calc_layer_importance else []
+
         for i, item in enumerate(progress_bar):
             if limit is not None and i >= limit:
                 break
@@ -256,13 +275,61 @@ class CommunicationEvaluator(SkylineEvaluator):
                 cv.calc_attn_weights_from_qk()
                 self.layer_importance_total = calc_layer_importance(cv.B_attn_weights, model_A.name, self.layer_importance_total)
             
+            prev_total = self.evaluator.f1_total
             self.evaluator.evaluate_item(item, response)
-            
+
+            if per_sample is not None:
+                # evaluate_item does f1_total += score, f1_count += 1, so the
+                # delta is exactly this sample's score (F1 / EM / ROUGE-L recall).
+                score = self.evaluator.f1_total - prev_total
+                sid = None
+                try:
+                    sid = item.get("_id", item.get("id", None))
+                except AttributeError:
+                    sid = None
+                row = {"idx": i, "id": sid, "score": round(float(score), 6)}
+                # achieved transmitted-KV fraction and per-query budget (budget-aware runs)
+                kept = getattr(cv, "last_kept_ratio", None)
+                if kept is not None:
+                    row["budget"] = round(float(kept), 6)
+                qb = getattr(cv, "last_query_budget", None)
+                if qb is not None:
+                    row["query_budget"] = round(float(qb), 6)
+                per_sample.append(row)
+
             result = self.evaluator.get_result()
             progress_bar.set_description(f"{self.name} result: {result:.4f}")
             
         result = self.evaluator.get_result()
+        if per_sample is not None:
+            self._dump_per_sample(per_sample, cv)
         return result
+
+    def _dump_per_sample(self, per_sample, cv):
+        run_dir = _current_run_dir()
+        if run_dir is None:
+            return
+        meta = {
+            "dataset": getattr(self.evaluator, "name", None),
+            "score_mode": getattr(cv, "score_mode", None),
+            "recv_window": getattr(cv, "recv_window", None),
+            "merge": getattr(cv, "merge", None),
+            "merge_mode": getattr(cv, "merge_mode", None),
+            "merge_ratio": getattr(cv, "merge_ratio", None),
+            "budget_mode": getattr(cv, "budget_mode", None),
+            "budget_min": getattr(cv, "budget_min", None),
+            "budget_max": getattr(cv, "budget_max", None),
+            "n": len(per_sample),
+        }
+        path = os.path.join(run_dir, "per_sample.jsonl")
+        try:
+            with open(path, "w") as f:
+                f.write(json.dumps({"_meta": meta}) + "\n")
+                for row in per_sample:
+                    f.write(json.dumps(row) + "\n")
+            logging.info(f"per-sample scores written to {path}")
+        except OSError as e:
+            logging.warning(f"failed to write per-sample scores: {e}")
     
     @torch.no_grad()
     def test(self, model_A, cv, limit=None, do_calc_layer_importance=False, no_wandb=False):
@@ -274,6 +341,117 @@ class CommunicationEvaluator(SkylineEvaluator):
             wandb.log({f"{self.name}_result": result, f"{self.name}_time": time_used})
         logging.info(f"{self.name} result: {result:.4f}, {self.name} time: {time_used:.2f}s")
         return result
+
+    # ---------- Step 2b: online progressive communication ----------
+
+    @torch.no_grad()
+    def _generate_uncertainty(self, cv, input_ids_B, out_A_past_key_values):
+        """Generate B's answer at the current budget and return (response, uncertainty, budget).
+
+        Uncertainty signals (computed from the step logits of the greedy decode):
+          - ent_first / ent_mean : predictive entropy of the first / mean of all generated tokens
+          - margin_first/margin_mean: top-1 minus top-2 probability (low = unsure)
+        These are exactly the signals a real receiver could compute at inference time
+        to decide whether to request more KV.
+        """
+        gen_args = dict(self.generate_args)
+        gen_args.update(return_dict_in_generate=True, output_scores=True)
+        out = cv.generate(
+            input_ids_B,
+            attention_mask=torch.ones_like(input_ids_B),
+            out_A_past_key_values=out_A_past_key_values,
+            **gen_args,
+        )
+        context_length = input_ids_B.shape[-1]
+        response = self.get_response(out.sequences[0], context_length)
+        budget = getattr(cv, "last_kept_ratio", None)
+
+        ents, margins = [], []
+        for s in out.scores:
+            logp = torch.log_softmax(s[0].float(), dim=-1)
+            p = logp.exp()
+            ents.append(float(-(p * logp).sum()))
+            top2 = torch.topk(p, 2).values
+            margins.append(float(top2[0] - top2[1]))
+        if not ents:  # no token generated -> maximally unsure
+            unc = {"ent_first": 20.0, "ent_mean": 20.0, "margin_first": 0.0, "margin_mean": 0.0}
+        else:
+            unc = {
+                "ent_first": ents[0],
+                "ent_mean": sum(ents) / len(ents),
+                "margin_first": margins[0],
+                "margin_mean": sum(margins) / len(margins),
+            }
+        return response, unc, budget
+
+    @torch.no_grad()
+    def _test_progressive(self, model_A, cv, ladder, limit=None):
+        """For each sample, generate at every budget rung and record
+        {score, budget, uncertainty} so any stop-threshold theta can be swept
+        offline (scripts/analyze_progressive_online.py). The receiver-aware
+        importance is query-dependent but budget-independent, so it is computed
+        once per sample and reused across rungs (only merge_ratio changes)."""
+        assert getattr(cv, "score_mode", None) == "receiver", "progressive needs score_mode=receiver"
+        ladder = sorted(float(r) for r in ladder)
+        per_sample = []
+        pbar = tqdm(self.evaluator, desc=f"{self.name} progressive")
+        for i, item in enumerate(pbar):
+            if limit is not None and i >= limit:
+                break
+            input_ids_A, input_ids_B = self.prepare_input_ids(item, cv.A, cv.B)
+            out_A = model_A(input_ids=input_ids_A, use_cache=True, return_dict=True)
+            base_pkv = out_A.past_key_values
+            cv.compute_receiver_importance(input_ids_B, base_pkv)  # once, r-independent
+
+            rungs = []
+            for r in ladder:
+                cv.merge_ratio = float(r)
+                pkv = copy.deepcopy(base_pkv)  # generate appends to its own copy
+                resp, unc, budget = self._generate_uncertainty(cv, input_ids_B, pkv)
+                prev_total, prev_count = self.evaluator.f1_total, self.evaluator.f1_count
+                self.evaluator.evaluate_item(item, resp)
+                score = self.evaluator.f1_total - prev_total
+                self.evaluator.f1_total, self.evaluator.f1_count = prev_total, prev_count  # don't pollute
+                rungs.append({
+                    "r": float(r),
+                    "budget": round(float(budget), 6) if budget is not None else None,
+                    "score": round(float(score), 6),
+                    **{k: round(float(v), 6) for k, v in unc.items()},
+                })
+            sid = item.get("_id", item.get("id", None)) if hasattr(item, "get") else None
+            per_sample.append({"idx": i, "id": sid, "rungs": rungs})
+            pbar.set_description(f"{self.name} progressive [{i+1}]")
+
+        self._dump_progressive(per_sample, cv, ladder)
+        return per_sample
+
+    def _dump_progressive(self, per_sample, cv, ladder):
+        run_dir = _current_run_dir()
+        if run_dir is None:
+            return
+        meta = {
+            "dataset": getattr(self.evaluator, "name", None),
+            "score_mode": getattr(cv, "score_mode", None),
+            "recv_window": getattr(cv, "recv_window", None),
+            "ladder": list(ladder),
+            "signals": ["ent_first", "ent_mean", "margin_first", "margin_mean"],
+            "n": len(per_sample),
+        }
+        path = os.path.join(run_dir, "per_sample_prog.jsonl")
+        try:
+            with open(path, "w") as f:
+                f.write(json.dumps({"_meta": meta}) + "\n")
+                for row in per_sample:
+                    f.write(json.dumps(row) + "\n")
+            logging.info(f"progressive per-sample records written to {path}")
+        except OSError as e:
+            logging.warning(f"failed to write progressive records: {e}")
+
+    @torch.no_grad()
+    def test_progressive(self, model_A, cv, ladder, limit=None):
+        tic = time.time()
+        self._test_progressive(model_A, cv, ladder, limit)
+        logging.info(f"progressive done in {time.time()-tic:.1f}s, ladder={sorted(float(r) for r in ladder)}")
 
 class ACEvaluator(CommunicationEvaluator):
     def __init__(self, evaluator, tokenizer, use_wandb, max_input_length):

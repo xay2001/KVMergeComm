@@ -1,5 +1,6 @@
 from typing import Literal, Optional
 import copy
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -37,6 +38,11 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         merge_mode: str = "merge",
         score_mode: str = "value_norm",
         recv_window: int = 0,
+        budget_mode: str = "uniform",
+        budget_min: float = 0.05,
+        budget_max: float = 0.5,
+        budget_tau: float = 1.0,
+        budget_floor: float = 0.02,
     ) -> None:
         super().__init__(model_B.config)
         self.A = model_A
@@ -53,6 +59,19 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.score_mode = score_mode  # "value_norm" (query-agnostic) or "receiver" (B's question attention)
         self.recv_window = recv_window  # 0 = all question tokens; >0 = only last N (SnapKV-style observation window)
         self.token_importance = None  # filled per-sample by compute_receiver_importance when score_mode=="receiver"
+        # budget-aware allocation (Step 1): how the per-query / per-layer keep ratio is set.
+        #   uniform      -> every layer keeps self.merge_ratio (original RASC behaviour)
+        #   query        -> per-query total budget B(Q) from importance entropy, uniform across layers
+        #   layer        -> fixed total budget self.merge_ratio, softmax-allocated across layers by importance
+        #   query+layer  -> both: B(Q) total, softmax-allocated across layers
+        self.budget_mode = budget_mode
+        self.budget_min = budget_min
+        self.budget_max = budget_max
+        self.budget_tau = budget_tau
+        self.budget_floor = budget_floor
+        self.layer_budget = {}        # {layer_idx: r_l}, recomputed per query
+        self.last_query_budget = None # B(Q) for the most recent query
+        self.last_kept_ratio = None   # actual transmitted KV fraction for the most recent query
         self._merge_logged = False
         for p in self.A.parameters(): p.requires_grad = False
         for p in self.B.parameters(): p.requires_grad = False
@@ -114,23 +133,28 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         value_cache = past_key_values.value_cache
         assert len(key_cache) == len(self.layer_map), "key_cache and layer_map must have the same length"
         past_key_values_new = DynamicCache()
+        kept_tokens, total_tokens = 0, 0
         for i in range(len(key_cache)): # i is the layer index of model A
+            total_tokens += key_cache[i].shape[-2]
             if self.merge:
                 # Merge-then-Communicate: keep all layers, compress tokens within each
                 # layer by merging (instead of dropping whole layers). Layer 0 is kept
                 # full to anchor the receiver's position indexing.
                 if i == 0:
-                    past_key_values_new.update(key_cache[i], value_cache[i], self.layer_map[i])
+                    key_cache_i, value_cache_i = key_cache[i], value_cache[i]
                 else:
                     key_cache_i, value_cache_i = self.compress_merge_layer(key_cache[i], value_cache[i], layer_idx=i)
-                    past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
+                past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
             elif i in self.layers_list or i == 0:
-                past_key_values_new.update(key_cache[i], value_cache[i], self.layer_map[i])
+                key_cache_i, value_cache_i = key_cache[i], value_cache[i]
+                past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
             else:
                 # keep the first token due to attention sink
                 key_cache_i = key_cache[i][:, :, :1, :]
                 value_cache_i = value_cache[i][:, :, :1, :]
                 past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
+            kept_tokens += key_cache_i.shape[-2]
+        self.last_kept_ratio = kept_tokens / total_tokens if total_tokens else None
         return past_key_values_new
 
     @torch.no_grad()
@@ -143,7 +167,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         K, V: [B, H_kv, L, D]
         """
         B, H, L, D = K.shape
-        k = max(int(round(self.merge_ratio * L)), self.merge_sink + self.merge_recent)
+        r_eff = self._effective_ratio(layer_idx)
+        k = max(int(round(r_eff * L)), self.merge_sink + self.merge_recent)
         if k >= L:
             return K, V
 
@@ -183,9 +208,64 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             Vk = ((Vk.float() + agg) / denom).to(V.dtype)  # normalized convex combination -> no magnitude blow-up
 
         if not self._merge_logged:
-            logging.info(f"[merge] mode={self.merge_mode} score={self.score_mode} layer compress: L={L} -> k={k} (ratio={self.merge_ratio}, sink={self.merge_sink}, recent={self.merge_recent})")
+            logging.info(f"[merge] mode={self.merge_mode} score={self.score_mode} budget={self.budget_mode} layer compress: L={L} -> k={k} (r_eff={r_eff:.3f}, base_ratio={self.merge_ratio}, sink={self.merge_sink}, recent={self.merge_recent})")
             self._merge_logged = True
         return Kk, Vk.contiguous()
+
+    def _effective_ratio(self, layer_idx: int) -> float:
+        """Per-layer keep ratio. Falls back to the global merge_ratio unless a
+        budget-aware allocation has been computed for this query/layer."""
+        if self.budget_mode == "uniform" or not self.layer_budget:
+            return self.merge_ratio
+        return self.layer_budget.get(layer_idx, self.merge_ratio)
+
+    def _query_total_budget(self) -> float:
+        """Per-query total budget B(Q) from the receiver-importance distribution.
+        Diffuse importance (high entropy) -> evidence spread over many tokens ->
+        needs a larger budget; concentrated importance -> small budget suffices.
+            B = budget_min + (budget_max - budget_min) * mean_l(H_l / log L_l)
+        """
+        Hns = []
+        for l, s in self.token_importance.items():
+            if l == 0:
+                continue
+            s = s.float()
+            tot = s.sum()
+            if tot <= 0 or s.numel() < 2:
+                continue
+            p = s / (tot + 1e-9)
+            H = -(p * (p + 1e-12).log()).sum()
+            Hns.append((H / math.log(s.numel())).clamp(0.0, 1.0).item())
+        if not Hns:
+            return self.merge_ratio
+        Hmean = sum(Hns) / len(Hns)
+        return self.budget_min + (self.budget_max - self.budget_min) * Hmean
+
+    def _compute_budget(self):
+        """Recompute the per-layer keep ratios for the current query. Called right
+        after receiver importance is available. Requires score_mode=='receiver'."""
+        self.layer_budget = {}
+        self.last_query_budget = None
+        if self.budget_mode == "uniform" or not self.token_importance:
+            return
+        comp = [l for l in sorted(self.token_importance.keys()) if l != 0]
+        if not comp:
+            return
+        B = self._query_total_budget() if self.budget_mode in ("query", "query+layer") else self.merge_ratio
+        self.last_query_budget = float(B)
+        if self.budget_mode in ("layer", "query+layer"):
+            # layer importance: top-10% mean of receiver attention mass (concentration-robust)
+            I = []
+            for l in comp:
+                s = self.token_importance[l].float()
+                kk = max(1, int(round(0.1 * s.numel())))
+                I.append(torch.topk(s, min(kk, s.numel())).values.mean())
+            Ivec = torch.stack(I)
+            w = torch.softmax(Ivec / self.budget_tau, dim=0)  # sums to 1 over layers
+            r = (w * len(comp) * B).clamp(self.budget_floor, 1.0)  # mean over layers ~= B
+            self.layer_budget = {l: float(r[i]) for i, l in enumerate(comp)}
+        else:  # query-only: same B on every compressible layer
+            self.layer_budget = {l: float(B) for l in comp}
 
     @torch.no_grad()
     def compute_receiver_importance(self, input_ids_B, out_A_past_key_values):
@@ -226,6 +306,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             # B-layer bl reads A-layer bl's KV (identity layer_map for same-depth);
             # restrict to A-context columns (drop B's own appended question keys)
             self.token_importance[bl] = imp[: ctx_len[bl]].contiguous()
+
+        # budget-aware allocation depends on the importance distribution just computed
+        self._compute_budget()
 
     def forward(
         self,
