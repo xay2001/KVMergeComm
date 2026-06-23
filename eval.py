@@ -457,6 +457,50 @@ class CommunicationEvaluator(SkylineEvaluator):
         self._test_progressive(model_A, cv, ladder, limit)
         logging.info(f"progressive done in {time.time()-tic:.1f}s, ladder={sorted(float(r) for r in ladder)}")
 
+    # ---------- 牌2: single-shot budget-prediction feature dump ----------
+
+    @torch.no_grad()
+    def dump_pass1_features(self, model_A, cv, limit=None):
+        """For each sample, run only A-prefill + receiver scoring (Pass-1, no
+        generation) and dump the dimensionless budget-prediction features.
+        These join (by idx) with the probe per_sample.jsonl (oracle min budget)
+        to train a single-shot budget predictor offline."""
+        assert getattr(cv, "score_mode", None) == "receiver", "feature dump needs score_mode=receiver"
+        per_sample = []
+        pbar = tqdm(self.evaluator, desc=f"{self.name} pass1-features")
+        for i, item in enumerate(pbar):
+            if limit is not None and i >= limit:
+                break
+            input_ids_A, input_ids_B = self.prepare_input_ids(item, cv.A, cv.B)
+            out_A = model_A(input_ids=input_ids_A, use_cache=True, return_dict=True)
+            cv.compute_receiver_importance(input_ids_B, out_A.past_key_values)
+            feat = cv.compute_pass1_features()
+            sid = item.get("_id", item.get("id", None)) if hasattr(item, "get") else None
+            per_sample.append({"idx": i, "id": sid, **feat})
+        self._dump_features(per_sample, cv)
+        return per_sample
+
+    def _dump_features(self, per_sample, cv):
+        run_dir = _current_run_dir()
+        if run_dir is None:
+            return
+        meta = {
+            "dataset": getattr(self.evaluator, "name", None),
+            "score_mode": getattr(cv, "score_mode", None),
+            "recv_window": getattr(cv, "recv_window", None),
+            "n": len(per_sample),
+            "features": [k for k in per_sample[0].keys() if k not in ("idx", "id")] if per_sample else [],
+        }
+        path = os.path.join(run_dir, "per_sample_feat.jsonl")
+        try:
+            with open(path, "w") as f:
+                f.write(json.dumps({"_meta": meta}) + "\n")
+                for row in per_sample:
+                    f.write(json.dumps(row) + "\n")
+            logging.info(f"pass1 features written to {path}")
+        except OSError as e:
+            logging.warning(f"failed to write pass1 features: {e}")
+
 class ACEvaluator(CommunicationEvaluator):
     def __init__(self, evaluator, tokenizer, use_wandb, max_input_length):
         super().__init__(evaluator, tokenizer, use_wandb, max_input_length)

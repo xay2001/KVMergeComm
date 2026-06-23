@@ -18,21 +18,27 @@
 ### 0.2 研究主线(两阶段)
 
 ```
-阶段 A:RASC —— 把"层选择"升级为"接收方感知的 token 选择"        [§1–§4, 已验证]
+阶段 A:RASC —— 把"层选择"升级为"接收方感知的 token 选择"        [§1–§4, 已验证 ✓]
    KVComm(层级丢弃) → evict(token 级,value-norm) → RASC(token 级,receiver 打分 + 观测窗口)
    结论:同预算下 RASC > evict > merge;难任务上 token 级 ≫ 层级;merge 无益("选对" > "合并")
 
-阶段 B:Budget-aware —— 把"固定保留比"升级为"按 query 自适应预算"  [§6–§8]
-   Step 0 验证前提:每条 query 的最优预算大幅波动,固定 r 严重过供        → headroom 真实存在
-   Step 1 开环失败:发送方侧统计量(熵/层重要性)预测不出 per-query 预算   → 干净的 negative ablation
-   Step 2 闭环可行:接收方不确定性驱动的渐进补传,逼近 oracle 预算上界      → 等精度省 35–47% 预算,≤2.4 轮
+阶段 B:Budget-aware —— 把"固定保留比"升级为"按 query 自适应预算"  [§5–§9, 全面证伪 ✗]
+   Step 0  验证前提:每条 query 的最优预算大幅波动,固定 r 严重过供(理论 64–67% headroom)  → 前提成立
+   Step 1  开环预测:发送方侧统计量(熵/层重要性)预测不出 per-query 预算            → 证伪
+   Step 2a 离线上界:oracle-stop 渐进理论可省 35–47% 预算(但这是完美停止信号的上界)   → 仅上界
+   Step 2b 在线渐进:learned controller 实测,只有 hotpotqa 中段微正,musique/2wiki 负   → 证伪 + 多轮开销
+   牌2    单发预测:Pass-1 特征单发预测最优预算,LODO AUC 0.585、等精度全程负节省      → 证伪
+
+  → 阶段 B 的全部变体(开环 / 离线 / 在线多轮 / 单发)在等精度下都打不过"RASC + 固定预算",
+    且不跨数据集泛化。这与 BAGEN("预算可训练但难校准、不泛化")一致。整条线作为强 negative result 收编。
 ```
 
-### 0.3 三个创新点
+### 0.3 创新点定位(随实验修正)
 
-1. **Receiver-Aware KV Communication(RASC)**:利用接收方 B 的 query sketch(问题末 N 词的注意力)指导发送方 A **在 token 粒度**选择性传输 KV——跨模型版的 SnapKV。定位为 **selection**(选对 token),并实验证伪 cache-merging 的必要性。
-2. **开环预算预测不足(negative ablation)**:系统证明发送方侧的注意力熵 / 层重要性 **无法预测每条 query 的通信预算**(预测预算样本间方差近 0、与正确性零相关),为闭环方案提供动机。
-3. **闭环渐进式通信(Progressive RASC,主攻)**:接收方用不确定性信号触发**增量式**KV 补传,在等精度下显著降低平均预算,并揭示 **merge 不是关键、receiver-aware selection + 按需预算才是核心**。
+1. **Receiver-Aware KV Communication(RASC,主)**:利用接收方 B 的 query sketch(问题末 N 词的注意力)指导发送方 A **在 token 粒度**选择性传输 KV。定位为 **selection**(选对 token),并实验证伪 cache-merging 的必要性。这是已坐实的核心贡献。
+2. **机制分析(merge vs evict)**:系统对比表明在通信压缩场景"**选对 token**" > "合并被丢的 token",纠正了 CaM 式 cache-merging 的迁移假设。
+3. **Budget-aware 的系统性 negative result(§5–§9)**:从前提验证(headroom 真实存在)到四类预算自适应方案(开环 / 离线 oracle / 在线多轮 / 单发预测)逐一证伪,得出"**在 receiver-aware selection 之上,query 自适应预算无可开环/单发利用的信号、且不跨任务泛化**"——这是一个干净、可写半页的反面结论,反衬主方法的简洁有效。
+4. **(进行中)牌 1 — Cross-model RASC**:A、B 异构(不同权重/tokenizer/层数)时的打分对齐,是真实 MAS 刚需、KVComm 未解决的问题,拟作为第三个正向抓手。详见 §11。
 
 ---
 
@@ -262,34 +268,72 @@
 | musique | 0.494 | 1.71 | 0.241 | +20% |
 | twowikimqa | 0.460 | 1.56 | 0.212 | +29% |
 
-> **结论**:闭环渐进在三个难任务上**等精度省 35–47% 预算、≤2.4 轮**,远胜 Step 1 开环。
+> **结论**:闭环渐进在三个难任务上**等精度省 35–47% 预算、≤2.4 轮**(oracle 上界)。
 > - 渐进精度**反超**最佳固定 r(0.798>0.746):它给每条样本挑到能解的预算,连"低预算解出、高预算反崩"的样本也吃到——但这是 **oracle 上界**(完美停止信号),含部分非单调噪声红利,真实触发器落其下;**稳的主张是"等精度省预算",不是"涨精度"**。
-> - oracle 上界与固定 r 下界之间的 gap,就是 **Step 2b 不确定性预测器要赚的钱**。
+> - oracle 上界与固定 r 下界之间的 gap,就是 Step 2b 在线触发器要赚的钱——而 §8 表明它基本赚不到。
+
+## 8. Step 2b — 在线渐进式通信(实测,learned controller)
+
+**做法**(`eval.py` 加 `_test_progressive`/`_generate_uncertainty`/`compute_context_attention`,脚本 `scripts/run_progressive.sh`):对每档 r 真实生成,记录 6 个运行时不确定性信号(answer entropy 首/均、top-2 logit margin 首/均、B 对压缩 KV 的注意力质量 `ctx_mass` / 集中度 `ctx_conc`)。先用单信号扫阈值(`analyze_progressive_online.py`),再训一个 logistic 回归把全部信号融合成停止策略(`learn_stop_policy.py`,GroupKFold 防泄漏)。
+
+**musique(N=500,梯子 [0.1,0.2,0.3,0.5])实测**:
+
+| | 结果 |
+|---|---|
+| OOF AUC P(solved) | **0.751**(单信号更低) |
+| 主导信号 | `margin_mean +0.74`、`ent_first −0.71`;`ctx_mass/ctx_conc ≈ 0`(KV 充分性信号几乎无用) |
+| oracle 上界 | acc 0.554 @ b0.344 |
+| learned 策略 等精度省预算 | 中段 **−10% ~ −25%**(更差),仅极端档微正(+4~5%) |
+
+- 单信号(熵 / margin / ctx_*)阈值法在三个数据集上**均无法稳定跑赢固定 r**。
+- 融合 learned controller:**只有 hotpotqa 中段拿到约 +6~16%**;musique / twowikimqa **负节省**。
+- 即便偶有正节省,代价是 **avg rounds 升到 2.7–4.0**——多轮 = 多次 RTT + 重复 prefill/生成,在分布式 MAS 下吃掉所有带宽收益。
+
+> **结论**:在线多轮渐进**不构成稳定、可泛化的增益**,且与"用 KV 一次性替代 context"的初衷(省往返)冲突。放弃多轮路线。
+
+## 9. 牌2 — 单发 Pass-1 预算预测(LODO 证伪)
+
+**动机**:多轮太贵 → 能否**单发**?即只用 Pass-1(receiver 打分后、生成前)可得的特征,一次性预测该 query 的最优预算,只传一次。**关键检验是跨数据集泛化(LODO)**——因为 oracle 标注成本高,逐任务标注不现实。
+
+**做法**:`models.py` 加 `compute_pass1_features()`(从重要度分布抽 `rcap{50,90,95}`=覆盖 X% 注意力所需 token 比例、熵、Gini、top10/20 质量、recency/sink 偏置、log 上下文长,层间取均值/方差,**全部量纲无关**);`eval.py` 加 `--dump_pass1_features`(只前向打分、不生成,落 `per_sample_feat.jsonl`);`scripts/learn_budget_predictor.py` 把特征与 §5 的 oracle 标签按 idx 对齐,训 P(solved | features, r) 分类器,**WITHIN**(同任务 K 折,上界)对比 **LODO**(留一任务,真实泛化)。
+
+**结果(hotpotqa / musique / twowikimqa,τ=0.5)**:
+
+| 指标 | WITHIN(上界) | LODO(泛化) |
+|---|---|---|
+| AUC P(solved) | 0.697 | **0.585**(≈随机) |
+| 等精度省预算 | **全程负**(−25%~−190%) | **全程负**(−40%~−113%) |
+
+- 判别特征符合直觉(`top10_mean +2.10`、`gini_mean −1.35`、`log_ctx_len −1.70`:越集中/越短越省预算),但**跨任务一换就失效**(AUC 0.70→0.585)。
+- 即便同任务训练(WITHIN 上界),逐样本预测器在等精度下仍**比固定 r 更费预算**——固定 r 曲线本身是极强 baseline,逐样本方差带来的噪声 > 挖到的信号(与 §6 开环、§8 在线同病)。
+
+> **结论**:**单发 Pass-1 预算预测证伪**,且不满足跨数据集泛化的发表门槛(否决线:LODO 在 ≥2 留出任务正节省 ≥10%,实测三任务全负)。至此 **budget-aware 整条线(§5–§9)系统性证伪**,作为 negative result 收编,第三个正向抓手转向 §11 的牌 1。
 
 ---
 
-## 8. 时间 / 开销(待严格测量)
+## 10. 时间 / 开销(待严格测量)
 
 - 当前 log 的 `communication time` 是**整轮 500 样本墙钟**,受"压坏→生成变长"和并行抢卡污染,**非干净延迟**。
 - receiver 比 evict 多一遍 question 打分前向,均摊每样本 ~0.05s,可忽略。
 - 单卡上压缩不省"传输时间"(无真实传输),省的是 B 的 prefill 计算;真实通信收益须在分布式下测。
 - **TODO**:补受控延迟实验(单样本分别计时 A-prefill / 打分 / B-prefill / 生成)。
 
-## 9. 后续路线图
+## 11. 后续路线图
 
 | 步骤 | 内容 | 机器成本 | 价值 | 状态 |
 |---|---|---|---|---|
-| **Step 2b(下一步)** | **在线 progressive**:`eval.py`/`models.py` 记录每档生成后的不确定性(answer entropy / top-2 logit margin / B 对压缩 KV 的注意力集中度);`uncertainty>θ` 触发增量补传,否则停。报 accuracy / avg budget / avg rounds / latency,与 §7 oracle 上界、固定 r 下界对比,扫 θ 画 accuracy–budget 帕累托曲线 | 中(GPU) | **顶会主卖点** | 待开 |
-| Step 2c(可选) | head-wise 开环分配(Idea 3,目前 `attn.mean(heads)` 抹平了头差异)——补全开环消融,大概率仍 null | 半天 GPU | 消融完整性 | 待定 |
+| **牌 1(下一步,主攻)** | **Cross-model RASC**:A、B 异构(不同权重 / tokenizer / 层数)时如何对齐打分。需排查 `compute_receiver_importance` 的同深度假设、跨 tokenizer 的 token 对齐、层数不等时的映射。这是真实 MAS 刚需、KVComm 未解决,作为第三个正向创新点 | 中(GPU) | **顶会抓手** | 待开 |
 | Step 3 | 受控延迟实验:单样本分别计时 A-prefill / 打分 / B-prefill / 生成,分布式下测真实通信收益 | 小 | rebuttal | 待开 |
 | 收尾 | 补 qasper;难任务 receiver 补 r0.6–0.9;窗口 {4,8,16,32,all} 完整曲线;生成 LaTeX 表 | 小 | 完整性 | 待开 |
 
-## 10. 局限
+> Budget-aware 路线(原 Step 2b / 2c)已在 §8–§9 证伪并归档为 negative result,不再投入。
 
-- **同模型限定**:A、B 同权重时打分可在 A 端精确复现;异构模型需 B 传 query 向量或近似(future work)。
+## 12. 局限
+
+- **同模型限定**:A、B 同权重时打分可在 A 端精确复现;异构模型需 B 传 query 向量或近似(牌 1,§11,future work)。
 - **打分为启发式**:注意力之和;可升级为失真最优判据(注意力 × ‖value‖ / 输出分布变化),给 rate-distortion 论证。
-- **开环预算自适应已证伪**(§6):非训练的熵 / 层重要性不可用 → 主线转闭环渐进(§7)。
-- **渐进上界含非单调噪声红利**:§7 的精度反超部分来自 oracle 挑到"低预算偶然解出"的样本,真实触发器无法完全复现 → 论文以"等精度省预算"为主张。
+- **Budget-aware 整条线已证伪**(§5–§9):前提虽成立(headroom 真实),但开环(§6)、离线 oracle(§7,仅上界)、在线多轮(§8)、单发 Pass-1 预测(§9,LODO AUC 0.585)都无法在等精度下稳定、可泛化地跑赢固定预算 RASC。论文中作为 negative result 收编,主张回到"RASC + 固定预算"的简洁形态。
+- **渐进上界含非单调噪声红利**:§7 的精度反超部分来自 oracle 挑到"低预算偶然解出"的样本,真实触发器(§8)无法复现。
 
 ## 附 A:数据集目录结构
 
@@ -298,8 +342,10 @@ snapshots/<dataset>/
   ├── kvcomm/        kvcomm_top{0.3,0.5,0.7,1.0}_*
   ├── mtc_merge/     merge_r{0.1..0.9}_*
   ├── mtc_evict/     evict_r{0.1..0.9}_*
-  ├── mtc_receiver/  recv_w{8,16}_r{0.1..0.9}_*  +  probe_recv_w16_r{0.05..0.7}_*(Step 0 密集探针)
-  └── budget/        {uniform,layer,query,querylayer}_*（Step 1 预算分配）
+  ├── mtc_receiver/  recv_w{8,16}_r{0.1..0.9}_*  +  probe_recv_w16_r{0.05..0.7}_*(Step 0 密集探针 / 牌2 oracle 标签)
+  ├── budget/        {uniform,layer,query,querylayer}_*（Step 1 预算分配）
+  ├── progressive/   per_sample_prog.jsonl（Step 2b 在线渐进的逐档信号）
+  └── features/      feat_w16_*/per_sample_feat.jsonl（牌2 Pass-1 单发特征）
 ```
 每个 run 的最终指标在 `*/log.log` 最后一行 `communication result:`(前面的 1.0000 是单样本校准值,需取 tail -1);逐样本得分在 `*/per_sample.jsonl`(含 `score`、实际 `budget`、`query_budget`)。
 
@@ -313,3 +359,5 @@ snapshots/<dataset>/
 | `scripts/analyze_oracle.py` | Step 0:oracle 最小预算分布 / 省预算 / regret / coverage |
 | `scripts/analyze_budget.py` | Step 1:budget 模式 vs uniform 的等预算增益 / 等精度省预算 |
 | `scripts/sim_progressive.py` | Step 2a:离线 oracle 渐进模拟(accuracy / rounds / budget) |
+| `scripts/run_progressive.sh` / `analyze_progressive_online.py` / `learn_stop_policy.py` | Step 2b:在线渐进生成 + 单信号扫阈值 + learned controller |
+| `scripts/run_features.sh` / `learn_budget_predictor.py` | 牌2:Pass-1 单发特征落盘 + WITHIN/LODO 预算预测器 |

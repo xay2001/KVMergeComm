@@ -56,6 +56,8 @@ class AlignConfig:
     # Step 2b: online progressive communication
     progressive: bool = False
     prog_ladder: str = "0.1,0.2,0.3,0.5"  # ascending budget rungs for the progressive sweep
+    # 牌2: single-shot budget-prediction feature dump (Pass-1 only, no generation)
+    dump_pass1_features: bool = False
     # Test dataset configuration
     test_task: str = "tipsheets"
     task_name: str = ""
@@ -155,7 +157,10 @@ def main(cfg: AlignConfig):
         if cfg.merge:
             # Merge-then-Communicate: keep all layers, compress tokens within each via merging
             cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=(cfg.score_mode == "receiver"), shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode, score_mode=cfg.score_mode, recv_window=cfg.recv_window, budget_mode=cfg.budget_mode, budget_min=cfg.budget_min, budget_max=cfg.budget_max, budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor).to(cfg.device)
-            if cfg.progressive:
+            if cfg.dump_pass1_features:
+                communication_evaluator.dump_pass1_features(model_A, cv, limit=cfg.limit)
+                results = None
+            elif cfg.progressive:
                 ladder = [float(x) for x in cfg.prog_ladder.split(",")]
                 communication_evaluator.test_progressive(model_A, cv, ladder, limit=cfg.limit)
                 results = None

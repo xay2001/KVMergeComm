@@ -353,6 +353,52 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             "ctx_conc": float(torch.stack(concs).mean()) if concs else 0.0,
         }
 
+    @torch.no_grad()
+    def compute_pass1_features(self):
+        """Single-shot budget-prediction features from the receiver-importance
+        distribution already computed in compute_receiver_importance (Pass-1, no
+        generation). All features are dimensionless / relative so a predictor can
+        transfer across tasks. Aggregated as mean & std over layers.
+
+        The key features are `rcapXX` = fraction of A-context tokens (ranked by
+        importance) needed to cover XX% of the receiver's attention mass: a direct,
+        query-specific proxy for "how much KV budget this question needs".
+        """
+        assert self.token_importance, "call compute_receiver_importance first"
+        per_layer = {k: [] for k in
+                     ("rcap50", "rcap90", "rcap95", "ent", "gini", "top10", "top20", "recency", "sink")}
+        L_last = 0
+        for l, s in self.token_importance.items():
+            s = s.float().clamp_min(0)
+            L = s.numel()
+            if L < 2 or float(s.sum()) <= 0:
+                continue
+            L_last = L
+            p = s / s.sum()
+            sp, _ = torch.sort(p, descending=True)
+            csum = torch.cumsum(sp, dim=0)
+            for thr, key in ((0.5, "rcap50"), (0.9, "rcap90"), (0.95, "rcap95")):
+                idx = int(torch.searchsorted(csum, torch.tensor(thr, device=csum.device)))
+                per_layer[key].append((idx + 1) / L)
+            ent = -(p * (p + 1e-12).log()).sum()
+            per_layer["ent"].append(float(ent / math.log(L)))
+            # Gini of the importance distribution
+            sp_asc = torch.sort(p, descending=False).values
+            ranks = torch.arange(1, L + 1, device=p.device, dtype=torch.float)
+            per_layer["gini"].append(float((2 * (ranks * sp_asc).sum()) / (L * sp_asc.sum()) - (L + 1) / L))
+            per_layer["top10"].append(float(csum[max(0, int(0.10 * L) - 1)]))
+            per_layer["top20"].append(float(csum[max(0, int(0.20 * L) - 1)]))
+            per_layer["recency"].append(float(p[int(0.9 * L):].sum()))
+            per_layer["sink"].append(float(p[: min(4, L)].sum()))
+
+        feat = {}
+        for k, v in per_layer.items():
+            t = torch.tensor(v, dtype=torch.float) if v else torch.zeros(1)
+            feat[f"{k}_mean"] = float(t.mean())
+            feat[f"{k}_std"] = float(t.std(unbiased=False))
+        feat["log_ctx_len"] = float(math.log10(max(L_last, 1)))
+        return feat
+
     def forward(
         self,
         input_ids: torch.LongTensor,
