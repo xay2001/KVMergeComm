@@ -1,0 +1,431 @@
+######## [GPU2 pair2 llama32_same] START 2026-06-24 23:54:15 ########
+MODEL=/sharedspace/models/Llama-3.2-3B-Instruct
+ROOT=snapshots/table8_pair2_llama32_same
+==== [pair2 llama32_same GPU2] countries RASC w8 r=0.3 2026-06-24 23:54:15 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] countries RASC w8 r=0.5 2026-06-24 23:54:19 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] countries RASC w8 r=0.7 2026-06-24 23:54:23 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] countries RASC w16 r=0.3 2026-06-24 23:54:27 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] countries RASC w16 r=0.5 2026-06-24 23:54:31 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] countries RASC w16 r=0.7 2026-06-24 23:54:35 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] countries Coverage w8 tau=0.95 scale=0.75 2026-06-24 23:54:39 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] countries Coverage w8 tau=0.95 scale=0.85 2026-06-24 23:54:43 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] countries Coverage w16 tau=0.95 scale=0.90 2026-06-24 23:54:47 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] tipsheets RASC w8 r=0.3 2026-06-24 23:54:50 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] tipsheets RASC w8 r=0.5 2026-06-24 23:54:54 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] tipsheets RASC w8 r=0.7 2026-06-24 23:54:58 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] tipsheets RASC w16 r=0.3 2026-06-24 23:55:02 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] tipsheets RASC w16 r=0.5 2026-06-24 23:55:06 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] tipsheets RASC w16 r=0.7 2026-06-24 23:55:10 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] tipsheets Coverage w8 tau=0.95 scale=0.75 2026-06-24 23:55:14 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] tipsheets Coverage w8 tau=0.95 scale=0.85 2026-06-24 23:55:18 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] tipsheets Coverage w16 tau=0.95 scale=0.90 2026-06-24 23:55:21 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] hotpotqa RASC w8 r=0.3 2026-06-24 23:55:25 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] hotpotqa RASC w8 r=0.5 2026-06-24 23:55:29 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] hotpotqa RASC w8 r=0.7 2026-06-24 23:55:33 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] hotpotqa RASC w16 r=0.3 2026-06-24 23:55:37 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] hotpotqa RASC w16 r=0.5 2026-06-24 23:55:41 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] hotpotqa RASC w16 r=0.7 2026-06-24 23:55:44 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] hotpotqa Coverage w8 tau=0.95 scale=0.75 2026-06-24 23:55:48 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] hotpotqa Coverage w8 tau=0.95 scale=0.85 2026-06-24 23:55:52 ====
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 8, in <module>
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/__init__.py", line 27, in <module>
+    from . import dependency_versions_check
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/dependency_versions_check.py", line 57, in <module>
+    require_version_core(deps[pkg])
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 117, in require_version_core
+    return require_version(requirement, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 111, in require_version
+    _compare_versions(op, got_ver, want_ver, requirement, pkg, hint)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/versions.py", line 44, in _compare_versions
+    raise ImportError(
+ImportError: huggingface-hub>=0.30.0,<1.0 is required for a normal functioning of this module, but found huggingface-hub==1.20.1.
+Try: `pip install transformers -U` or `pip install -e '.[dev]'` if you're working with git main
+==== [pair2 llama32_same GPU2] hotpotqa Coverage w16 tau=0.95 scale=0.90 2026-06-24 23:55:56 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-06-24 23:56:03,928 - root - INFO - Logging setup completed. Log file: snapshots/table8_pair2_llama32_same/hotpotqa/coverage/cov_t0.95_s0.90_w16_0624_2356/log.log
+2026-06-24 23:56:03,928 - root - INFO - Log level: INFO
+2026-06-24 23:56:03,928 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/table8_pair2_llama32_same/hotpotqa/coverage', model_A='/sharedspace/models/Llama-3.2-3B-Instruct', model_B='/sharedspace/models/Llama-3.2-3B-Instruct', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='evict', score_mode='receiver', recv_window=16, budget_mode='coverage', budget_min=0.05, budget_max=0.7, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.95, coverage_scale=0.9, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, test_task='hotpotqa', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='cov_t0.95_s0.90_w16', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-06-24 23:56:03,928 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/table8_pair2_llama32_same/hotpotqa/coverage/cov_t0.95_s0.90_w16_0624_2356
+2026-06-24 23:56:03,928 - root - INFO - Log level: INFO
+2026-06-24 23:56:04,058 - root - INFO - Number of GPU: 1
+2026-06-24 23:56:04,063 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-06-24 23:56:04,063 - root - INFO - CUDA_VISIBLE_DEVICES: 2
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]

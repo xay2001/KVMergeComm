@@ -1,3 +1,27 @@
+# KVComm / RASC 实验方案、结果与后续计划总文档
+
+> 本文档由以下四份 Markdown 合并整理而成，并作为 `snapshots/` 下唯一保留的实验总文档：
+> `RESULTS.md`、`KVCOMM_PAPER_EXPERIMENT_PLAN.md`、`EXPERIMENT_RUN_STATUS_2026-06-25.md`、`EXPERIMENT_MAP_AND_TODO.md`。
+>
+> 合并原则：实验数据、表格数值、运行状态、脚本名、路径和 TODO 原样保留；只新增统一目录和分区说明，方便按“方案 → 结果 → 运行状态 → 后续计划”的顺序阅读。
+
+## 阅读顺序
+
+1. **第一部分：研究主线、方法与完整实验结果**  
+   汇总 RASC / Coverage-BRASC 的方法定义、主要对照表、各数据集结果、Budget-aware 正负实验链路、局限与脚本说明。
+2. **第二部分：KVComm 原论文实验版图与 RASC 跟跑计划**  
+   对齐 KVComm 原论文 Table / Figure / model pair / dataset 的实验矩阵，明确哪些 baseline 直接引用、哪些 RASC 实验需要补跑。
+3. **第三部分：实验运行状态（2026-06-25）**  
+   记录当日 GPU 队列、已完成任务、正在运行任务和下一步检查命令。
+4. **第四部分：实验地图与后续 TODO**  
+   用更工程化的视角列出当前模型、数据集、方法清单、论文表格规划、脚本目录和后续 TODO。
+
+---
+
+## 合并来源 1：第一部分：研究主线、方法与完整实验结果
+
+> 原文件：`snapshots/RESULTS.md`。以下为该文件正文内容，实验数值未改动。
+
 # KVComm → RASC 实验汇总
 
 > 方法:**RASC(Receiver-Aware Selective KV Communication)** —— 在 LLM 间用 KV cache 直接通信的场景下,
@@ -6,7 +30,7 @@
 
 ---
 
-## 0. 研究主线与三个创新点(论文骨架)
+## 0. 研究主线与创新点定位(论文骨架)
 
 ### 0.1 问题定位
 
@@ -22,23 +46,26 @@
    KVComm(层级丢弃) → evict(token 级,value-norm) → RASC(token 级,receiver 打分 + 观测窗口)
    结论:同预算下 RASC > evict > merge;难任务上 token 级 ≫ 层级;merge 无益("选对" > "合并")
 
-阶段 B:Budget-aware —— 把"固定保留比"升级为"按 query 自适应预算"  [§5–§9, 全面证伪 ✗]
+阶段 B:Budget-aware —— 把"固定保留比"升级为"按 query 自适应预算"  [§5–§10, 路线修正后成立 ✓]
    Step 0  验证前提:每条 query 的最优预算大幅波动,固定 r 严重过供(理论 64–67% headroom)  → 前提成立
    Step 1  开环预测:发送方侧统计量(熵/层重要性)预测不出 per-query 预算            → 证伪
    Step 2a 离线上界:oracle-stop 渐进理论可省 35–47% 预算(但这是完美停止信号的上界)   → 仅上界
    Step 2b 在线渐进:learned controller 实测,只有 hotpotqa 中段微正,musique/2wiki 负   → 证伪 + 多轮开销
    牌2    单发预测:Pass-1 特征单发预测最优预算,LODO AUC 0.585、等精度全程负节省      → 证伪
+   Step 3  Coverage-BRASC:不预测 r,改用 receiver-attention coverage/fidelity 阈值自动定预算 → 在线实测正收益
 
-  → 阶段 B 的全部变体(开环 / 离线 / 在线多轮 / 单发)在等精度下都打不过"RASC + 固定预算",
-    且不跨数据集泛化。这与 BAGEN("预算可训练但难校准、不泛化")一致。整条线作为强 negative result 收编。
+  → 关键转折:直接预测 query difficulty / budget 不稳定,但把预算定义为"接收方证据覆盖率"后,
+    budget control 从不可靠预测问题变成可解释 fidelity constraint。MuSiQue 的 w8 coverage 形成强 Pareto:
+    15.8% 平均预算即可达到 0.442(+40.7% 等精度省预算),27.9% 平均预算达到 0.482,
+    超过 fixed-r 最高精度。
 ```
 
 ### 0.3 创新点定位(随实验修正)
 
 1. **Receiver-Aware KV Communication(RASC,主)**:利用接收方 B 的 query sketch(问题末 N 词的注意力)指导发送方 A **在 token 粒度**选择性传输 KV。定位为 **selection**(选对 token),并实验证伪 cache-merging 的必要性。这是已坐实的核心贡献。
 2. **机制分析(merge vs evict)**:系统对比表明在通信压缩场景"**选对 token**" > "合并被丢的 token",纠正了 CaM 式 cache-merging 的迁移假设。
-3. **Budget-aware 的系统性 negative result(§5–§9)**:从前提验证(headroom 真实存在)到四类预算自适应方案(开环 / 离线 oracle / 在线多轮 / 单发预测)逐一证伪,得出"**在 receiver-aware selection 之上,query 自适应预算无可开环/单发利用的信号、且不跨任务泛化**"——这是一个干净、可写半页的反面结论,反衬主方法的简洁有效。
-4. **(进行中)牌 1 — Cross-model RASC**:A、B 异构(不同权重/tokenizer/层数)时的打分对齐,是真实 MAS 刚需、KVComm 未解决的问题,拟作为第三个正向抓手。详见 §11。
+3. **Coverage-Budget RASC(阶段 B 正向抓手,§10)**:直接预测 query 难度失败后,提出 training-free 的 **receiver evidence coverage** 预算控制:保留最少 KV token,使其覆盖接收方 query attention mass 的目标比例(90/95%)。这把预算从"手动固定 r"改为"可解释的证据保真度阈值",在线实测在 MuSiQue/HotpotQA 均有正收益。
+4. **Budget-aware negative-to-positive 机制链**:先系统证伪 entropy/layer/predictor/progressive 四条不稳定路线(§6–§9),再用 DBudgetKV/GVote 启发的 coverage/fidelity threshold 找到可行路线(§10)。论文叙事从"预算预测难校准"自然转到"接收方证据保真度约束"。
 
 ---
 
@@ -50,10 +77,12 @@
 | **merge** | token 级 + 融合 | value 向量 L2 范数(选)+ key 相似度(融) | 否(query 无关) | CaM 风格 |
 | **evict** | token 级(只丢) | value 向量 L2 范数 | 否(query 无关) | SnapKV/H2O 风格 |
 | **receiver (RASC)** | token 级(只丢) | **B 问题末 N 词对每个 token 的注意力** | **是,每条 query 重算** | 本工作 |
+| **Coverage-BRASC** | token 级(动态预算) | receiver attention coverage:保留最少 token 覆盖 θ 比例的 B-query 注意力质量 | **是,每条 query / 每层动态预算** | 阶段 B 新方案 |
 
 - 记号:token 方法的 `r` = **保留比例**(r=0.2 → 只留 20% token,压得最狠);KVComm 的 `top` = **保留层比例**。
 - `recv_wN`:观测窗口 = 只用问题最后 N 个 token 的 query 打分(N∈{8,16})。
 - 固定开销:第 0 层全量保留;每层至少保留 sink(4)+ recent(8)。
+- Coverage-BRASC 记号:`cov_t0.95_s0.8_w8` = 目标覆盖 95% receiver attention,预算乘 scale 0.8,观测窗口 8。
 
 ## 1.1 主对比表(各方法 @ 0.3 / 0.5 / 0.7 预算)
 
@@ -307,32 +336,165 @@
 - 判别特征符合直觉(`top10_mean +2.10`、`gini_mean −1.35`、`log_ctx_len −1.70`:越集中/越短越省预算),但**跨任务一换就失效**(AUC 0.70→0.585)。
 - 即便同任务训练(WITHIN 上界),逐样本预测器在等精度下仍**比固定 r 更费预算**——固定 r 曲线本身是极强 baseline,逐样本方差带来的噪声 > 挖到的信号(与 §6 开环、§8 在线同病)。
 
-> **结论**:**单发 Pass-1 预算预测证伪**,且不满足跨数据集泛化的发表门槛(否决线:LODO 在 ≥2 留出任务正节省 ≥10%,实测三任务全负)。至此 **budget-aware 整条线(§5–§9)系统性证伪**,作为 negative result 收编,第三个正向抓手转向 §11 的牌 1。
+> **结论**:**单发 Pass-1 预算预测证伪**,且不满足跨数据集泛化的发表门槛(否决线:LODO 在 ≥2 留出任务正节省 ≥10%,实测三任务全负)。这说明"直接预测 query difficulty / budget r"不是可行路线。阶段 B 随后转向 §10 的 **coverage/fidelity threshold** 范式。
+
+## 10. Step 3 — Coverage-BRASC(接收方证据覆盖率预算,正结果)
+
+**动机**:DBudgetKV/GVote 相关工作提示,动态预算不一定要预测一个 `r`。更稳的做法是定义一个**保真度阈值**:DBudgetKV 是"剪到 attention norm 快坏为止";GVote 是"保留 future queries 需要的 key"。在 inter-LLM communication 中,接收方 B 的 query 是已知的,因此可直接用 **receiver-query attention coverage** 定义预算。
+
+**方法**(`models.py` 新增 `budget_mode=coverage`,脚本 `scripts/run_coverage.sh` / `run_coverage_stage1.sh`,分析 `scripts/analyze_coverage.py`):
+
+1. 仍先用 RASC 计算每层 token 重要性 `s_i = Attn_B(q_tail -> token_i)`。
+2. 归一化 `p_i = s_i / sum_j s_j`。
+3. 按 `p_i` 从大到小排序,找最小 `k_l(Q)` 使 `sum_{i in Top-k} p_i >= coverage_tau`。
+4. 每层动态预算 `r_l(Q)=clamp(k_l/L_l * coverage_scale, budget_min, budget_max)`。
+5. 压缩仍为 evict-only(top-k + sink/recent),不训练、不多轮、不需要 oracle labels。
+
+**关键区别**:
+
+- 失败路线(§6/§9):`features/query difficulty -> predict r`。
+- Coverage-BRASC:`receiver evidence coverage target -> derive r`。
+- `coverage_tau=0.90/0.95` 有直接语义:保留 90%/95% 的接收方注意力证据,比固定 `r=0.3` 更可解释。
+
+### 10.1 零 GPU 离线预检(rcap + probe 查表)
+
+**做法**:`scripts/sim_coverage_budget.py` 复用 `per_sample_feat.jsonl` 中的 `rcap90/95` 和 Step 0 的 probe scores,将 `rcapXX * scale` 映射到已有预算档,查表模拟 accuracy / avg budget。
+
+| 数据集 | 策略 | acc | avg budget | 等精度省预算 |
+|---|---|---:|---:|---:|
+| hotpotqa | rcap90 x0.7 | 0.632 | 0.212 | +4.1% |
+| hotpotqa | rcap95 x0.9 | 0.738 | 0.442 | +3.9% |
+| musique | rcap90 x0.7 | 0.424 | 0.206 | +12.2% |
+| musique | rcap90 x0.75 | 0.438 | 0.226 | +12.5% |
+| musique | rcap90 x0.8 | 0.452 | 0.247 | +12.7% |
+| musique | rcap95 x0.8 | 0.472 | 0.395 | +12.3% |
+| twowikimqa | rcap90 x0.4 | 0.435 | 0.085 | +43.3% |
+
+> **离线结论**:musique 信号最稳;hotpotqa 局部微正;twowikimqa fixed-r 曲线非单调,节省率易被插值放大,仅作辅助。
+
+### 10.2 在线实测(Stage-1 Coverage-BRASC)
+
+**做法**:真实运行 `budget_mode=coverage`,每条样本 Pass-1 后按 coverage 动态设每层 `r_l`,再生成答案。与 fixed-r RASC probe 曲线做等精度预算对比。
+
+MuSiQue accuracy–budget Pareto 图见: `snapshots/musique/coverage_pareto.png`。
+
+#### MuSiQue(主卖点)
+
+fixed-r 曲线:
+
+| fixed r | 0.05 | 0.1 | 0.15 | 0.2 | 0.3 | 0.4 | 0.5 | 0.7 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| acc | 0.088 | 0.294 | 0.374 | 0.404 | 0.462 | 0.470 | 0.474 | 0.478 |
+
+Coverage-BRASC 在线结果:
+
+| coverage_tau | scale | window | acc | avg budget | 等精度省预算 |
+|---:|---:|---:|---:|---:|---:|
+| 0.90 | 0.70 | 16 | 0.406 | 0.192 | +5.6% |
+| 0.90 | 0.75 | 16 | 0.418 | 0.203 | +9.4% |
+| 0.90 | 0.80 | 16 | 0.424 | 0.214 | +8.6% |
+| 0.90 | 0.90 | 16 | 0.442 | 0.236 | +11.0% |
+| 0.95 | 0.75 | 16 | 0.470 | 0.336 | +16.0% |
+| 0.95 | 0.80 | 16 | 0.472 | 0.356 | +20.8% |
+| 0.95 | 0.85 | 16 | 0.474 | 0.377 | +24.7% |
+| 0.95 | 0.90 | 16 | 0.480 | 0.397 | acc>fixed-ceiling |
+| **0.90** | **0.75** | **8** | **0.442** | **0.158** | **+40.7%** |
+| 0.90 | 0.80 | 8 | 0.440 | 0.165 | +36.9% |
+| 0.90 | 0.90 | 8 | 0.428 | 0.181 | +25.0% |
+| 0.95 | 0.65 | 8 | 0.464 | 0.246 | +24.2% |
+| **0.95** | **0.70** | **8** | **0.470** | **0.263** | **+34.3%** |
+| **0.95** | **0.75** | **8** | **0.482** | **0.279** | **acc>fixed-ceiling** |
+| 0.95 | 0.80 | 8 | 0.470 | 0.296 | +26.0% |
+| **0.95** | **0.85** | **8** | **0.490** | **0.313** | **acc>fixed-ceiling** |
+| 0.95 | 0.90 | 8 | 0.480 | 0.329 | acc>fixed-ceiling |
+
+**MuSiQue 结论**:
+
+- `w8` 明显强于 `w16`,和原始 RASC 中 "MuSiQue 更偏好窄观测窗口" 的观察一致。
+- `cov_t0.95_s0.75_w8`:**acc=0.482, avg budget=0.279**,超过 fixed-r 最高点 0.478,且只用 27.9% 平均 KV。
+- `cov_t0.95_s0.85_w8`:**acc=0.490, avg budget=0.313**,当前 MuSiQue 最高 coverage 精度,仍显著低于 fixed r=0.5 的预算。
+- `cov_t0.95_s0.70_w8`:**acc=0.470, avg budget=0.263**,在接近 fixed r=0.4/0.5 的精度区间取得 **+34.3%** 等精度省预算。
+- `cov_t0.90_s0.75_w8`:**acc=0.442, avg budget=0.158**,等精度省 **+40.7%**。
+- `w8 tau=0.95` 从 `scale=0.65→0.85` 形成清晰 Pareto:0.246/0.464 → 0.263/0.470 → 0.279/0.482 → 0.313/0.490。
+- 这是目前 budget-aware 线最强正结果,足以作为主图/主表。
+
+#### HotpotQA(辅助正结果)
+
+fixed-r 曲线:
+
+| fixed r | 0.05 | 0.1 | 0.15 | 0.2 | 0.3 | 0.4 | 0.5 | 0.7 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| acc | 0.072 | 0.230 | 0.488 | 0.614 | 0.700 | 0.726 | 0.746 | 0.748 |
+
+Coverage-BRASC 在线结果:
+
+| coverage_tau | scale | window | acc | avg budget | 等精度省预算 |
+|---:|---:|---:|---:|---:|---:|
+| 0.90 | 0.70 | 16 | 0.580 | 0.206 | -10.4% |
+| 0.90 | 0.90 | 16 | 0.660 | 0.251 | +0.9% |
+| 0.95 | 0.80 | 16 | 0.720 | 0.360 | +4.6% |
+| **0.95** | **0.90** | **16** | **0.732** | **0.400** | **+6.9%** |
+| 0.95 | 1.00 | 16 | 0.738 | 0.441 | +4.1% |
+| 0.98 | 0.80 | 16 | 0.734 | 0.530 | -20.4% |
+| 0.98 | 0.90 | 16 | 0.744 | 0.592 | -20.8% |
+| 0.98 | 1.00 | 16 | 0.746 | 0.643 | -28.6% |
+
+**HotpotQA 结论**:
+
+- aggressive `0.90/0.70` 欠分配,会明显负收益。
+- 保守 `coverage_tau=0.95` 有稳定小正收益,最佳 `scale=0.9`:**+6.9%**。
+- `coverage_tau=0.98` 过度保守,预算太高,不适合。
+
+#### 2WikiMQA(仅辅助观察)
+
+fixed-r 曲线非单调:
+
+| fixed r | 0.05 | 0.1 | 0.15 | 0.2 | 0.3 | 0.4 | 0.5 | 0.7 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| acc | 0.400 | 0.440 | 0.435 | 0.425 | 0.410 | 0.410 | 0.410 | 0.425 |
+
+Coverage-BRASC 在线结果:
+
+| coverage_tau | scale | window | acc | avg budget | 等精度省预算 |
+|---:|---:|---:|---:|---:|---:|
+| 0.90 | 0.40 | 16 | 0.400 | 0.090 | -79.4% |
+| 0.90 | 0.50 | 16 | 0.405 | 0.098 | +43.9% |
+| 0.90 | 0.60 | 16 | 0.420 | 0.108 | +64.1% |
+| 0.90 | 0.70 | 16 | 0.420 | 0.118 | +60.7% |
+
+**2WikiMQA 结论**:coverage 能用极低预算保持 0.40–0.42,但 fixed-r 曲线在 `r=0.1` 最高、非单调严重,等精度 saving 容易被插值放大。作为"coverage 避免高预算反崩"观察,不作主论据。
+
+### 10.3 阶段 B 当前结论
+
+> 直接预测 query difficulty / budget r 的方法(熵、层分配、learned Pass-1、在线多轮 controller)均不稳定或不泛化;但 **receiver-attention coverage** 把预算控制转成可解释 fidelity constraint 后,在线实测在 MuSiQue 获得强正收益、HotpotQA 获得稳健小正收益。Budget-aware 主线从 "predictive budget" 修正为 **Coverage-Budget RASC**。
 
 ---
 
-## 10. 时间 / 开销(待严格测量)
+## 11. 时间 / 开销(待严格测量)
 
 - 当前 log 的 `communication time` 是**整轮 500 样本墙钟**,受"压坏→生成变长"和并行抢卡污染,**非干净延迟**。
 - receiver 比 evict 多一遍 question 打分前向,均摊每样本 ~0.05s,可忽略。
 - 单卡上压缩不省"传输时间"(无真实传输),省的是 B 的 prefill 计算;真实通信收益须在分布式下测。
 - **TODO**:补受控延迟实验(单样本分别计时 A-prefill / 打分 / B-prefill / 生成)。
 
-## 11. 后续路线图
+## 12. 后续路线图
 
 | 步骤 | 内容 | 机器成本 | 价值 | 状态 |
 |---|---|---|---|---|
-| **牌 1(下一步,主攻)** | **Cross-model RASC**:A、B 异构(不同权重 / tokenizer / 层数)时如何对齐打分。需排查 `compute_receiver_importance` 的同深度假设、跨 tokenizer 的 token 对齐、层数不等时的映射。这是真实 MAS 刚需、KVComm 未解决,作为第三个正向创新点 | 中(GPU) | **顶会抓手** | 待开 |
+| **Coverage-BRASC 收尾(当前主攻)** | MuSiQue `w8 tau=0.95` 细扫已完成;下一步补 `multifieldqa_en`,画 accuracy–budget 帕累托图,整理 LaTeX 表 | 小-中 | **Budget-aware 正向抓手** | 进行中 |
+| Head-wise Coverage-BRASC | 借鉴 Ada-KV:每个 head 独立 coverage,避免 head 平均抹平检索头差异 | 中 | 放大创新点 | 待开 |
+| 牌 1 | **Cross-model RASC**:A、B 异构(不同权重 / tokenizer / 层数)时如何对齐打分。需排查 `compute_receiver_importance` 的同深度假设、跨 tokenizer 的 token 对齐、层数不等时的映射 | 中(GPU) | 真实 MAS 扩展 | 待开 |
 | Step 3 | 受控延迟实验:单样本分别计时 A-prefill / 打分 / B-prefill / 生成,分布式下测真实通信收益 | 小 | rebuttal | 待开 |
 | 收尾 | 补 qasper;难任务 receiver 补 r0.6–0.9;窗口 {4,8,16,32,all} 完整曲线;生成 LaTeX 表 | 小 | 完整性 | 待开 |
 
-> Budget-aware 路线(原 Step 2b / 2c)已在 §8–§9 证伪并归档为 negative result,不再投入。
+> Budget-aware 路线已从"预测预算"修正为"证据覆盖率预算"。§6–§9 作为 failed predictive-budget ablations 保留;§10 是当前正向方法。
 
-## 12. 局限
+## 13. 局限
 
-- **同模型限定**:A、B 同权重时打分可在 A 端精确复现;异构模型需 B 传 query 向量或近似(牌 1,§11,future work)。
+- **同模型限定**:A、B 同权重时打分可在 A 端精确复现;异构模型需 B 传 query 向量或近似(牌 1,§12,future work)。
 - **打分为启发式**:注意力之和;可升级为失真最优判据(注意力 × ‖value‖ / 输出分布变化),给 rate-distortion 论证。
-- **Budget-aware 整条线已证伪**(§5–§9):前提虽成立(headroom 真实),但开环(§6)、离线 oracle(§7,仅上界)、在线多轮(§8)、单发 Pass-1 预测(§9,LODO AUC 0.585)都无法在等精度下稳定、可泛化地跑赢固定预算 RASC。论文中作为 negative result 收编,主张回到"RASC + 固定预算"的简洁形态。
+- **Predictive budget 已证伪**(§6–§9):前提虽成立(headroom 真实),但开环熵/层分配、在线多轮、单发 Pass-1 预测都无法稳定泛化。Coverage-BRASC(§10)说明可行路线应是 receiver-evidence fidelity/coverage,而不是直接预测 query difficulty。
+- **Coverage-BRASC 仍需更多任务验证**:当前强正结果主要来自 MuSiQue,HotpotQA 为中等正收益,2WikiMQA 因 fixed-r 非单调只能辅助。需补 MultiFieldQA/QASPER 与更多窗口/阈值。
 - **渐进上界含非单调噪声红利**:§7 的精度反超部分来自 oracle 挑到"低预算偶然解出"的样本,真实触发器(§8)无法复现。
 
 ## 附 A:数据集目录结构
@@ -344,6 +506,7 @@ snapshots/<dataset>/
   ├── mtc_evict/     evict_r{0.1..0.9}_*
   ├── mtc_receiver/  recv_w{8,16}_r{0.1..0.9}_*  +  probe_recv_w16_r{0.05..0.7}_*(Step 0 密集探针 / 牌2 oracle 标签)
   ├── budget/        {uniform,layer,query,querylayer}_*（Step 1 预算分配）
+  ├── coverage/      cov_t{0.90,0.95,0.98}_s*_w{8,16}_*（Coverage-BRASC 在线实验）
   ├── progressive/   per_sample_prog.jsonl（Step 2b 在线渐进的逐档信号）
   └── features/      feat_w16_*/per_sample_feat.jsonl（牌2 Pass-1 单发特征）
 ```
@@ -361,3 +524,1198 @@ snapshots/<dataset>/
 | `scripts/sim_progressive.py` | Step 2a:离线 oracle 渐进模拟(accuracy / rounds / budget) |
 | `scripts/run_progressive.sh` / `analyze_progressive_online.py` / `learn_stop_policy.py` | Step 2b:在线渐进生成 + 单信号扫阈值 + learned controller |
 | `scripts/run_features.sh` / `learn_budget_predictor.py` | 牌2:Pass-1 单发特征落盘 + WITHIN/LODO 预算预测器 |
+| `scripts/sim_coverage_budget.py` | Coverage-BRASC 离线预检:rcap90/95 + probe scores 查表模拟 |
+| `scripts/run_coverage.sh` / `run_coverage_stage1.sh` / `analyze_coverage.py` | Coverage-BRASC 在线运行与等精度预算分析 |
+
+---
+
+## 合并来源 2：第二部分：KVComm 原论文实验版图与 RASC 跟跑计划
+
+> 原文件：`snapshots/KVCOMM_PAPER_EXPERIMENT_PLAN.md`。以下为该文件正文内容，实验数值未改动。
+
+# KVComm 原论文实验版图与 RASC 跟跑计划
+
+> 目标:先完整拆解 KVComm 原论文做了哪些实验、哪些表格、哪些模型对、哪些数据集。原论文已有的 `Baseline / Skyline / NLD / CIPHER / AC / KVComm` 结果原则上不重复复现,直接作为 paper baseline 引用或转录。我们要做的是:在**同样数据集、同样模型对、同样预算点**上跑 `RASC / Coverage-BRASC`,形成一一对比。
+
+---
+
+## 0. 重要更正
+
+我们现在截图里的同模型 Llama-3.1-8B 表格,不是 KVComm 原论文主文 Table 1,而是 **Appendix Table 8** 里的 model pair #1:
+
+```text
+M_s = meta-llama/Llama-3.1-8B-Instruct
+M_r = meta-llama/Llama-3.1-8B-Instruct
+```
+
+KVComm 原论文主文 Table 1 报的是 3 个 fine-tuned model pairs:
+
+```text
+pair #6: Llama-3.2-3B fine-tuned pair
+pair #7: Qwen2.5-7B fine-tuned pair
+pair #8: Falcon3-7B fine-tuned pair
+```
+
+所以我们对齐 KVComm 原文时应分两层:
+
+- **主文对齐**:优先跟跑 KVComm Table 1 的 3 个主模型对。
+- **完整对齐**:再跟跑 Appendix Table 8 的 9 个模型对,其中包含我们已经在跑的 Llama-3.1-8B 同模型。
+
+---
+
+## 1. KVComm 原论文实验设置
+
+### 1.1 任务定义
+
+KVComm 是 two-agent contextual communication:
+
+- Sender `M_s` 只看 context `C`。
+- Receiver `M_r` 只看 query `Q`。
+- 通信协议把 `M_s` 从 `C` 中提取的信息传给 `M_r`。
+- `M_r` 结合 `Q` 和通信信息生成答案。
+
+原 KVComm 传 selected layer KV cache:
+
+```text
+k_r^l <- [k_s^l ; k_r^l]
+v_r^l <- [v_s^l ; v_r^l]
+```
+
+原 KVComm 的选择粒度和预算:
+
+- 按 **layer** 选 KV。
+- `KVComm(0.3/0.5/0.7)` 表示传 `30%/50%/70%` 的层。
+- 层选择分数 = attention importance score + Gaussian prior。
+- `mu = L/2`, `sigma = 10`。
+- `alpha = 1` for Llama, `alpha = 0.8` for Qwen/Falcon。
+- calibration size = 1。
+
+### 1.2 数据集
+
+KVComm 原论文主数据集 8 个:
+
+| Dataset | Size in paper | Metric | 说明 |
+|---|---:|---|---|
+| Countries | 200 | F1 | 合成地理事实 QA |
+| Tipsheets | 500 | F1 | 合成投资选择 QA |
+| HotpotQA | 500 | F1 | 多跳 QA |
+| QASPER | 500 | F1 | scientific paper QA |
+| MuSiQuest / MuSiQue | 500 | F1 | 多跳组合推理 |
+| MultiFieldQA-en | 150 | F1 | LongBench 子集 |
+| 2WikiMQA | 200 | F1 | LongBench 子集 |
+| TMATH | 300 | ROUGE-L Recall | 数学 hint / reasoning |
+
+Appendix E 扩展数据集:
+
+| Dataset | Size in paper | 用途 |
+|---|---:|---|
+| HotpotQA-E | 7,405 | full/extended HotpotQA |
+| QASPER-E | 1,726 | full/extended QASPER |
+| MuSiQuest-E | 2,417 | full/extended MuSiQuest |
+| SAMSum | 819 | summarization |
+
+### 1.3 模型对
+
+KVComm 原论文共 9 个 model pairs:
+
+| Pair | Sender `M_s` | Receiver `M_r` | 类型 | 我们当前状态 |
+|---:|---|---|---|---|
+| 1 | `meta-llama/Llama-3.1-8B-Instruct` | `meta-llama/Llama-3.1-8B-Instruct` | Same model | 已在跑/已有大量结果 |
+| 2 | `meta-llama/Llama-3.2-3B-Instruct` | `meta-llama/Llama-3.2-3B-Instruct` | Same model | 未跑 RASC |
+| 3 | `Qwen/Qwen2.5-7B-Instruct` | `Qwen/Qwen2.5-7B-Instruct` | Same model | 未跑 RASC |
+| 4 | `tiiuae/Falcon3-7B-Instruct` | `tiiuae/Falcon3-7B-Instruct` | Same model | 未跑 RASC |
+| 5 | `yuvraj17/EvolCodeLlama-3.1-8B-Instruct` | `Team-ACE/ToolACE-2-Llama-3.1-8B` | fine-tuned from pair #1 base | 未跑 RASC |
+| 6 | `huihui-ai/Llama-3.2-3B-Instruct-abliterated` | `suayptalha/DeepSeek-R1-Distill-Llama-3B` | fine-tuned from pair #2 base | KVComm 主文 Table 1,未跑 RASC |
+| 7 | `Orion-zhen/Qwen2.5-7B-Instruct-Uncensored` | `bespokelabs/Bespoke-Stratos-7B` | fine-tuned from pair #3 base | KVComm 主文 Table 1,未跑 RASC |
+| 8 | `ehristoforu/falcon3-ultraset` | `huihui-ai/Falcon3-7B-Instruct-abliterated` | fine-tuned from pair #4 base | KVComm 主文 Table 1,未跑 RASC |
+| 9 | `arcee-ai/Llama-3.1-SuperNova-Lite` | `deepseek-ai/DeepSeek-R1-Distill-Llama-8B` | fine-tuned from pair #1 base | 未跑 RASC |
+
+注意:
+
+- KVComm 原文没有直接跨完全不同 architecture 传 KV;它限制在 same model 或 same-base fine-tuned models。
+- 我们 RASC 当前也最适合同结构/同 tokenizer/同层数设置。
+- pair #6/#7/#8 是最优先的“对齐 KVComm 主文”模型对。
+
+---
+
+## 2. KVComm 原论文表格 / 图清单
+
+### Table 1: 主文通信结果
+
+目的:比较 `KVComm` 与 `Baseline / Skyline / NLD / CIPHER / AC`。
+
+模型对:
+
+- pair #6: Llama-3.2-3B fine-tuned pair
+- pair #7: Qwen2.5-7B fine-tuned pair
+- pair #8: Falcon3-7B fine-tuned pair
+
+数据集:8 个主数据集全跑。
+
+原论文方法:
+
+- `Baseline`
+- `Skyline`
+- `NLD`
+- `CIPHER`
+- `AC(mean)`
+- `AC(replace)`
+- `AC(sum)`
+- `KVComm(0.3)`
+- `KVComm(0.5)`
+- `KVComm(0.7)`
+
+我们要补:
+
+- `RASC-w8(0.3/0.5/0.7)`
+- `RASC-w16(0.3/0.5/0.7)`
+- `Coverage-BRASC` 代表点:
+  - `w8 tau=0.95 scale=0.75`
+  - `w8 tau=0.95 scale=0.85`
+  - `w16 tau=0.95 scale=0.90`
+
+这是最应该优先跟跑的表。
+
+### Table 2: 主文 selection strategy ablation
+
+目的:证明 KVComm 的 layer selection 比 random layer selection 好。
+
+模型对:
+
+- pair #6
+
+数据集:
+
+- 8 个主数据集。
+
+原论文方法:
+
+- `Random(0.3/0.5/0.7)`
+- `KVComm(0.3/0.5/0.7)`
+
+我们对应做:
+
+- `Random-token(0.3/0.5/0.7)`:随机 token 选择。
+- `ValueNorm / Evict(0.3/0.5/0.7)`:query-agnostic token baseline。
+- `RASC-w8/w16(0.3/0.5/0.7)`:receiver-aware token selection。
+
+这张表对应我们的核心消融:不是随机 token,不是 value-norm,而是 receiver-aware token selection 起作用。
+
+### Table 3: Countries / Tipsheets prompt examples
+
+只展示合成数据格式,不需要跑实验。我们可在 appendix 说明任务格式。
+
+### Table 4: 主数据集统计
+
+列 8 个数据集的 size。我们论文中需要对齐这个表,并标注是否使用同样样本数。
+
+当前注意:
+
+- 我们 QASPER 数据源/样本数需要最终确认。
+- 如果样本数不同,必须在表格或实验设置里注明。
+
+### Table 5: 9 个 model pairs
+
+列出所有模型对。我们需要复用成自己的 RASC model-pair evaluation plan。
+
+### Table 6: extended tasks 通信结果
+
+目的:在 extended datasets 上验证 robustness。
+
+数据集:
+
+- HotpotQA-E
+- QASPER-E
+- MuSiQuest-E
+- SAMSum
+
+模型对:
+
+- pair #6
+- pair #7
+- pair #8
+
+方法:
+
+- `Baseline / Skyline / NLD / CIPHER / AC / KVComm(0.3/0.5/0.7)`
+
+我们后续可补:
+
+- `RASC-w8/w16(0.3/0.5/0.7)`
+- `Coverage-BRASC` 代表点
+
+优先级低于 Table 1 / Table 8,因为 full datasets 成本高。
+
+### Table 7: extended datasets 统计
+
+只需要记录,不需要跑。
+
+### Table 8: Appendix 完整 communication results
+
+目的:给 9 个 model pairs 的完整通信结果。
+
+模型对:
+
+- pair #1 - #9 全部。
+
+数据集:
+
+- 8 个主数据集。
+
+方法:
+
+- `Baseline`
+- `Skyline`
+- `NLD`
+- `CIPHER`
+- `AC(mean/replace/sum)`
+- `KVComm(0.3/0.5/0.7)`
+
+我们当前截图的 Llama-3.1-8B 同模型表就是 Table 8 中的 pair #1。
+
+我们要补:
+
+- 对每个 pair 跑 `RASC-w8/w16 r=0.3/0.5/0.7`。
+- 对重点 pair 跑 dense curve `r=0.1/0.2/0.3/0.4/0.5/0.7`。
+- 对 pair #1/#6/#7/#8 跑 `Coverage-BRASC`。
+
+### Table 9: Appendix random selection 更多模型对
+
+目的:补充 Table 2,证明 KVComm selection strategy 在更多 model pair 上好于 random。
+
+涉及 model pairs:
+
+- pair #1/#2/#3/#4/#5/#6/#7/#8
+
+我们对应补:
+
+- `Random-token` vs `ValueNorm/Evict` vs `RASC`
+- 优先在 pair #1/#6/#7/#8 做。
+
+### Table 10: multi-source KVComm
+
+目的:两个 sender + 一个 receiver,证明多源 KV 能融合。
+
+任务:
+
+- HotpotQA
+- MuSiQuest
+- 2WikiMQA
+
+我们后续可以做:
+
+- Multi-source RASC:两个 sender 的 token KV 一起按 receiver attention score 选择。
+- 这是很好的后续创新点,但不是当前第一优先级。
+
+### Table 11: positional embedding coherence
+
+目的:比较 `KVComm` 和 `KVComm-S`,其中 `KVComm-S` 表示 non-selected layers 不保持 position shift。
+
+我们后续可以做:
+
+- RASC 的 `shift_back` / positional coherence ablation。
+- 当前不是主表优先级。
+
+### Figures 1-3: 方法与 hidden-state 动机
+
+- Figure 1: KVComm framework。
+- Figure 2: last token hidden state 最重要。
+- Figure 3: prepending hidden states 只有 early-to-early 有效。
+
+我们不需要完全复现,可以作为动机引用:KVComm 已证明 hidden state 不是理想通信载体,所以我们沿用 KV 通道,只改选择粒度和预算。
+
+### Figures 4-6: contiguous chunk vs non-contiguous layer selection
+
+目的:证明 KVComm 的 non-contiguous layer selection 优于一个连续 layer chunk。
+
+我们可对应做:
+
+- token-level contiguous span vs RASC top-k token。
+- 按 token 位置连续保留 recent/middle span,与 receiver top-k 比。
+
+优先级中等。
+
+### Figure 7: attention importance level
+
+目的:选 attention importance score 高的层更好。
+
+我们可对应做:
+
+- receiver attention score 高的 token 更好。
+- 按 score 分桶:top / middle / bottom token groups 传输,比较效果。
+
+这很适合作为 RASC mechanism figure。
+
+### Figure 8: system efficiency
+
+目的:比较 `AC / Skyline / KVComm` 的 FLOPs 和 memory。
+
+原论文模型/数据集:
+
+- Llama-3.2-3B pair
+- Tipsheets
+- MultiFieldQA-en
+
+我们必须补:
+
+- `RASC / Coverage-BRASC` 的 FLOPs 或 wall-clock / memory。
+- 指标:communicated KV budget, A-prefill, receiver scoring, B-prefill, generation, peak memory。
+
+这是后续论文 rebuttal 级别必需实验。
+
+### Figure 11: calibration set size
+
+目的:证明 KVComm 只需 1 个 calibration sample。
+
+我们可以转化为优势:
+
+- RASC 不需要 calibration,每条 query 直接 receiver-aware 打分。
+- 不一定需要复现。
+
+### Figure 12: NLD transmitted token length
+
+分析 NLD token 长度对结果影响。我们一般不需要复现。
+
+### Figures 13-14: online calibration / layer ranking similarity
+
+- Figure 13: mixed-task online calibration interval。
+- Figure 14: dataset 间 layer ranking Kendall Tau。
+
+我们可对应做 query-level budget/coverage distribution,但不是第一优先级。
+
+---
+
+## 3. 我们要跑的对齐实验矩阵
+
+### Priority A: 必跑,对齐主文 Table 1
+
+目标:在 KVComm 主文 3 个 fine-tuned model pairs 上跑我们的 RASC / Coverage-BRASC。
+
+模型对:
+
+- pair #6
+- pair #7
+- pair #8
+
+数据集:
+
+- Countries
+- Tipsheets
+- HotpotQA
+- QASPER
+- MuSiQue
+- MultiFieldQA-en
+- 2WikiMQA
+- TMATH
+
+方法:
+
+- `RASC-w8 r=0.3/0.5/0.7`
+- `RASC-w16 r=0.3/0.5/0.7`
+- `Coverage-BRASC`:
+  - `w8 tau=0.95 scale=0.75`
+  - `w8 tau=0.95 scale=0.85`
+  - `w16 tau=0.95 scale=0.90`
+
+输出表:
+
+```text
+Table A: KVComm Table 1 + Ours
+```
+
+### Priority B: 必跑,对齐 Appendix Table 8 pair #1
+
+目标:补完 Llama-3.1-8B same-model 的完整表。
+
+模型对:
+
+- pair #1
+
+当前状态:
+
+- 大部分 RASC / Coverage 正在跑或已有。
+- `scripts/run_table_completion_2x5.sh` 正在补 Coverage-BRASC 表格三行。
+
+输出表:
+
+```text
+Table B: Llama-3.1-8B same-model KVComm Table 8 block + Ours
+```
+
+这是我们当前最接近完成的一张表。
+
+### Priority C: Selection ablation,对齐 Table 2 / Table 9
+
+目标:把 KVComm 的 random layer selection 消融,对应成我们的 token selection 消融。
+
+模型对:
+
+- 先 pair #1。
+- 再 pair #6/#7/#8。
+
+数据集:
+
+- HotpotQA
+- MuSiQue
+- MultiFieldQA-en
+- Countries/Tipsheets 作为简单任务对照。
+
+方法:
+
+- `Random-token`
+- `ValueNorm / Evict`
+- `RASC-w8`
+- `RASC-w16`
+
+预算:
+
+- `r=0.3/0.5/0.7`
+
+输出表:
+
+```text
+Table C: Token selection ablation
+```
+
+### Priority D: Efficiency,对齐 Figure 8
+
+目标:证明 RASC/Coverage-BRASC 不只是精度高,通信和计算也有优势。
+
+模型:
+
+- 先 pair #1 Llama-3.1-8B。
+- 如成本允许,再 pair #2 Llama-3.2-3B,与原 Figure 8 更一致。
+
+数据集:
+
+- Tipsheets
+- MultiFieldQA-en
+- MuSiQue 或 HotpotQA 加一个难任务。
+
+方法:
+
+- Skyline
+- KVComm(0.3/0.5/0.7),可引用或少量重跑。
+- RASC-w8/w16
+- Coverage-BRASC
+
+指标:
+
+- communicated KV budget
+- A-prefill time
+- receiver scoring time
+- B-prefill time
+- generation time
+- peak memory
+
+输出图:
+
+```text
+Figure Efficiency: Accuracy vs budget/time/memory
+```
+
+### Priority E: Appendix full coverage,对齐 Table 8 全 9 模型对
+
+目标:把 RASC 方法扩展到 KVComm 论文所有 9 个模型对。
+
+建议分阶段:
+
+1. same-model pairs:
+   - #1 Llama-3.1-8B
+   - #2 Llama-3.2-3B
+   - #3 Qwen2.5-7B
+   - #4 Falcon3-7B
+2. fine-tuned main pairs:
+   - #6/#7/#8
+3. 其它:
+   - #5/#9
+
+最小跑法:
+
+- 每个 pair 先只跑:
+  - `RASC-w16 r=0.3/0.5/0.7`
+  - `RASC-w8 r=0.3/0.5/0.7`
+- coverage 只对 pair #1/#6/#7/#8 跑。
+
+---
+
+## 4. 当前我们已经做了什么
+
+### 已完成或正在完成:pair #1 Llama-3.1-8B same-model
+
+模型:
+
+```text
+M_s = /sharedspace/models/Llama-3.1-8B-Instruct
+M_r = /sharedspace/models/Llama-3.1-8B-Instruct
+```
+
+已做:
+
+- KVComm 原论文 Table 8 pair #1 的 baseline 结果已转录到 `snapshots/RESULTS.md`。
+- Merge / Evict / RASC-w8 / RASC-w16 在多个预算点已跑。
+- Budget-aware 失败路线已完成:
+  - Step 0 oracle headroom
+  - Step 1 open-loop
+  - Step 2a offline oracle progressive
+  - Step 2b online progressive
+  - Pass-1 predictor
+- Coverage-BRASC 已在 MuSiQue / HotpotQA / MultiFieldQA-en 有正结果。
+- Table 1 当前缺口正在用 GPU2/GPU5 补:
+  - Countries
+  - Tipsheets
+  - QASPER
+  - 2WikiMQA
+  - TMATH
+
+### 当前未做:KVComm 主文 Table 1 的 3 个 fine-tuned pairs
+
+还没有系统跑:
+
+- pair #6
+- pair #7
+- pair #8
+
+这是下一阶段最重要的实验。
+
+---
+
+## 5. 后续 TODO
+
+### TODO 1: 先完成当前 pair #1 表
+
+- [ ] 等 `scripts/run_table_completion_2x5.sh` 跑完。
+- [ ] 汇总 `analyze_coverage.py`。
+- [ ] 更新 `snapshots/RESULTS.md` 和论文 Table B。
+- [ ] 标明这是 KVComm Appendix Table 8 pair #1 对齐表。
+
+### TODO 2: 准备模型下载 / 路径检查
+
+需要确认本机是否已有以下模型:
+
+- [ ] `meta-llama/Llama-3.2-3B-Instruct`
+- [ ] `Qwen/Qwen2.5-7B-Instruct`
+- [ ] `tiiuae/Falcon3-7B-Instruct`
+- [ ] `huihui-ai/Llama-3.2-3B-Instruct-abliterated`
+- [ ] `suayptalha/DeepSeek-R1-Distill-Llama-3B`
+- [ ] `Orion-zhen/Qwen2.5-7B-Instruct-Uncensored`
+- [ ] `bespokelabs/Bespoke-Stratos-7B`
+- [ ] `ehristoforu/falcon3-ultraset`
+- [ ] `huihui-ai/Falcon3-7B-Instruct-abliterated`
+
+### TODO 3: 跑 KVComm 主文 Table 1 对齐实验
+
+对 pair #6/#7/#8 跑:
+
+- [ ] RASC-w8 `r=0.3/0.5/0.7`
+- [ ] RASC-w16 `r=0.3/0.5/0.7`
+- [ ] Coverage-BRASC 三个代表点
+
+数据集:
+
+- [ ] Countries
+- [ ] Tipsheets
+- [ ] HotpotQA
+- [ ] QASPER
+- [ ] MuSiQue
+- [ ] MultiFieldQA-en
+- [ ] 2WikiMQA
+- [ ] TMATH
+
+### TODO 4: Selection ablation
+
+- [ ] 实现/确认 random-token selection。
+- [ ] 对 pair #1 跑 Random-token vs Evict vs RASC。
+- [ ] 对 pair #6/#7/#8 选 2-3 个任务补。
+
+### TODO 5: Efficiency figure
+
+- [ ] 加单样本 timing logger。
+- [ ] 记录 A-prefill / receiver scoring / B-prefill / generation。
+- [ ] 记录 peak memory。
+- [ ] 画 accuracy-budget-time/memory 图。
+
+### TODO 6: Appendix expansion
+
+- [ ] 对 same-model #2/#3/#4 跑 RASC。
+- [ ] 对 fine-tuned #5/#9 跑 RASC。
+- [ ] 只在主模型对跑 Coverage-BRASC,避免实验量爆炸。
+
+---
+
+## 6. 实验量估算
+
+### 对齐主文 Table 1 的最小量
+
+3 个 model pairs × 8 个 datasets × 2 windows × 3 fixed budgets:
+
+```text
+3 * 8 * 2 * 3 = 144 runs
+```
+
+Coverage 三点:
+
+```text
+3 model pairs * 8 datasets * 3 coverage settings = 72 runs
+```
+
+合计最小:
+
+```text
+216 runs
+```
+
+这还不含模型下载、OOM 重试、QASPER fixed curve 等。
+
+### 推荐执行顺序
+
+先不要一次性全跑 216 个。建议:
+
+1. pair #1 当前表收尾。
+2. pair #6 先跑 HotpotQA / MuSiQue / MultiFieldQA-en 三个任务。
+3. 如果 pair #6 正向,再补 pair #6 全 8 任务。
+4. 再跑 pair #7/#8 的三任务小集。
+5. 最后扩展到完整 8 任务。
+
+---
+
+## 7. 论文叙事建议
+
+不要说“复现 KVComm 全部实验”。更准确:
+
+```text
+We use the original KVComm experimental protocol and reported baselines as the comparison frame.
+On the same datasets and model-pair settings, we evaluate our receiver-aware token-level KV selection and dynamic coverage budgeting.
+```
+
+中文:
+
+```text
+我们沿用 KVComm 原论文的实验版图:同样的数据集、同样的模型对、同样的预算点。
+原论文已有的 KVComm / Baseline / Skyline / AC / NLD / CIPHER 结果作为对照。
+我们新增运行 RASC 和 Coverage-BRASC,看在同一设置下 token 级 receiver-aware 选择是否超过层级 KVComm。
+```
+
+最关键的对比句:
+
+```text
+KVComm shows that KV cache is an effective communication medium.
+RASC shows that, under the same KV communication frame, receiver-aware token selection is more bandwidth-efficient than static layer selection.
+Coverage-BRASC further replaces fixed communication ratios with receiver-evidence coverage constraints.
+```
+
+---
+
+## 合并来源 3：第三部分：实验运行状态（2026-06-25）
+
+> 原文件：`snapshots/EXPERIMENT_RUN_STATUS_2026-06-25.md`。以下为该文件正文内容，实验数值未改动。
+
+# Experiment Run Status - 2026-06-25 13:08
+
+This note records the current queue status parsed from `logs/` and the Table 8 model-pair snapshot logs.
+
+## Queue Summary
+
+| Queue / Log | Model Pair | GPU | Status | Notes |
+|---|---|---:|---|---|
+| `logs/gpu2_table_queue.log` | Llama-3.1-8B-Instruct same-model | 2 | Done | Coverage-BRASC table points for `countries`, `tipsheets`, `twowikimqa` finished. |
+| `logs/gpu5_table_queue_resume.log` | Llama-3.1-8B-Instruct same-model | 5 | Done | QASPER fixed-r tail, QASPER coverage, TMATH coverage, and HotpotQA extra finished. |
+| `snapshots/table8_pair2_llama32_same/logs/gpu2_pair2_0624_2358.log` | Llama-3.2-3B-Instruct same-model | 2 | Done | All 8 datasets finished for RASC and Coverage-BRASC. |
+| `snapshots/table8_pair3_qwen25_7b_same/logs/gpu6_pair3_0625_0001.log` | Qwen2.5-7B-Instruct same-model | 6 | Running | Finished through TMATH RASC. Currently running TMATH coverage `w8 tau=0.95 scale=0.75`. |
+
+Current active KVComm process:
+
+```text
+GPU6: python com.py --test_task tmath ... --budget_mode coverage --coverage_tau 0.95 --coverage_scale 0.75 --recv_window 8
+```
+
+GPU5 has another non-KVComm Python process, not from these experiment queues.
+
+## Llama-3.1 Same-Model Table Completion
+
+### `logs/gpu2_table_queue.log` - Done
+
+Coverage-BRASC completed:
+
+| Dataset | Setting | Result |
+|---|---|---:|
+| `countries` | `w8 tau=0.95 scale=0.75` | 0.6150 |
+| `countries` | `w8 tau=0.95 scale=0.85` | 0.6150 |
+| `countries` | `w16 tau=0.95 scale=0.90` | 0.6000 |
+| `tipsheets` | `w8 tau=0.95 scale=0.75` | 0.8780 |
+| `tipsheets` | `w8 tau=0.95 scale=0.85` | 0.8780 |
+| `tipsheets` | `w16 tau=0.95 scale=0.90` | 0.9060 |
+| `twowikimqa` | `w8 tau=0.95 scale=0.75` | 0.4100 |
+| `twowikimqa` | `w8 tau=0.95 scale=0.85` | 0.4100 |
+| `twowikimqa` | `w16 tau=0.95 scale=0.90` | 0.4100 |
+
+Finished at `2026-06-24 22:22:42`.
+
+### `logs/gpu5_table_queue_resume.log` - Done
+
+QASPER fixed-r tail and remaining coverage points completed:
+
+| Dataset | Method / Setting | Result |
+|---|---|---:|
+| `qasper` | RASC `w16 r=0.8` | 0.3480 |
+| `qasper` | RASC `w16 r=0.9` | 0.3420 |
+| `qasper` | Coverage `w8 tau=0.95 scale=0.75` | 0.3320 |
+| `qasper` | Coverage `w8 tau=0.95 scale=0.85` | 0.3260 |
+| `qasper` | Coverage `w16 tau=0.95 scale=0.90` | 0.3380 |
+| `tmath` | Coverage `w8 tau=0.95 scale=0.75` | 0.3481 |
+| `tmath` | Coverage `w8 tau=0.95 scale=0.85` | 0.3523 |
+| `tmath` | Coverage `w16 tau=0.95 scale=0.90` | 0.3525 |
+| `hotpotqa` | Coverage `w8 tau=0.95 scale=0.85` | 0.7160 |
+
+Finished at `2026-06-25 04:32:06`.
+
+## Table 8 Pair #2: Llama-3.2-3B-Instruct Same-Model
+
+Log: `snapshots/table8_pair2_llama32_same/logs/gpu2_pair2_0624_2358.log`
+
+Status: done at `2026-06-25 12:18:54`.
+
+This queue finished all 8 datasets:
+
+```text
+countries
+tipsheets
+hotpotqa
+musique
+multifieldqa_en
+twowikimqa
+qasper
+tmath
+```
+
+For each dataset it ran:
+
+```text
+RASC: w8/w16 x r in {0.3, 0.5, 0.7}
+Coverage-BRASC: w8 tau=0.95 scale=0.75
+Coverage-BRASC: w8 tau=0.95 scale=0.85
+Coverage-BRASC: w16 tau=0.95 scale=0.90
+```
+
+No `Traceback`, `RuntimeError`, `ImportError`, or OOM marker was found in this log.
+
+## Table 8 Pair #3: Qwen2.5-7B-Instruct Same-Model
+
+Log: `snapshots/table8_pair3_qwen25_7b_same/logs/gpu6_pair3_0625_0001.log`
+
+Status: running.
+
+Completed datasets so far:
+
+```text
+countries
+tipsheets
+hotpotqa
+musique
+multifieldqa_en
+twowikimqa
+qasper
+```
+
+TMATH completed fixed-r RASC:
+
+| Dataset | Method / Setting | Result |
+|---|---|---:|
+| `tmath` | RASC `w8 r=0.3` | 0.3112 |
+| `tmath` | RASC `w8 r=0.5` | 0.3111 |
+| `tmath` | RASC `w8 r=0.7` | 0.3172 |
+| `tmath` | RASC `w16 r=0.3` | 0.3099 |
+| `tmath` | RASC `w16 r=0.5` | 0.3164 |
+| `tmath` | RASC `w16 r=0.7` | 0.3162 |
+
+Currently running:
+
+```text
+tmath Coverage-BRASC: w8 tau=0.95 scale=0.75
+```
+
+Remaining in this queue after the current run:
+
+```text
+tmath Coverage-BRASC: w8 tau=0.95 scale=0.85
+tmath Coverage-BRASC: w16 tau=0.95 scale=0.90
+```
+
+No `Traceback`, `RuntimeError`, `ImportError`, or OOM marker has appeared in this log so far.
+
+## Immediate Next Check
+
+After GPU6 finishes, check:
+
+```bash
+rg "DONE|Traceback|RuntimeError|ImportError|CUDA out of memory|communication result: [0-9]\\.[0-9]{4}, communication time" snapshots/table8_pair3_qwen25_7b_same/logs/gpu6_pair3_0625_0001.log
+```
+
+The queue is complete when the log contains:
+
+```text
+######## [GPU6 pair3 qwen25_7b_same] DONE ...
+```
+
+---
+
+## 合并来源 4：第四部分：实验地图与后续 TODO
+
+> 原文件：`snapshots/EXPERIMENT_MAP_AND_TODO.md`。以下为该文件正文内容，实验数值未改动。
+
+# KVComm / RASC 实验地图与后续 TODO
+
+> 用途:这份文档回答“我们基于 KVComm 论文做了哪些模型、哪些数据集、哪些实验,论文里 Table 1/2/3/4 分别是什么,以及后续还要补什么”。更详细的数值结果见 `snapshots/RESULTS.md`。
+
+---
+
+## 1. 对照论文与我们当前工作的定位
+
+原论文: **KVComm: Enabling Efficient LLM Communication through Selective KV Sharing**(ICLR 2026 Poster, OpenReview: `https://openreview.net/forum?id=F7rUng23nw`)。
+
+原论文核心思想:
+
+- 在 multi-agent / inter-LLM communication 中,不传自然语言回复,也不传 hidden states,而是让发送方模型把部分 KV cache 传给接收方模型。
+- 原 KVComm 的压缩粒度是**层级选择**:先用 attention importance + Gaussian prior 选重要层,然后传这些层的 KV。
+- 原论文结论是:只传约 30% 层的 KV,可以接近 Skyline / full-context 上界,同时降低通信成本。
+
+我们当前工作的核心改动:
+
+- 从“选哪些层”升级到“在每一层里选哪些 token”。
+- 从“发送方/校准集静态选择”升级到“接收方 query-aware 选择”。
+- 从“固定预算 r”进一步尝试“query-adaptive / budget-aware 动态预算”。
+
+当前最清晰的论文主线:
+
+```text
+KVComm(layer-wise selective KV sharing)
+  -> token-level KV compression(Merge / Evict)
+  -> RASC(receiver-aware selective KV communication)
+  -> Coverage-BRASC(receiver-attention coverage budget)
+```
+
+---
+
+## 2. 当前实验模型
+
+### 2.1 主实验模型
+
+目前所有主要表格实验都使用同模型通信:
+
+- Sender model `M_s`: `/sharedspace/models/Llama-3.1-8B-Instruct`
+- Receiver model `M_r`: `/sharedspace/models/Llama-3.1-8B-Instruct`
+- 精度: `torch.bfloat16`
+- attention implementation: `sdpa`
+- 最大输入长度: `64000`
+- 运行方式:单卡加载两个同模型实例,用 `CUDA_VISIBLE_DEVICES=<gpu>` 指定物理 GPU。
+
+表格 caption 可以写:
+
+```text
+M_s: meta-llama/Llama-3.1-8B-Instruct;
+M_r: meta-llama/Llama-3.1-8B-Instruct.
+```
+
+### 2.2 尚未完成的模型扩展
+
+当前还没有正式完成 cross-model 表:
+
+- Llama-3.1-8B -> Llama-3.1-8B:已完成主线。
+- Llama -> Qwen / Mistral / Gemma:未完成,属于后续 Cross-model RASC。
+- 不同 tokenizer / 不同层数模型:未完成,需要额外处理 token 对齐与层映射。
+
+---
+
+## 3. 当前实验数据集
+
+本项目当前围绕 8 个任务做表:
+
+| 数据集 | 脚本名 / task name | 类型 | 当前用途 |
+|---|---|---|---|
+| Countries | `countries` | 简单事实 / 地理 QA | 简单任务对照,看低压下是否饱和 |
+| Tipsheets | `tipsheets` | 自定义/合成 QA | 简单任务对照,KVComm 层级方法很强 |
+| HotpotQA | `hotpotqa` | 多跳 QA | 主任务之一,RASC 与 Coverage-BRASC 有正结果 |
+| QASPER | `qasper` | 科学论文 QA | 正在补表,需要 fixed RASC + coverage |
+| MuSiQue | `musique` | 多跳组合推理 | 当前最强主任务,Coverage-BRASC 主卖点 |
+| MultiField-QA-en | `multifieldqa_en` | 长文本/多领域 QA | RASC 低预算效率很强,Coverage 已补较多 |
+| 2WikiM-QA | `twowikimqa` | 多跳桥接 QA | oracle / budget 线已做,coverage 表格三行正在补 |
+| TMATH | `tmath` | 数学题 | 原 KVComm 表已有,coverage 表格三行正在补 |
+
+指标口径:
+
+- `score`:各 evaluator 产出的任务分数,通常是 F1 / EM 或任务自带匹配分。
+- `analyze_coverage.py --tau 0.5`:把 `score >= 0.5` 视为正确,用于计算 accuracy / equal-accuracy budget saving。
+- 注意:这个 `--tau 0.5` 是“答对阈值”,不是 Coverage-BRASC 的 `coverage_tau=0.95`。
+
+---
+
+## 4. 做过的方法清单
+
+### 4.1 原 KVComm 论文/代码自带对照
+
+| 方法 | 在表里名字 | 做了什么 | 是否我们新增 |
+|---|---|---|---|
+| Baseline | `Baseline` | 不通信/普通回答 | 否 |
+| Skyline | `Skyline` | 上界:把完整上下文给一个模型 | 否 |
+| NLD | `NLD` | Natural Language Debate,模型间传自然语言 | 否 |
+| CIPHER | `CIPHER` | learned embedding / cipher 通信 | 否 |
+| Activation Communication | `AC(mean/replace/sum)` | 传 hidden activation 并注入 | 否 |
+| KVComm | `KVComm(0.3/0.5/0.7)` | 原论文方法,按层选择 KV | 否,复现/对照 |
+
+### 4.2 我们新增的 token-level / RASC 方法
+
+| 方法 | 在表里名字 | 做了什么 | 结论 |
+|---|---|---|---|
+| Merge-then-Communicate | `Merge(0.3/0.5/0.7)` | 每层 token 级压缩,被丢 token 合并到保留 token | 整体不稳定,难任务上常弱于 evict |
+| Evict-only | `Evict(0.3/0.5/0.7)` | 每层 token 级只保留 top token,不合并 | 比 merge 更稳,证明“选对 token”比“合并”重要 |
+| RASC-w8 | `RASC-w8(r)` | 用接收方 query 最后 8 tokens 注意力给 A-context token 打分 | 主方法之一,MuSiQue 很强 |
+| RASC-w16 | `RASC-w16(r)` | 用接收方 query 最后 16 tokens 注意力打分 | 主方法之一,HotpotQA 较强 |
+| Coverage-BRASC | `Coverage-BRASC-w8/w16` | 不固定 r,按 receiver attention coverage 自动得到每条 query 的预算 | 当前 budget-aware 正结果 |
+
+### 4.3 做过但证伪的 Budget-aware 方法
+
+| 阶段 | 名字 | 方法 | 结论 |
+|---|---|---|---|
+| Step 0 | oracle 最小预算分析 | 密集扫 fixed-r RASC,找每条样本最小可解预算 | 前提成立:query 间预算需求差异很大 |
+| Step 1 | 开环预算预测 | 用 receiver 重要度熵 / 层重要性猜预算 | 证伪:预算 std≈0,corr≈0 |
+| Step 2a | 离线 oracle 渐进 | 用完美 stop signal 模拟多轮补传 | 只是上界:理论省 35-47% |
+| Step 2b | 在线渐进 + learned controller | 真实生成多轮,测 entropy/margin/context attention 信号 | 证伪:不稳且平均轮数 2.7-4.0 |
+| 牌2 | Pass-1 单发预算预测 | 抽 rcap/entropy/gini 等特征,训练分类器预测预算 | 证伪:LODO AUC 0.585,等精度全负 |
+| Step 3 | Coverage-BRASC | 不预测 query difficulty,改用 receiver evidence coverage 定预算 | 成立:MuSiQue 强正,HotpotQA 小正 |
+
+---
+
+## 5. 论文表格规划
+
+### Table 1: 主对比总表
+
+目的:回答“我们的 RASC / Coverage-BRASC 相比原 KVComm 和其它通信方式怎么样?”
+
+包含方法:
+
+- 原论文/复现对照:`Baseline`, `Skyline`, `NLD`, `CIPHER`, `AC(mean/replace/sum)`, `KVComm(0.3/0.5/0.7)`。
+- 我们新增:`Merge`, `Evict`, `RASC-w8`, `RASC-w16`。
+- Coverage-BRASC 三个代表点:
+  - `Coverage-BRASC-w8 (tau=0.95, scale=0.75)`
+  - `Coverage-BRASC-w8 (tau=0.95, scale=0.85)`
+  - `Coverage-BRASC-w16 (tau=0.95, scale=0.90)`
+
+当前状态:
+
+- `MuSiQue`, `MultiField-QA-en`, `HotpotQA` 的 Coverage-BRASC 关键点基本已有。
+- `Countries`, `Tipsheets`, `QASPER`, `2WikiM-QA`, `TMATH` 正在用 `scripts/run_table_completion_2x5.sh` 补齐。
+- QASPER 还需要先补 fixed RASC-w16 曲线,因为 `analyze_coverage.py` 要用 fixed-r 曲线做 equal-accuracy 对比。
+
+建议 Table 1 caption:
+
+```text
+Comparison between KVComm, token-level compression baselines, RASC, and Coverage-BRASC under different communication budgets.
+For Coverage-BRASC, the subscript denotes the actual average KV budget used by the dynamic coverage policy.
+```
+
+### Table 2: RASC dense budget / window ablation
+
+目的:回答“RASC 的提升来自 receiver-aware token selection,而不是某个单点偶然结果。”
+
+应包含:
+
+- `fixed-r` 曲线:`r = 0.1,0.2,0.3,0.4,0.5,0.7`。
+- 方法:`KVComm`, `Merge`, `Evict`, `RASC-w8`, `RASC-w16`。
+- 数据集重点:
+  - HotpotQA:难多跳,RASC-w16 强。
+  - MuSiQue:最强主任务,RASC-w8 强。
+  - MultiField-QA-en:低预算 token 效率很强。
+  - Countries/Tipsheets:简单任务,说明 RASC 不是所有任务都赢 KVComm,更诚实。
+
+当前结论:
+
+- MuSiQue: `RASC-w8 r=0.3` 达到约 0.480,明显高于 `KVComm(0.3)=0.112`。
+- HotpotQA: `RASC-w16 r=0.5` 达到约 0.746,接近 full / Skyline。
+- MultiField-QA-en: `RASC` 在 `r=0.1` 已接近饱和。
+- Merge 通常弱于 Evict,说明“合并被丢 KV”不如“直接保留最相关 token”。
+
+### Table 3: Budget-aware negative ablations
+
+目的:回答“我们不是只试了一个 coverage,而是系统验证过哪些 budget-aware 方案不行。”
+
+包含 4 组:
+
+- Step 0 oracle headroom:
+  - 扫 `r={0.05,0.1,0.15,0.2,0.3,0.4,0.5,0.7}`。
+  - 结论:HotpotQA/MuSiQue 固定 r 理论浪费很大,headroom 真实存在。
+- Step 1 open-loop:
+  - `uniform`, `layer`, `query`, `query+layer`。
+  - 结论:query budget 标准差接近 0,与正确性相关性接近 0。
+- Step 2 online progressive:
+  - 多轮 ladder `[0.1,0.2,0.3,0.5]`。
+  - 信号:entropy, margin, context attention mass/concentration。
+  - 结论:在线 controller 不稳,轮数太多。
+- 牌2 Pass-1 predictor:
+  - 特征:rcap50/90/95, entropy, gini, top mass, recency/sink, context length。
+  - 结论:LODO AUC 0.585,跨数据集几乎随机。
+
+建议 Table 3 不放所有细节,只放压缩摘要:
+
+```text
+Step / method / signal used / key metric / conclusion
+```
+
+详细数值放 appendix。
+
+### Table 4: Coverage-BRASC 动态预算主表
+
+目的:回答“Budget-aware 最终可行方案是什么,实际省多少预算?”
+
+核心展示:
+
+- 固定 RASC 曲线 vs Coverage-BRASC 点。
+- 每个点报告:
+  - `coverage_tau`
+  - `coverage_scale`
+  - `recv_window`
+  - `accuracy`
+  - `average budget`
+  - `equal-accuracy saving`
+
+当前最强结果:
+
+- MuSiQue:
+  - `tau=0.95, scale=0.75, w8`:acc 0.482, avg budget 0.279,超过 fixed-r 最高点。
+  - `tau=0.95, scale=0.85, w8`:acc 0.490, avg budget 0.313,当前最高 coverage 精度。
+  - `tau=0.90, scale=0.75, w8`:acc 0.442, avg budget 0.158,等精度约 +40.7% 省预算。
+- HotpotQA:
+  - `tau=0.95, scale=0.90, w16`:acc 0.732, avg budget 0.400,约 +6.9% 省预算。
+
+建议主图:
+
+- Figure 1/2:MuSiQue accuracy-budget Pareto。
+- Figure 3:Coverage-BRASC per-sample budget distribution,证明不是固定 r 的变体,而是 query-adaptive。
+
+---
+
+## 6. 当前脚本与结果目录对应关系
+
+### 6.1 运行脚本
+
+| 脚本 | 对应实验 | 输出目录 |
+|---|---|---|
+| `scripts/run_baseline.sh` | Baseline | `snapshots/<task>/baseline` |
+| `scripts/run_dataset.sh` | 原 KVComm / 多方法批量 | `snapshots/<task>/...` |
+| `scripts/run_merge.sh` | token-level merge | `snapshots/<task>/mtc_merge` |
+| `scripts/run_evict.sh` | token-level evict | `snapshots/<task>/mtc_evict` |
+| `scripts/run_receiver.sh` | fixed-r RASC | `snapshots/<task>/mtc_receiver` |
+| `scripts/run_probe.sh` | Step 0 dense fixed-r probe | `snapshots/<task>/mtc_receiver/probe_recv_w16_r*` |
+| `scripts/run_budget.sh` | Step 1 open-loop budget modes | `snapshots/<task>/budget` |
+| `scripts/run_progressive.sh` | Step 2b online progressive | `snapshots/<task>/progressive` |
+| `scripts/run_features.sh` | Pass-1 feature dump | `snapshots/<task>/features` |
+| `scripts/run_coverage.sh` | Coverage-BRASC 单任务扫描 | `snapshots/<task>/coverage` |
+| `scripts/run_table_completion_2x5.sh` | 当前补 Table 1 缺失 coverage 点 | `logs/gpu2_table_queue.log`, `logs/gpu5_table_queue.log` |
+
+### 6.2 分析脚本
+
+| 脚本 | 用途 |
+|---|---|
+| `scripts/analyze_oracle.py` | Step 0 oracle 最小预算分布 |
+| `scripts/analyze_budget.py` | Step 1 budget mode 对比 |
+| `scripts/sim_progressive.py` | Step 2a 离线 oracle 渐进上界 |
+| `scripts/analyze_progressive_online.py` | Step 2b 在线多轮阈值扫描 |
+| `scripts/learn_stop_policy.py` | Step 2b learned controller |
+| `scripts/learn_budget_predictor.py` | 牌2 Pass-1 预算预测器 |
+| `scripts/sim_coverage_budget.py` | Coverage-BRASC 零 GPU 离线预检 |
+| `scripts/analyze_coverage.py` | Coverage-BRASC 在线结果分析 |
+| `scripts/plot_coverage_pareto.py` | Coverage Pareto 图 |
+| `scripts/plot_budget_distribution.py` | 动态预算分布图 |
+
+---
+
+## 7. 当前正在跑 / 正在补的实验
+
+当前补表脚本:
+
+```bash
+bash scripts/run_table_completion_2x5.sh
+```
+
+只使用 GPU 2 和 GPU 5:
+
+- GPU2 队列:
+  - `countries`: `w8 tau=0.95 scale=0.75/0.85`, `w16 tau=0.95 scale=0.90`
+  - `tipsheets`: `w8 tau=0.95 scale=0.75/0.85`, `w16 tau=0.95 scale=0.90`
+  - `twowikimqa`: `w8 tau=0.95 scale=0.75/0.85`, `w16 tau=0.95 scale=0.90`
+- GPU5 队列:
+  - `qasper`:先跑 fixed RASC-w16 `r=0.1..0.9`
+  - `qasper`:再跑 coverage 三点
+  - `tmath`:coverage 三点
+  - `hotpotqa`:补 `w8 tau=0.95 scale=0.85`
+
+进度检查:
+
+```bash
+tail -f logs/gpu2_table_queue.log
+tail -f logs/gpu5_table_queue.log
+```
+
+跑完后统一分析:
+
+```bash
+python scripts/analyze_coverage.py \
+  --tasks countries tipsheets hotpotqa qasper musique multifieldqa_en twowikimqa tmath \
+  --tau 0.5
+```
+
+---
+
+## 8. 后续 TODO List
+
+### 8.1 立即完成:补齐 Table 1
+
+- [ ] 等 `scripts/run_table_completion_2x5.sh` 全部跑完。
+- [ ] 跑 `scripts/analyze_coverage.py` 汇总所有 coverage 结果。
+- [ ] 把 `Countries/Tipsheets/QASPER/2WikiM-QA/TMATH` 的 Coverage-BRASC 三行填进 Table 1。
+- [ ] 若 QASPER fixed RASC-w16 跑完但没有 w8 fixed 曲线,先确认 Table 1 是否只需要 coverage 表格值,还是还要 equal-accuracy saving。
+- [ ] 检查 coverage 每个点的 `avg budget`,在表格中用下标标注,例如 `0.482_{0.279}`。
+
+### 8.2 主结果收尾
+
+- [ ] 更新 `snapshots/RESULTS.md` 的 Table 1,保证和最终论文表一致。
+- [ ] 重新生成 MuSiQue Pareto 图,必要时加入 HotpotQA / MultiField-QA-en 小图。
+- [ ] 生成 per-sample budget distribution 图,证明 Coverage-BRASC 的 budget 是 query-adaptive。
+- [ ] 写一段英文方法描述,把 Coverage-BRASC 定义为 receiver evidence fidelity / coverage constraint。
+
+### 8.3 论文需要的补充实验
+
+- [ ] Window scan:在主任务上补 `recv_window={4,8,16,32,all}`。
+- [ ] Coverage threshold scan:主任务补 `coverage_tau={0.90,0.95,0.98}` 与 `scale` 网格,但论文主表只放 2-3 个代表点。
+- [ ] Latency breakdown:单样本拆开测 A-prefill / receiver scoring / B-prefill / generation。
+- [ ] Budget distribution by dataset:看哪些数据集天然预算低、哪些预算高。
+- [ ] Failure case analysis:挑 MuSiQue 上 coverage 成功/失败样本,分析 receiver attention 是否聚焦证据 token。
+
+### 8.4 进一步创新点
+
+- [ ] Head-wise Coverage-BRASC:每个 attention head 单独算 coverage,避免 head 平均抹掉检索头。
+- [ ] Cross-model RASC:不同模型之间通信,例如 Llama -> Qwen / Mistral / Gemma。
+- [ ] Tokenizer mismatch 处理:当 A/B tokenizer 不同,需要字符级 span 对齐或让 B 传 query embedding。
+- [ ] Layer mapping:当 A/B 层数不同,需要线性映射、最近层映射或 learned mapping。
+- [ ] Rate-distortion scoring:把 token score 从纯 attention 升级为 `attention * value_norm` 或输出分布扰动。
+
+---
+
+## 9. 当前结论摘要
+
+已经能讲的结论:
+
+- 原 KVComm 证明 KV 是好的通信载体,但它主要是层级选择。
+- 我们证明 token-level selection 更适合压缩通信,尤其是多跳 QA。
+- Merge 不稳定,Evict 更稳,说明关键不是“合并压缩”,而是“选对 token”。
+- RASC 的关键增益来自 receiver-aware:用接收方 query 注意力选择 A-context token。
+- 直接预测 query difficulty / budget 的路线失败了:开环熵、层分配、在线多轮、Pass-1 predictor 都不稳定或不泛化。
+- Coverage-BRASC 是当前 budget-aware 正路线:不预测 r,而是保留最少 token 覆盖 receiver attention mass,从而自然得到 per-query dynamic budget。
+
+最适合论文主张的结果:
+
+- MuSiQue 上 Coverage-BRASC `w8, tau=0.95, scale=0.75/0.85` 形成强 Pareto,能在低平均预算下超过 fixed-r RASC 最高精度。
+- HotpotQA 上 `w16, tau=0.95, scale=0.90` 有稳定小正收益。
+- MultiField-QA-en 用于证明 RASC 低预算效率很高。
+- Countries/Tipsheets/TMath/2Wiki/QASPER 用于补完整主表,但不一定都作为主卖点。
+
+---

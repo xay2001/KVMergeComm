@@ -1,5 +1,5 @@
 #!/bin/bash
-# qasper 全套方法,0/1 两张卡并行  (需先 bash scripts/download_datasets.sh 下载 tau/scrolls)
+# qasper 全套方法,0/1 两张卡并行  (需先 python scripts/prepare_qasper.py 准备 JSONL)
 #   GPU 0: baseline(top0.3/0.5/0.7/1.0) + merge(r0.1-0.9) + evict(r0.1-0.9)
 #   GPU 1: receiver w8(r0.1-0.9) + receiver w16(r0.1-0.9)
 # 用法:  bash scripts/run_qasper.sh

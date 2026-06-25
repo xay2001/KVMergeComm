@@ -43,6 +43,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         budget_max: float = 0.5,
         budget_tau: float = 1.0,
         budget_floor: float = 0.02,
+        coverage_tau: float = 0.90,
+        coverage_scale: float = 1.0,
     ) -> None:
         super().__init__(model_B.config)
         self.A = model_A
@@ -64,11 +66,14 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         #   query        -> per-query total budget B(Q) from importance entropy, uniform across layers
         #   layer        -> fixed total budget self.merge_ratio, softmax-allocated across layers by importance
         #   query+layer  -> both: B(Q) total, softmax-allocated across layers
+        #   coverage     -> per-layer budget from receiver-attention coverage threshold
         self.budget_mode = budget_mode
         self.budget_min = budget_min
         self.budget_max = budget_max
         self.budget_tau = budget_tau
         self.budget_floor = budget_floor
+        self.coverage_tau = coverage_tau
+        self.coverage_scale = coverage_scale
         self.layer_budget = {}        # {layer_idx: r_l}, recomputed per query
         self.last_query_budget = None # B(Q) for the most recent query
         self.last_kept_ratio = None   # actual transmitted KV fraction for the most recent query
@@ -241,6 +246,32 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         Hmean = sum(Hns) / len(Hns)
         return self.budget_min + (self.budget_max - self.budget_min) * Hmean
 
+    def _coverage_ratio(self, s: torch.Tensor) -> float:
+        """Budget from receiver-evidence coverage.
+
+        Let p_i be normalized receiver attention mass over A-context tokens. We
+        keep the smallest top-k set whose cumulative mass reaches coverage_tau,
+        then optionally scale and clamp the resulting k/L ratio. Unlike the
+        entropy/query predictor, this does not learn or predict task difficulty;
+        the budget is derived from an interpretable fidelity target.
+        """
+        s = s.float().clamp_min(0)
+        L = s.numel()
+        if L < 2 or float(s.sum()) <= 0:
+            return self.merge_ratio
+        p = s / s.sum().clamp_min(1e-9)
+        sp = torch.sort(p, descending=True).values
+        csum = torch.cumsum(sp, dim=0)
+        thr = min(max(float(self.coverage_tau), 0.0), 1.0)
+        idx = int(torch.searchsorted(csum, torch.tensor(thr, device=csum.device)))
+        idx = min(idx, L - 1)
+        raw = ((idx + 1) / L) * float(self.coverage_scale)
+        lo = max(float(self.budget_min), float(self.budget_floor))
+        hi = float(self.budget_max)
+        if hi < lo:
+            hi = lo
+        return float(min(max(raw, lo), hi))
+
     def _compute_budget(self):
         """Recompute the per-layer keep ratios for the current query. Called right
         after receiver importance is available. Requires score_mode=='receiver'."""
@@ -250,6 +281,10 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             return
         comp = [l for l in sorted(self.token_importance.keys()) if l != 0]
         if not comp:
+            return
+        if self.budget_mode == "coverage":
+            self.layer_budget = {l: self._coverage_ratio(self.token_importance[l]) for l in comp}
+            self.last_query_budget = sum(self.layer_budget.values()) / len(self.layer_budget)
             return
         B = self._query_total_budget() if self.budget_mode in ("query", "query+layer") else self.merge_ratio
         self.last_query_budget = float(B)

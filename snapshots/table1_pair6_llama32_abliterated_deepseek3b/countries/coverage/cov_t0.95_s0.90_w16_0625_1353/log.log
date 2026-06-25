@@ -1,0 +1,12 @@
+2026-06-25 13:53:52,047 - root - INFO - Logging setup completed. Log file: snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/coverage/cov_t0.95_s0.90_w16_0625_1353/log.log
+2026-06-25 13:53:52,047 - root - INFO - Log level: INFO
+2026-06-25 13:53:52,047 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/coverage', model_A='/sharedspace/models/Llama-3.2-3B-Instruct-abliterated', model_B='/sharedspace/models/DeepSeek-R1-Distill-Llama-3B', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='evict', score_mode='receiver', recv_window=16, budget_mode='coverage', budget_min=0.05, budget_max=0.7, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.95, coverage_scale=0.9, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, test_task='countries', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='cov_t0.95_s0.90_w16', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-06-25 13:53:52,047 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/coverage/cov_t0.95_s0.90_w16_0625_1353
+2026-06-25 13:53:52,047 - root - INFO - Log level: INFO
+2026-06-25 13:53:52,167 - root - INFO - Number of GPU: 1
+2026-06-25 13:53:52,170 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-06-25 13:53:52,171 - root - INFO - CUDA_VISIBLE_DEVICES: 7
+2026-06-25 13:54:28,214 - root - INFO - CVCommunicator initialized
+2026-06-25 13:54:29,711 - root - INFO - [merge] mode=evict score=receiver budget=coverage layer compress: L=39 -> k=12 (r_eff=0.069, base_ratio=0.2, sink=4, recent=8)
+2026-06-25 13:55:22,848 - root - INFO - per-sample scores written to /home/xay/KVComm/snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/coverage/cov_t0.95_s0.90_w16_0625_1353/per_sample.jsonl
+2026-06-25 13:55:22,849 - root - INFO - communication result: 0.5000, communication time: 54.63s
