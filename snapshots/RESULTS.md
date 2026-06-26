@@ -1357,6 +1357,151 @@ The queue is complete when the log contains:
 ######## [GPU6 pair3 qwen25_7b_same] DONE ...
 ```
 
+## 2026-06-25 晚间最新补充:Table 8 pair #2/#3 与 Table 1 pair #6
+
+> 更新时间:2026-06-25 18:48。以下结果来自最新 `snapshots/table*/logs/*.log`。  
+> 记号:`RASC-w8` / `RASC-w16` 列中三个数依次为 `r=0.3/0.5/0.7`;`Coverage` 列中三个数依次为 `w8-t0.95-s0.75 / w8-t0.95-s0.85 / w16-t0.95-s0.90`。
+
+### Table 8 pair #2:Llama-3.2-3B-Instruct same-model(已完成)
+
+模型对:
+
+```text
+M_s = /sharedspace/models/Llama-3.2-3B-Instruct
+M_r = /sharedspace/models/Llama-3.2-3B-Instruct
+```
+
+日志:`snapshots/table8_pair2_llama32_same/logs/gpu2_pair2_0624_2358.log`。状态:已完成,`2026-06-25 12:18:54`。
+
+| Dataset | RASC-w8 r=.3/.5/.7 | RASC-w16 r=.3/.5/.7 | Coverage-BRASC 3 pts |
+|---|---|---|---|
+| `countries` | 0.505 / 0.565 / 0.565 | 0.500 / 0.565 / 0.570 | 0.530 / 0.525 / 0.565 |
+| `tipsheets` | 0.420 / 0.610 / 0.782 | 0.554 / 0.666 / 0.792 | 0.434 / 0.446 / 0.552 |
+| `hotpotqa` | 0.654 / 0.702 / 0.692 | 0.666 / 0.696 / 0.696 | 0.642 / 0.652 / 0.676 |
+| `musique` | 0.350 / 0.356 / 0.376 | 0.338 / 0.370 / 0.384 | 0.340 / 0.342 / 0.344 |
+| `multifieldqa_en` | 0.513 / 0.500 / 0.507 | 0.500 / 0.513 / 0.493 | 0.567 / 0.560 / 0.533 |
+| `twowikimqa` | 0.395 / 0.415 / 0.415 | 0.395 / 0.415 / 0.415 | 0.380 / 0.380 / 0.410 |
+| `qasper` | 0.320 / 0.324 / 0.330 | 0.328 / 0.330 / 0.318 | 0.316 / 0.330 / 0.330 |
+| `tmath` | 0.341 / 0.350 / 0.353 | 0.344 / 0.346 / 0.353 | 0.340 / 0.340 / 0.345 |
+
+初步观察:pair #2 上 Coverage-BRASC 在 `multifieldqa_en` 明显强于固定 RASC;`hotpotqa/qasper/tmath` 基本接近固定 RASC;`tipsheets/musique/twowikimqa` 的三个 coverage 代表点偏保守或偏低,后续若要主打 pair #2 需要补更合适的 `tau/scale`。
+
+### Table 8 pair #3:Qwen2.5-7B-Instruct same-model(已完成)
+
+模型对:
+
+```text
+M_s = /sharedspace/models/Qwen2.5-7B-Instruct
+M_r = /sharedspace/models/Qwen2.5-7B-Instruct
+```
+
+日志:`snapshots/table8_pair3_qwen25_7b_same/logs/gpu6_pair3_0625_0001.log`。状态:已完成,`2026-06-25 15:55:53`。
+
+| Dataset | RASC-w8 r=.3/.5/.7 | RASC-w16 r=.3/.5/.7 | Coverage-BRASC 3 pts |
+|---|---|---|---|
+| `countries` | 0.025 / 0.210 / 0.360 | 0.020 / 0.265 / 0.360 | 0.270 / 0.260 / 0.295 |
+| `tipsheets` | 0.890 / 0.912 / 0.948 | 0.916 / 0.932 / 0.940 | 0.848 / 0.872 / 0.866 |
+| `hotpotqa` | 0.532 / 0.634 / 0.698 | 0.602 / 0.658 / 0.668 | 0.580 / 0.606 / 0.666 |
+| `musique` | 0.340 / 0.434 / 0.458 | 0.370 / 0.454 / 0.446 | 0.354 / 0.356 / 0.410 |
+| `multifieldqa_en` | 0.460 / 0.493 / 0.487 | 0.480 / 0.460 / 0.487 | 0.440 / 0.460 / 0.473 |
+| `twowikimqa` | 0.440 / 0.445 / 0.450 | 0.435 / 0.465 / 0.460 | 0.420 / 0.395 / 0.440 |
+| `qasper` | 0.332 / 0.340 / 0.342 | 0.338 / 0.340 / 0.340 | 0.296 / 0.296 / 0.312 |
+| `tmath` | 0.311 / 0.311 / 0.317 | 0.310 / 0.316 / 0.316 | 0.312 / 0.318 / 0.311 |
+
+初步观察:pair #3 的固定 RASC 在 `tipsheets/hotpotqa/musique/twowikimqa/qasper` 上整体稳定;Coverage-BRASC 在 `tmath` 的 `w8-s0.85` 略高于固定 RASC 最优,但在 `qasper/tipsheets/musique` 上代表点偏保守,需要依赖后续平均预算分析判断是否有 Pareto 优势。
+
+### Table 1 pair #6:Llama-3.2 abliterated -> DeepSeek-R1-Distill-Llama-3B(已完成)
+
+模型对:
+
+```text
+M_s = /sharedspace/models/Llama-3.2-3B-Instruct-abliterated
+M_r = /sharedspace/models/DeepSeek-R1-Distill-Llama-3B
+```
+
+日志:`snapshots/table1_pair6_llama32_abliterated_deepseek3b/logs/gpu7_pair6_0625_1339.log`。状态:已完成,`2026-06-26 01:23:39`。
+
+| Dataset | RASC-w8 r=.3/.5/.7 | RASC-w16 r=.3/.5/.7 | Coverage-BRASC 3 pts |
+|---|---|---|---|
+| `countries` | 0.375 / 0.520 / 0.575 | 0.370 / 0.515 / 0.575 | 0.490 / 0.505 / 0.500 |
+| `tipsheets` | 0.486 / 0.594 / 0.736 | 0.484 / 0.604 / 0.716 | 0.410 / 0.412 / 0.470 |
+| `hotpotqa` | 0.646 / 0.702 / 0.718 | 0.668 / 0.694 / 0.716 | 0.642 / 0.640 / 0.674 |
+| `musique` | 0.362 / 0.384 / 0.384 | 0.354 / 0.390 / 0.396 | 0.384 / 0.370 / 0.368 |
+| `multifieldqa_en` | 0.467 / 0.480 / 0.460 | 0.467 / 0.487 / 0.460 | 0.467 / 0.487 / 0.493 |
+| `twowikimqa` | 0.395 / 0.425 / 0.420 | 0.410 / 0.420 / 0.420 | 0.400 / 0.395 / 0.410 |
+| `qasper` | 0.306 / 0.302 / 0.310 | 0.316 / 0.326 / 0.306 | 0.300 / 0.306 / 0.324 |
+| `tmath` | 0.318 / 0.321 / 0.323 | 0.317 / 0.321 / 0.320 | 0.317 / 0.319 / 0.317 |
+
+初步观察:这是 KVComm 主文 Table 1 的优先 pair #6。固定 RASC 在 `hotpotqa/musique/twowikimqa/qasper` 有较稳曲线;Coverage-BRASC 在 `multifieldqa_en` 接近或略高于固定 RASC,在 `hotpotqa/qasper` 接近固定 RASC,在 `tipsheets/tmath` 偏低。
+
+### KVComm 对比与 Coverage 平均预算收益
+
+> 下表把每个模型对的最佳 RASC / Coverage-BRASC 与原论文 KVComm 最佳值对比。  
+> `best RASC` 和 `best Coverage` 使用原始 `communication result`/平均分数。`avg budget` 来自每条样本的实际 `budget` 字段,包含 sink/recent 等实际保留比例。  
+> `equal-acc saving` 沿用 `scripts/analyze_coverage.py` 的口径:以 `score >= 0.5` 作为答对阈值,在 fixed RASC-w16 曲线上插值得到同等 accuracy 所需固定预算,再计算 `(1 - avg_budget / fixed_budget)`. 这对 F1 型 QA 合理;对 `tmath` 的 ROUGE-L Recall 仅作粗略参考。
+
+#### Table 8 pair #1:Llama-3.1-8B-Instruct same-model
+
+| Dataset | KVComm best | best RASC | best Coverage-BRASC | Coverage budget / saving |
+|---|---:|---:|---:|---|
+| `countries` | 0.62 | 0.61 | 0.615 | avg budget 0.327; saving n/a |
+| `tipsheets` | 0.96 | 0.89 | 0.906 | avg budget 0.370; saving n/a |
+| `hotpotqa` | 0.69 | 0.748 | 0.746 | avg budget 0.643; best saving +7.4% |
+| `qasper` | 0.29 | 0.348 | 0.338 | avg budget 0.329; best saving +27.2% |
+| `musique` | 0.39 | 0.478 | 0.490 | avg budget 0.313; best saving +40.7% |
+| `multifieldqa_en` | 0.54 | 0.540 | 0.540 | avg budget 0.099; saving n/a |
+| `twowikimqa` | 0.38 | 0.440 | 0.420 | avg budget 0.108; best saving +64.1% |
+| `tmath` | 0.38 | n/a | 0.167 | avg budget 0.300; saving n/a |
+
+结论:pair #1 是 RASC 主正结果来源,`hotpotqa/musique/qasper/twowikimqa` 均超过 KVComm;Coverage-BRASC 在 `musique/twowikimqa/qasper` 显示出明显预算节省潜力。
+
+#### Table 8 pair #2:Llama-3.2-3B-Instruct same-model
+
+| Dataset | KVComm best | best RASC | best Coverage-BRASC | Coverage budget / saving |
+|---|---:|---:|---:|---|
+| `countries` | 0.57 | 0.570 | 0.565 | avg budget 0.329; best saving +36.5% |
+| `tipsheets` | 0.80 | 0.792 | 0.552 | avg budget 0.295; best saving +33.1% |
+| `hotpotqa` | 0.65 | 0.702 | 0.676 | avg budget 0.354; best saving +15.4% |
+| `qasper` | 0.27 | 0.330 | 0.330 | avg budget 0.287; best saving +63.8% |
+| `musique` | 0.29 | 0.384 | 0.344 | avg budget 0.362; best saving +22.6% |
+| `multifieldqa_en` | 0.48 | 0.513 | 0.567 | avg budget 0.237; acc above fixed curve |
+| `twowikimqa` | 0.35 | 0.415 | 0.410 | avg budget 0.302; best saving +35.7% |
+| `tmath` | 0.37 | 0.353 | 0.345 | avg budget 0.236; best saving +27.3%* |
+
+结论:pair #2 上 RASC 在 5/8 个任务超过 KVComm 最佳值,尤其 `hotpotqa/qasper/musique/multifieldqa_en/twowikimqa`;Coverage-BRASC 的平均预算通常落在 0.24-0.36,明显低于固定 `r=0.5/0.7`。
+
+#### Table 8 pair #3:Qwen2.5-7B-Instruct same-model
+
+| Dataset | KVComm best | best RASC | best Coverage-BRASC | Coverage budget / saving |
+|---|---:|---:|---:|---|
+| `countries` | 0.57 | 0.360 | 0.295 | avg budget 0.379; best saving +35.4% |
+| `tipsheets` | 0.98 | 0.948 | 0.872 | avg budget 0.305; best saving +15.2% |
+| `hotpotqa` | 0.72 | 0.698 | 0.666 | avg budget 0.430; best saving +36.0% |
+| `qasper` | 0.29 | 0.342 | 0.312 | avg budget 0.349; best saving +23.3% |
+| `musique` | 0.48 | 0.458 | 0.410 | avg budget 0.411; best saving +22.2% |
+| `multifieldqa_en` | 0.45 | 0.493 | 0.473 | avg budget 0.307; best saving +60.7% |
+| `twowikimqa` | 0.35 | 0.465 | 0.440 | avg budget 0.278; best saving +43.2% |
+| `tmath` | 0.33 | 0.318 | 0.318 | avg budget 0.299; best saving +39.8%* |
+
+结论:Qwen same-model 上 RASC 不如 Llama 稳,但 `qasper/multifieldqa_en/twowikimqa` 明确超过 KVComm;`hotpotqa/musique/tipsheets` 接近但未超过 KVComm 最佳值。
+
+#### Table 1 pair #6:Llama-3.2 abliterated -> DeepSeek-R1-Distill-Llama-3B
+
+| Dataset | KVComm best | best RASC | best Coverage-BRASC | Coverage budget / saving |
+|---|---:|---:|---:|---|
+| `countries` | 0.57 | 0.575 | 0.505 | avg budget 0.374; best saving +26.9% |
+| `tipsheets` | 0.81 | 0.736 | 0.470 | avg budget 0.276; best saving +39.6% |
+| `hotpotqa` | 0.65 | 0.718 | 0.674 | avg budget 0.368; best saving +16.4% |
+| `qasper` | 0.29 | 0.326 | 0.324 | avg budget 0.343; best saving +64.4% |
+| `musique` | 0.36 | 0.396 | 0.384 | avg budget 0.251; best saving +48.4% |
+| `multifieldqa_en` | 0.51 | 0.487 | 0.493 | avg budget 0.328; best saving +50.4% |
+| `twowikimqa` | 0.37 | 0.425 | 0.410 | avg budget 0.302; best saving +32.3% |
+| `tmath` | 0.35 | 0.323 | 0.319 | avg budget 0.218; best saving +43.9%* |
+
+结论:pair #6 是对齐 KVComm 主文 Table 1 的关键正结果。RASC 在 `hotpotqa/qasper/musique/twowikimqa` 超过 KVComm,`countries` 打平略高;`tipsheets/tmath` 低于 KVComm。Coverage-BRASC 虽然多数任务 accuracy 略低于 best fixed RASC,但平均预算只有约 0.22-0.37,在 `qasper/musique/multifieldqa_en` 上给出 48%-64% 的等精度预算节省信号。
+
+带 `*` 的 TMATH saving 只作参考,因为该任务原指标是 ROUGE-L Recall,`score >= 0.5` 的二值化不如 F1 QA 任务稳定。
+
 ---
 
 ## 合并来源 4：第四部分：实验地图与后续 TODO
