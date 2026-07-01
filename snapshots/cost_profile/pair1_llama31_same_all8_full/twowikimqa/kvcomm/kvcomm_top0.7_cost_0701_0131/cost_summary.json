@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "dataset": "2wikimqa",
+    "score_mode": "value_norm",
+    "recv_window": 0,
+    "merge": false,
+    "merge_mode": "merge",
+    "merge_ratio": 0.2,
+    "budget_mode": "uniform",
+    "budget_min": 0.05,
+    "budget_max": 0.5,
+    "coverage_tau": 0.9,
+    "coverage_scale": 1.0,
+    "warmup": 5,
+    "n": 195
+  },
+  "score_mean": 0.405128,
+  "budget_mean": 0.687557,
+  "query_budget_mean": null,
+  "kv_token_ratio_mean": 0.687557,
+  "kv_byte_ratio_mean": 0.687557,
+  "kv_tokens_sent_mean": 158133.928205,
+  "kv_bytes_sent_mean": 647716569.928205,
+  "ctx_tokens_A_mean": 7187.451282,
+  "query_tokens_B_mean": 73.789744,
+  "output_tokens_mean": 6.364103,
+  "t_prepare_inputs_mean": 0.046461,
+  "t_a_prefill_mean": 1.294895,
+  "t_receiver_score_mean": 0.0,
+  "t_generate_total_mean": 0.411106,
+  "t_total_mean": 1.752463,
+  "peak_mem_gb_mean": 33.921224
+}

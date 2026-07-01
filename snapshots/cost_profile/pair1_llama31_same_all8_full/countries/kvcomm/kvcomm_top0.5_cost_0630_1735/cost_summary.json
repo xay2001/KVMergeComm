@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "dataset": "countries",
+    "score_mode": "value_norm",
+    "recv_window": 0,
+    "merge": false,
+    "merge_mode": "merge",
+    "merge_ratio": 0.2,
+    "budget_mode": "uniform",
+    "budget_min": 0.05,
+    "budget_max": 0.5,
+    "coverage_tau": 0.9,
+    "coverage_scale": 1.0,
+    "warmup": 5,
+    "n": 195
+  },
+  "score_mean": 0.610256,
+  "budget_mean": 0.507624,
+  "query_budget_mean": null,
+  "kv_token_ratio_mean": 0.507624,
+  "kv_byte_ratio_mean": 0.507624,
+  "kv_tokens_sent_mean": 1067.979487,
+  "kv_bytes_sent_mean": 4374443.979487,
+  "ctx_tokens_A_mean": 65.748718,
+  "query_tokens_B_mean": 74.230769,
+  "output_tokens_mean": 3.010256,
+  "t_prepare_inputs_mean": 0.001501,
+  "t_a_prefill_mean": 0.038855,
+  "t_receiver_score_mean": 0.0,
+  "t_generate_total_mean": 0.121765,
+  "t_total_mean": 0.162121,
+  "peak_mem_gb_mean": 29.996301
+}

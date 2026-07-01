@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "dataset": "qasper",
+    "score_mode": "receiver",
+    "recv_window": 8,
+    "merge": true,
+    "merge_mode": "evict",
+    "merge_ratio": 0.2,
+    "budget_mode": "coverage",
+    "budget_min": 0.05,
+    "budget_max": 0.7,
+    "coverage_tau": 0.95,
+    "coverage_scale": 0.85,
+    "warmup": 5,
+    "n": 495
+  },
+  "score_mean": 0.327273,
+  "budget_mean": 0.258448,
+  "query_budget_mean": 0.234528,
+  "kv_token_ratio_mean": 0.258448,
+  "kv_byte_ratio_mean": 0.258448,
+  "kv_tokens_sent_mean": 39130.014141,
+  "kv_bytes_sent_mean": 160276537.923232,
+  "ctx_tokens_A_mean": 4879.242424,
+  "query_tokens_B_mean": 64.452525,
+  "output_tokens_mean": 23.09899,
+  "t_prepare_inputs_mean": 0.021369,
+  "t_a_prefill_mean": 0.844545,
+  "t_receiver_score_mean": 0.109082,
+  "t_generate_total_mean": 1.027583,
+  "t_total_mean": 2.002579,
+  "peak_mem_gb_mean": 32.540842
+}

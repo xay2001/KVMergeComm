@@ -1,5 +1,12 @@
 # KVComm / RASC 实验方案、结果与后续计划总文档
 
+> 当前维护入口（2026-06-30 新增）：
+> - `snapshots/INDEX.md`：按论文 Table / model pair / dataset / method 检查当前结果与缺口。
+> - `snapshots/PAIR_REGISTRY.md`：KVComm 论文 pair 与本地 snapshot root 的映射。
+> - `snapshots/manifest/experiments.csv` / `experiments.json`：由 `scripts/build_experiment_manifest.py` 从 `snapshots/**/log.log` 自动生成的机器可读 run 索引。
+>
+> 本文件继续作为叙事型总记录与历史结果汇总；新增实验优先更新 manifest / INDEX，再把关键结论写回本文。
+
 > 本文档由以下四份 Markdown 合并整理而成，并作为 `snapshots/` 下唯一保留的实验总文档：
 > `RESULTS.md`、`KVCOMM_PAPER_EXPERIMENT_PLAN.md`、`EXPERIMENT_RUN_STATUS_2026-06-25.md`、`EXPERIMENT_MAP_AND_TODO.md`。
 >

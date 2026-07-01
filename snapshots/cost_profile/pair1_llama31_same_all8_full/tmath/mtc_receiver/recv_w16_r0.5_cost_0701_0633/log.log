@@ -1,0 +1,13 @@
+2026-07-01 06:33:52,171 - root - INFO - Logging setup completed. Log file: snapshots/cost_profile/pair1_llama31_same_all8_full/tmath/mtc_receiver/recv_w16_r0.5_cost_0701_0633/log.log
+2026-07-01 06:33:52,172 - root - INFO - Log level: INFO
+2026-07-01 06:33:52,172 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/cost_profile/pair1_llama31_same_all8_full/tmath/mtc_receiver', model_A='/sharedspace/models/Llama-3.1-8B-Instruct', model_B='/sharedspace/models/Llama-3.1-8B-Instruct', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.5, merge_sink=4, merge_recent=8, merge_mode='evict', score_mode='receiver', recv_window=16, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=True, profile_limit=0, profile_warmup=5, test_task='tmath', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='recv_w16_r0.5_cost', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-01 06:33:52,172 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/cost_profile/pair1_llama31_same_all8_full/tmath/mtc_receiver/recv_w16_r0.5_cost_0701_0633
+2026-07-01 06:33:52,172 - root - INFO - Log level: INFO
+2026-07-01 06:33:52,267 - root - INFO - Number of GPU: 1
+2026-07-01 06:33:52,270 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-01 06:33:52,270 - root - INFO - CUDA_VISIBLE_DEVICES: 2
+2026-07-01 06:34:39,251 - root - INFO - CVCommunicator initialized
+2026-07-01 06:34:40,868 - root - INFO - [merge] mode=evict score=receiver budget=uniform layer compress: L=223 -> k=112 (r_eff=0.500, base_ratio=0.5, sink=4, recent=8)
+2026-07-01 07:33:18,221 - root - INFO - cost profile written to /home/xay/KVComm/snapshots/cost_profile/pair1_llama31_same_all8_full/tmath/mtc_receiver/recv_w16_r0.5_cost_0701_0633/cost_profile.jsonl
+2026-07-01 07:33:18,221 - root - INFO - cost summary written to /home/xay/KVComm/snapshots/cost_profile/pair1_llama31_same_all8_full/tmath/mtc_receiver/recv_w16_r0.5_cost_0701_0633/cost_summary.json
+2026-07-01 07:33:18,221 - root - INFO - communication cost profile result: 0.3511, measured=295, warmup=5
