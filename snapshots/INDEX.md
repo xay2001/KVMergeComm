@@ -7,6 +7,7 @@ manifest.
 ## Primary Files
 
 - `snapshots/RESULTS.md`: narrative experiment record and historical notes.
+- `snapshots/EXPERIMENT_TODO.md`: full paper/appendix/reviewer-risk experiment checklist.
 - `snapshots/PAIR_REGISTRY.md`: paper table / model pair / local path mapping.
 - `snapshots/manifest/experiments.csv`: machine-readable run manifest.
 - `snapshots/manifest/experiments.json`: JSON version of the same manifest.
@@ -26,7 +27,7 @@ Generated from `snapshots/**/log.log`.
 | Table 1 | #6 | `snapshots/table1_pair6_llama32_abliterated_deepseek3b/` | 72 | Complete for 8 datasets x 9 paper-table runs |
 | Table 1 | #7 | `snapshots/table1_pair7_qwen25_uncensored_bespoke/` | 64 | Missing most `tmath` paper-table runs |
 | Table 1 | #8 | `snapshots/table1_pair8_falcon3_ultraset_abliterated/` | 2 | Started only; current runs are not completed |
-| Table 8 | #1 | `snapshots/<dataset>/` | 506 | Main full sweep; `qasper` is sparse |
+| Table 8 | #1 | `snapshots/<dataset>/` | 511 | Main full sweep; paper-table ReKV/B-ReKV block is complete |
 | Table 8 | #2 | `snapshots/table8_pair2_llama32_same/` | 74 | 72 completed paper-table runs plus 2 incomplete duplicate coverage dirs |
 | Table 8 | #3 | `snapshots/table8_pair3_qwen25_7b_same/` | 72 | Complete for 8 datasets x 9 paper-table runs |
 
@@ -53,7 +54,7 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 
 | Pair | Dataset coverage | Notes |
 |---:|---|---|
-| #1 | Full legacy sweep under `snapshots/<dataset>/` | Includes KVComm, merge, evict, ReKV, budget, coverage, progressive, features |
+| #1 | Full legacy sweep under `snapshots/<dataset>/` | Includes KVComm, merge, evict, ReKV, budget, coverage, progressive, features; paper-table ReKV/B-ReKV block complete |
 | #2 | 8 datasets have 9 completed paper-table runs | Two extra incomplete coverage directories are indexed as `unknown` |
 | #3 | 8 datasets have 9 completed paper-table runs | Complete paper-table queue |
 
