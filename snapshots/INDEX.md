@@ -87,9 +87,10 @@ These experiments were added to support the paper framing beyond raw accuracy.
 |---|---|---|
 | Cost / efficiency | `snapshots/cost_profile/pair1_llama31_same_all8_full/cost_table.csv` | Done |
 | Coverage robustness / Pareto | `snapshots/coverage_robustness_summary.txt`, `snapshots/{musique,hotpotqa,multifieldqa_en}/coverage_pareto.png` | Done |
+| B-ReKV budget adaptivity | `snapshots/brekv_budget_distribution.png`, `snapshots/brekv_budget_distribution_summary.csv` | Done |
 | Receiver-initiated fairness | `snapshots/query_fairness/pair1_llama31_same/query_fairness.csv` | Done |
-| Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md` | Done |
+| Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md`, `cleaned/*_clean_top_tokens.png` | Done |
 
 Main remaining work is consolidation: choose final paper tables/figures, polish
-Pareto plots, and select 3-6 qualitative examples for the interpretability
-section.
+Pareto/budget-distribution plots, and decide which cleaned qualitative examples
+enter the final interpretability section.

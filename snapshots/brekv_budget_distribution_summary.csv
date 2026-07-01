@@ -1,0 +1,4 @@
+task,n,mean,std,min,p25,p50,p75,p90,max,frac_below_0.3,frac_above_0.5,path
+musique,500,0.279494,0.031111,0.170303,0.258915,0.278988,0.300652,0.318804,0.367641,0.742,0.0,snapshots/musique/coverage/cov_t0.95_s0.75_w8_0623_2305/per_sample.jsonl
+hotpotqa,500,0.306215,0.024041,0.215671,0.291542,0.30749,0.322833,0.336198,0.366994,0.378,0.0,snapshots/hotpotqa/coverage/cov_t0.95_s0.75_w8_0624_1419/per_sample.jsonl
+multifieldqa_en,150,0.197821,0.031793,0.129252,0.177363,0.199006,0.220377,0.238192,0.271621,1.0,0.0,snapshots/multifieldqa_en/coverage/cov_t0.95_s0.75_w8_0624_0013/per_sample.jsonl

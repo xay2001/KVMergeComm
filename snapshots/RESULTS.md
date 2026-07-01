@@ -510,6 +510,8 @@ snapshots/coverage_robustness_summary.txt
 snapshots/musique/coverage_pareto.png
 snapshots/hotpotqa/coverage_pareto.png
 snapshots/multifieldqa_en/coverage_pareto.png
+snapshots/brekv_budget_distribution.png
+snapshots/brekv_budget_distribution_summary.csv
 ```
 
 结论:
@@ -525,6 +527,11 @@ snapshots/multifieldqa_en/coverage_pareto.png
   - `scale=0.85`: acc `0.730`, budget `0.380`, saving `+9.5%`。
   - `scale=0.90`: acc `0.732`, budget `0.400`, saving `+6.9%`。
 - MultiFieldQA-en 的 fixed-r 曲线平坦/非单调,不强调插值 saving;但 Coverage `tau=0.90 scale=0.60 w8` 用 `0.099` 平均预算达到 fixed-r 最高 acc `0.540`,可作为低预算辅助观察。
+- B-ReKV 的 per-sample budget distribution 证明它不是换了一个固定 `r`:
+  - `musique`: mean `0.279`, p25/p50/p75=`0.259/0.279/0.301`, min/max=`0.170/0.368`。
+  - `hotpotqa`: mean `0.306`, p25/p50/p75=`0.292/0.307/0.323`, min/max=`0.216/0.367`。
+  - `multifieldqa_en`: mean `0.198`, p25/p50/p75=`0.177/0.199/0.220`, min/max=`0.129/0.272`,全部样本预算低于 fixed `r=0.3`。
+  - 这些分布在同一全局 `tau=0.95, scale=0.75, w=8` 下产生,可作为 Figure 3: **query-adaptive B-ReKV budget distribution**。
 
 #### 10.4.3 Receiver-initiated / query-aware fairness
 
@@ -561,6 +568,8 @@ scripts/run_interpretability_dump_gpu2_7.sh
 scripts/dump_interpretability_examples.py
 snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv
 snapshots/interpretability/pair1_llama31_same/interpretability_examples.md
+snapshots/interpretability/pair1_llama31_same/cleaned/clean_interpretability_examples.md
+snapshots/interpretability/pair1_llama31_same/cleaned/*_clean_top_tokens.png
 ```
 
 答案词 overlap(50 samples/task, top-20 tokens):
@@ -572,6 +581,14 @@ snapshots/interpretability/pair1_llama31_same/interpretability_examples.md
 | MultiFieldQA-en | **0.293** | 0.017 | 0.099 |
 
 结论:ReKV top tokens 更频繁覆盖答案词/证据相关词,支持 receiver attention mass 作为 interpretable receiver-evidence proxy。当前 overlap 是粗粒度 lexical proxy,后续可从 `interpretability_examples.md` 挑选 qualitative case 并画 heatmap。
+
+清洗后的 qualitative examples 已补齐,过滤 `<|...|>` special tokens、`system/user/assistant`、Instruction/Context/Date 等模板词后,每个任务保留 1 个可放论文的 case:
+
+- HotpotQA idx=35:`D1NZ` 问题中 ReKV clean top tokens 命中 `drifting`,Evict/Random recall 为 0。
+- MuSiQue idx=40:ReKV clean top tokens 命中 `000/nearly/Zurich/25`,answer-term recall `0.667`,Evict 仅 `0.167`。
+- MultiFieldQA-en idx=27:ReKV clean top tokens 命中 `wearable/sensors`,answer-term recall `1.0`,Evict/Random 为 0。
+
+这些 examples 对应 `hotpotqa_clean_top_tokens.png`,`musique_clean_top_tokens.png`,`multifieldqa_en_clean_top_tokens.png`,适合作为论文中 token bar / qualitative evidence figure 的候选。
 
 ---
 

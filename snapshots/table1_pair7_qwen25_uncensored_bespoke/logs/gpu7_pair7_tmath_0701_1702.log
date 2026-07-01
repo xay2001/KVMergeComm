@@ -1,0 +1,16 @@
+######## pair7 TMATH GPU7 START 2026-07-01 17:02:14 ########
+MODEL_A=/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored
+MODEL_B=/sharedspace/models/Bespoke-Stratos-7B
+ROOT=snapshots/table1_pair7_qwen25_uncensored_bespoke
+TASK=tmath
+SKIP_EXISTING=1
+==== [skip] tmath ReKV w8 r=0.3 already has per_sample.jsonl ====
+==== [skip] tmath ReKV w8 r=0.5 already has per_sample.jsonl ====
+==== [skip] tmath ReKV w8 r=0.7 already has per_sample.jsonl ====
+==== [skip] tmath ReKV w16 r=0.3 already has per_sample.jsonl ====
+==== [skip] tmath ReKV w16 r=0.5 already has per_sample.jsonl ====
+==== [skip] tmath ReKV w16 r=0.7 already has per_sample.jsonl ====
+==== [skip] tmath B-ReKV w8 tau=0.95 scale=0.75 already has per_sample.jsonl ====
+==== [skip] tmath B-ReKV w8 tau=0.95 scale=0.85 already has per_sample.jsonl ====
+==== [skip] tmath B-ReKV w16 tau=0.95 scale=0.90 already has per_sample.jsonl ====
+######## pair7 TMATH GPU7 DONE 2026-07-01 17:02:14 ########
