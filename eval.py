@@ -23,6 +23,29 @@ def _current_run_dir():
             return os.path.dirname(base)
     return None
 
+
+def _cuda_available_for_model(model):
+    try:
+        return next(model.parameters()).is_cuda
+    except StopIteration:
+        return torch.cuda.is_available()
+
+
+def _sync_if_cuda(model):
+    if _cuda_available_for_model(model):
+        torch.cuda.synchronize()
+
+
+def _peak_memory_gb(model):
+    if not _cuda_available_for_model(model):
+        return None
+    return torch.cuda.max_memory_allocated() / (1024 ** 3)
+
+
+def _reset_peak_memory(model):
+    if _cuda_available_for_model(model):
+        torch.cuda.reset_peak_memory_stats()
+
 QA_INSTRUCTION = "Directly answer the question based on the context passage, no explanation is needed."
 MATH_INSTRUCTION = "Answer the math problem step by step."
 CODE_INSTRUCTION = "Complete ONLY THE NEXT LINE of the code snippet based on the context."
@@ -260,6 +283,71 @@ class CommunicationEvaluator(SkylineEvaluator):
         response = self.get_response(output, context_length)
         return response
 
+    def inference_with_cost(self, model, cv, item):
+        """Run one communication sample and return response plus timing/payload stats.
+
+        This path is only used by --profile_cost. It mirrors inference() but
+        synchronizes CUDA around coarse phases so the cost table can separate the
+        receiver-aware scoring overhead from regular generation.
+        """
+        _reset_peak_memory(model)
+        _sync_if_cuda(model)
+        t0 = time.perf_counter()
+        input_ids_A, input_ids_B = self.prepare_input_ids(item, cv.A, cv.B)
+        _sync_if_cuda(model)
+        t_prepare = time.perf_counter() - t0
+
+        t0 = time.perf_counter()
+        out_A = model(
+            input_ids=input_ids_A,
+            use_cache=True,
+            return_dict=True,
+        )
+        _sync_if_cuda(model)
+        t_a_prefill = time.perf_counter() - t0
+        out_A_past_key_values = out_A.past_key_values
+
+        t_receiver_score = 0.0
+        if getattr(cv, "score_mode", "value_norm") == "receiver":
+            t0 = time.perf_counter()
+            cv.compute_receiver_importance(input_ids_B, out_A_past_key_values)
+            _sync_if_cuda(model)
+            t_receiver_score = time.perf_counter() - t0
+
+        t0 = time.perf_counter()
+        output = cv.generate(
+            input_ids_B,
+            attention_mask=torch.ones_like(input_ids_B),
+            out_A_past_key_values=out_A_past_key_values,
+            **self.generate_args
+        )[0]
+        _sync_if_cuda(model)
+        t_generate_total = time.perf_counter() - t0
+
+        context_length = input_ids_B.shape[-1]
+        response = self.get_response(output, context_length)
+        output_tokens = int(max(output.shape[-1] - context_length, 0))
+        kv_cost = getattr(cv, "last_kv_cost", None) or {}
+        row = {
+            "ctx_tokens_A": int(input_ids_A.shape[-1]),
+            "query_tokens_B": int(input_ids_B.shape[-1]),
+            "output_tokens": output_tokens,
+            "t_prepare_inputs": round(float(t_prepare), 6),
+            "t_a_prefill": round(float(t_a_prefill), 6),
+            "t_receiver_score": round(float(t_receiver_score), 6),
+            "t_generate_total": round(float(t_generate_total), 6),
+            "t_total": round(float(t_prepare + t_a_prefill + t_receiver_score + t_generate_total), 6),
+            "peak_mem_gb": round(float(_peak_memory_gb(model)), 6) if _peak_memory_gb(model) is not None else None,
+            "budget": round(float(getattr(cv, "last_kept_ratio")), 6) if getattr(cv, "last_kept_ratio", None) is not None else None,
+            "query_budget": round(float(getattr(cv, "last_query_budget")), 6) if getattr(cv, "last_query_budget", None) is not None else None,
+        }
+        for key, value in kv_cost.items():
+            if isinstance(value, float):
+                row[key] = round(value, 6)
+            else:
+                row[key] = value
+        return response, row
+
     def _test(self, model_A, cv, limit=None, do_calc_layer_importance=False):
         progress_bar = tqdm(self.evaluator, desc=f"{self.name} result: 0.0000", disable=do_calc_layer_importance)
 
@@ -341,6 +429,103 @@ class CommunicationEvaluator(SkylineEvaluator):
             wandb.log({f"{self.name}_result": result, f"{self.name}_time": time_used})
         logging.info(f"{self.name} result: {result:.4f}, {self.name} time: {time_used:.2f}s")
         return result
+
+    @torch.no_grad()
+    def test_cost_profile(self, model_A, cv, limit=50, warmup=5):
+        measured = []
+        warmup = int(max(warmup or 0, 0))
+        limit = int(max(limit or 0, 0))
+        total_needed = None if limit <= 0 else warmup + limit
+        pbar = tqdm(self.evaluator, desc=f"{self.name} cost-profile")
+        for i, item in enumerate(pbar):
+            if total_needed is not None and i >= total_needed:
+                break
+            response, row = self.inference_with_cost(model_A, cv, item)
+            if i < warmup:
+                pbar.set_description(f"{self.name} cost-profile warmup {i + 1}/{warmup}")
+                continue
+
+            prev_total = self.evaluator.f1_total
+            self.evaluator.evaluate_item(item, response)
+            score = self.evaluator.f1_total - prev_total
+            sid = item.get("_id", item.get("id", None)) if hasattr(item, "get") else None
+            row.update({
+                "idx": i - warmup,
+                "source_idx": i,
+                "id": sid,
+                "score": round(float(score), 6),
+            })
+            measured.append(row)
+            target = "all" if limit <= 0 else str(limit)
+            pbar.set_description(f"{self.name} cost-profile [{len(measured)}/{target}]")
+
+        self._dump_cost_profile(measured, cv, warmup)
+        result = self.evaluator.get_result()
+        logging.info(f"{self.name} cost profile result: {result:.4f}, measured={len(measured)}, warmup={warmup}")
+        return result
+
+    def _dump_cost_profile(self, rows, cv, warmup):
+        run_dir = _current_run_dir()
+        if run_dir is None:
+            return
+        meta = {
+            "dataset": getattr(self.evaluator, "name", None),
+            "score_mode": getattr(cv, "score_mode", None),
+            "recv_window": getattr(cv, "recv_window", None),
+            "merge": getattr(cv, "merge", None),
+            "merge_mode": getattr(cv, "merge_mode", None),
+            "merge_ratio": getattr(cv, "merge_ratio", None),
+            "budget_mode": getattr(cv, "budget_mode", None),
+            "budget_min": getattr(cv, "budget_min", None),
+            "budget_max": getattr(cv, "budget_max", None),
+            "coverage_tau": getattr(cv, "coverage_tau", None),
+            "coverage_scale": getattr(cv, "coverage_scale", None),
+            "warmup": warmup,
+            "n": len(rows),
+        }
+        profile_path = os.path.join(run_dir, "cost_profile.jsonl")
+        summary_path = os.path.join(run_dir, "cost_summary.json")
+        try:
+            with open(profile_path, "w") as f:
+                f.write(json.dumps({"_meta": meta}) + "\n")
+                for row in rows:
+                    f.write(json.dumps(row) + "\n")
+            summary = self._summarize_cost_profile(rows, meta)
+            with open(summary_path, "w") as f:
+                json.dump(summary, f, indent=2)
+                f.write("\n")
+            logging.info(f"cost profile written to {profile_path}")
+            logging.info(f"cost summary written to {summary_path}")
+        except OSError as e:
+            logging.warning(f"failed to write cost profile: {e}")
+
+    def _summarize_cost_profile(self, rows, meta):
+        def mean(key):
+            vals = [float(r[key]) for r in rows if r.get(key) is not None]
+            return round(sum(vals) / len(vals), 6) if vals else None
+
+        keys = [
+            "score",
+            "budget",
+            "query_budget",
+            "kv_token_ratio",
+            "kv_byte_ratio",
+            "kv_tokens_sent",
+            "kv_bytes_sent",
+            "ctx_tokens_A",
+            "query_tokens_B",
+            "output_tokens",
+            "t_prepare_inputs",
+            "t_a_prefill",
+            "t_receiver_score",
+            "t_generate_total",
+            "t_total",
+            "peak_mem_gb",
+        ]
+        summary = {"_meta": meta}
+        for key in keys:
+            summary[f"{key}_mean"] = mean(key)
+        return summary
 
     # ---------- Step 2b: online progressive communication ----------
 

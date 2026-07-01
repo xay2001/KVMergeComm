@@ -77,6 +77,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.layer_budget = {}        # {layer_idx: r_l}, recomputed per query
         self.last_query_budget = None # B(Q) for the most recent query
         self.last_kept_ratio = None   # actual transmitted KV fraction for the most recent query
+        self.last_kv_cost = None      # payload stats from the most recent cache preparation
         self._merge_logged = False
         for p in self.A.parameters(): p.requires_grad = False
         for p in self.B.parameters(): p.requires_grad = False
@@ -139,8 +140,15 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         assert len(key_cache) == len(self.layer_map), "key_cache and layer_map must have the same length"
         past_key_values_new = DynamicCache()
         kept_tokens, total_tokens = 0, 0
+        kept_kv_elements, total_kv_elements = 0, 0
+        kept_kv_bytes, total_kv_bytes = 0, 0
         for i in range(len(key_cache)): # i is the layer index of model A
             total_tokens += key_cache[i].shape[-2]
+            total_kv_elements += key_cache[i].numel() + value_cache[i].numel()
+            total_kv_bytes += (
+                key_cache[i].numel() * key_cache[i].element_size()
+                + value_cache[i].numel() * value_cache[i].element_size()
+            )
             if self.merge:
                 # Merge-then-Communicate: keep all layers, compress tokens within each
                 # layer by merging (instead of dropping whole layers). Layer 0 is kept
@@ -159,7 +167,23 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                 value_cache_i = value_cache[i][:, :, :1, :]
                 past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
             kept_tokens += key_cache_i.shape[-2]
+            kept_kv_elements += key_cache_i.numel() + value_cache_i.numel()
+            kept_kv_bytes += (
+                key_cache_i.numel() * key_cache_i.element_size()
+                + value_cache_i.numel() * value_cache_i.element_size()
+            )
         self.last_kept_ratio = kept_tokens / total_tokens if total_tokens else None
+        self.last_kv_cost = {
+            "kv_tokens_sent": int(kept_tokens),
+            "kv_tokens_total": int(total_tokens),
+            "kv_token_ratio": float(kept_tokens / total_tokens) if total_tokens else None,
+            "kv_elements_sent": int(kept_kv_elements),
+            "kv_elements_total": int(total_kv_elements),
+            "kv_element_ratio": float(kept_kv_elements / total_kv_elements) if total_kv_elements else None,
+            "kv_bytes_sent": int(kept_kv_bytes),
+            "kv_bytes_total": int(total_kv_bytes),
+            "kv_byte_ratio": float(kept_kv_bytes / total_kv_bytes) if total_kv_bytes else None,
+        }
         return past_key_values_new
 
     @torch.no_grad()

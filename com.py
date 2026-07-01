@@ -60,6 +60,11 @@ class AlignConfig:
     prog_ladder: str = "0.1,0.2,0.3,0.5"  # ascending budget rungs for the progressive sweep
     # 牌2: single-shot budget-prediction feature dump (Pass-1 only, no generation)
     dump_pass1_features: bool = False
+    # Cost profiling: run a small controlled subset and dump timing/payload stats
+    # next to the run log instead of the normal per-sample eval file.
+    profile_cost: bool = False
+    profile_limit: int = 50
+    profile_warmup: int = 5
     # Test dataset configuration
     test_task: str = "tipsheets"
     task_name: str = ""
@@ -166,6 +171,8 @@ def main(cfg: AlignConfig):
                 ladder = [float(x) for x in cfg.prog_ladder.split(",")]
                 communication_evaluator.test_progressive(model_A, cv, ladder, limit=cfg.limit)
                 results = None
+            elif cfg.profile_cost:
+                results = communication_evaluator.test_cost_profile(model_A, cv, limit=cfg.profile_limit, warmup=cfg.profile_warmup)
             else:
                 results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
         else:
@@ -183,7 +190,10 @@ def main(cfg: AlignConfig):
                 layer_ranking = get_layer_ranking(communication_evaluator.layer_importance_total, cfg)
             if not cfg.do_layer_curve:
                 cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False, shift_back=cfg.shift_back).to(cfg.device)
-                results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+                if cfg.profile_cost:
+                    results = communication_evaluator.test_cost_profile(model_A, cv, limit=cfg.profile_limit, warmup=cfg.profile_warmup)
+                else:
+                    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
             else:
                 results = []
                 for i in range(len(layer_ranking)):
