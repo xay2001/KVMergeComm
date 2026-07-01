@@ -8,3 +8,6 @@
 2026-07-01 09:42:24,850 - root - INFO - CUDA_VISIBLE_DEVICES: 2
 2026-07-01 09:43:02,638 - root - INFO - CVCommunicator initialized
 2026-07-01 09:43:03,702 - root - INFO - [merge] mode=evict score=receiver budget=uniform layer compress: L=223 -> k=156 (r_eff=0.700, base_ratio=0.7, sink=4, recent=8)
+2026-07-01 10:41:36,187 - root - INFO - cost profile written to /home/xay/KVComm/snapshots/cost_profile/pair1_llama31_same_all8_full/tmath/mtc_receiver/recv_w16_r0.7_cost_0701_0942/cost_profile.jsonl
+2026-07-01 10:41:36,188 - root - INFO - cost summary written to /home/xay/KVComm/snapshots/cost_profile/pair1_llama31_same_all8_full/tmath/mtc_receiver/recv_w16_r0.7_cost_0701_0942/cost_summary.json
+2026-07-01 10:41:36,188 - root - INFO - communication cost profile result: 0.3560, measured=295, warmup=5

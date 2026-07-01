@@ -489,6 +489,7 @@ Coverage-BRASC 在线结果:
 | 步骤 | 内容 | 机器成本 | 价值 | 状态 |
 |---|---|---|---|---|
 | **Coverage-BRASC 收尾(当前主攻)** | MuSiQue `w8 tau=0.95` 细扫已完成;下一步补 `multifieldqa_en`,画 accuracy–budget 帕累托图,整理 LaTeX 表 | 小-中 | **Budget-aware 正向抓手** | 进行中 |
+| Receiver-Initiated KV Communication 协议化 | 把 RASC 从"query attention trick"升级为 receiver-initiated / query-aware KV communication setting;优先补 `recv_window={4,8,16,32,all}` sketch-size ablation、query-sketch overhead accounting、RASC vs Evict/Random-token | 小-中 | **核心叙事升级 / 审稿风险补强** | 待开 |
 | Head-wise Coverage-BRASC | 借鉴 Ada-KV:每个 head 独立 coverage,避免 head 平均抹平检索头差异 | 中 | 放大创新点 | 待开 |
 | 牌 1 | **Cross-model RASC**:A、B 异构(不同权重 / tokenizer / 层数)时如何对齐打分。需排查 `compute_receiver_importance` 的同深度假设、跨 tokenizer 的 token 对齐、层数不等时的映射 | 中(GPU) | 真实 MAS 扩展 | 待开 |
 | Step 3 | 受控延迟实验:单样本分别计时 A-prefill / 打分 / B-prefill / 生成,分布式下测真实通信收益 | 小 | rebuttal | 待开 |
@@ -503,6 +504,7 @@ Coverage-BRASC 在线结果:
 - **Predictive budget 已证伪**(§6–§9):前提虽成立(headroom 真实),但开环熵/层分配、在线多轮、单发 Pass-1 预测都无法稳定泛化。Coverage-BRASC(§10)说明可行路线应是 receiver-evidence fidelity/coverage,而不是直接预测 query difficulty。
 - **Coverage-BRASC 仍需更多任务验证**:当前强正结果主要来自 MuSiQue,HotpotQA 为中等正收益,2WikiMQA 因 fixed-r 非单调只能辅助。需补 MultiFieldQA/QASPER 与更多窗口/阈值。
 - **渐进上界含非单调噪声红利**:§7 的精度反超部分来自 oracle 挑到"低预算偶然解出"的样本,真实触发器(§8)无法复现。
+- **Problem setting 需讲清楚**:RASC 不是在原 KVComm 的完全 query-blind sender 设定下声称同设定取胜,而是研究更实际的 receiver-initiated / query-aware communication。接收方发送轻量 query sketch 指导 context holder 选择 KV,应把 sketch 开销计入通信量,并用 Evict/Random-token/sketch-size 消融证明 receiver-aware 信号本身有效。
 
 ## 附 A:数据集目录结构
 
@@ -1142,7 +1144,43 @@ M_r = /sharedspace/models/Llama-3.1-8B-Instruct
 - [ ] 记录 peak memory。
 - [ ] 画 accuracy-budget-time/memory 图。
 
-### TODO 6: Appendix expansion
+### TODO 6: Receiver-Initiated KV Communication / reviewer-risk ablations
+
+目的:把 RASC 从一个"query attention trick"升级为完整的 receiver-initiated KV communication protocol,避免被误解为在 KVComm query-blind sender 设定下不公平对比。
+
+- [ ] Problem setting:定义 **Receiver-Initiated KV Communication**: receiver sends a lightweight query sketch to the context holder; sender returns query-relevant KV, not an answer。
+- [ ] RAG/Agent 对齐:说明该 setting 类似 query-aware retrieval / memory server,区别是返回 selected KV 而不是 text chunks。
+- [ ] Query sketch size ablation:优先跑 `recv_window={4,8,16,32,all}`;报告 accuracy、A→B selected KV bytes、B→A sketch token/bytes、total communication。
+- [ ] Communication accounting:把 B→A 的 query sketch token/bytes 计入总通信量,与 A→B selected KV bytes 一起报;证明 sketch overhead 相对 context KV 很小。
+- [ ] RASC vs Evict:二者都是 token-level evict-only,区别只有 receiver query signal,用于证明 query-aware selection 有效。
+- [ ] RASC vs Random-token:证明不是任意 token 子集都能工作。
+- [ ] 可选 Sender-only baseline:如实现成本低,补 sender-only/value-norm/sender-attention 与 receiver-query attention 对照。
+- [ ] Evidence sparsity analysis:证明证据主要稀疏分布在 token 上而非 layer 上,可复用 attention concentration / evidence overlap / top-token case study。
+- [ ] "Why not let sender answer?" 写入 discussion:sender 是 context holder / memory server; receiver 是 user-facing reasoning model,拥有 instruction-following、tool-use、safety 或最终回答职责。
+- [ ] 论文措辞:避免说 "same setting as KVComm";改写为 "we extend KVComm from query-agnostic layer-wise KV sharing to receiver-aware token-wise KV communication"。
+
+优先数据集:
+
+```text
+hotpotqa, musique, multifieldqa_en
+```
+
+优先模型:
+
+```text
+pair #1 Llama-3.1 same-model first; then pair #6/#7 representative fine-tuned pairs if needed.
+```
+
+最小执行顺序:
+
+```text
+1. recv_window={4,8,16,32,all} on hotpotqa/musique/multifieldqa_en.
+2. Query sketch overhead accounting table.
+3. RASC vs Evict vs Random-token table.
+4. Evidence concentration / top-token examples.
+```
+
+### TODO 7: Appendix expansion
 
 - [ ] 对 same-model #2/#3/#4 跑 RASC。
 - [ ] 对 fine-tuned #5/#9 跑 RASC。
@@ -1508,6 +1546,34 @@ M_r = /sharedspace/models/DeepSeek-R1-Distill-Llama-3B
 结论:pair #6 是对齐 KVComm 主文 Table 1 的关键正结果。RASC 在 `hotpotqa/qasper/musique/twowikimqa` 超过 KVComm,`countries` 打平略高;`tipsheets/tmath` 低于 KVComm。Coverage-BRASC 虽然多数任务 accuracy 略低于 best fixed RASC,但平均预算只有约 0.22-0.37,在 `qasper/musique/multifieldqa_en` 上给出 48%-64% 的等精度预算节省信号。
 
 带 `*` 的 TMATH saving 只作参考,因为该任务原指标是 ROUGE-L Recall,`score >= 0.5` 的二值化不如 F1 QA 任务稳定。
+
+### 2026-07-01 补充:Table 1 pair #7 TMATH fixed RASC(已完成)
+
+模型对:
+
+```text
+M_s = /sharedspace/models/Qwen2.5-7B-Instruct-Uncensored
+M_r = /sharedspace/models/Bespoke-Stratos-7B
+```
+
+日志目录:`snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/mtc_receiver/`。状态:固定 RASC 的 `w8/w16 × r=0.3/0.5/0.7` 六个点均已完成,每个 run 写出 `per_sample.jsonl`,样本数 301。
+
+| Dataset | RASC-w8 r=.3/.5/.7 | RASC-w16 r=.3/.5/.7 |
+|---|---|---|
+| `tmath` | 0.3274 / 0.3301 / 0.3342 | 0.3311 / 0.3356 / 0.3309 |
+
+运行时间:
+
+| Run | communication time |
+|---|---:|
+| `recv_w8_r0.3_0630_1505` | 5138.49s |
+| `recv_w8_r0.5_0630_1632` | 5017.60s |
+| `recv_w8_r0.7_0630_1756` | 5826.77s |
+| `recv_w16_r0.3_0630_1934` | 4984.52s |
+| `recv_w16_r0.5_0630_2058` | 4806.94s |
+| `recv_w16_r0.7_0630_2219` | 5957.69s |
+
+初步观察:`w16 r=0.5` 是当前 `pair #7 / tmath` 固定 RASC 最优点(0.3356),略高于 `w8 r=0.7`(0.3342);整体曲线很平,预算从 0.3 增到 0.7 没有带来稳定收益。
 
 ---
 

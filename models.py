@@ -58,7 +58,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.merge_sink = merge_sink
         self.merge_recent = merge_recent
         self.merge_mode = merge_mode  # "merge" (normalized value merge) or "evict" (drop only)
-        self.score_mode = score_mode  # "value_norm" (query-agnostic) or "receiver" (B's question attention)
+        self.score_mode = score_mode  # "value_norm", "random", or "receiver" (B's question attention)
         self.recv_window = recv_window  # 0 = all question tokens; >0 = only last N (SnapKV-style observation window)
         self.token_importance = None  # filled per-sample by compute_receiver_importance when score_mode=="receiver"
         # budget-aware allocation (Step 1): how the per-query / per-layer keep ratio is set.
@@ -119,6 +119,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             old = block.self_attn
             device = next(old.parameters()).device
             dtype  = next(old.parameters()).dtype
+            if type(old) in (Qwen2AttentionTracer, LlamaAttentionTracer, Gemma3AttentionTracer):
+                continue
             if type(old) is Qwen2Attention:
                 new = Qwen2AttentionTracer(old.config, old.layer_idx).to(device, dtype)
                 new.load_state_dict(old.state_dict(), strict=True)
@@ -210,6 +212,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         ):
             # receiver-aware: how much B's question attends to each A-context token
             imp = self.token_importance[layer_idx].to(K.device).float().clone()  # [L]
+        elif self.score_mode == "random":
+            # Random-token baseline for selection ablations.
+            imp = torch.rand(L, device=K.device, dtype=torch.float32)
         else:
             # query-agnostic proxy: value vector L2-norm
             imp = V.float().norm(dim=-1).mean(dim=1)[0]  # [L]

@@ -78,3 +78,7 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 - Pair #7 needs `tmath` completion.
 - Pair #8 needs model path/startup issue resolution before continuing the queue.
 - Pair #1 `qasper` remains sparse relative to other datasets.
+- Add Receiver-Initiated KV Communication reviewer-risk experiments:
+  `recv_window={4,8,16,32,all}` sketch-size ablation, query-sketch
+  communication accounting, RASC vs Evict/Random-token, and evidence
+  concentration analysis on `hotpotqa`, `musique`, `multifieldqa_en`.
