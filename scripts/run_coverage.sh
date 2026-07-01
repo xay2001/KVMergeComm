@@ -1,5 +1,5 @@
 #!/bin/bash
-# Coverage-BRASC (Stage 1): training-free receiver-attention coverage budget.
+# B-ReKV (Stage 1): training-free receiver-attention coverage budget.
 #
 # It keeps the minimum number of receiver-aware top tokens whose cumulative
 # attention mass reaches coverage_tau, then scales/clamps the per-layer ratio.

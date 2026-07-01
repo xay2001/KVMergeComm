@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a machine-readable manifest for KVComm/RASC experiment runs.
+"""Build a machine-readable manifest for KVComm/ReKV experiment runs.
 
 The script is intentionally conservative: it only reads existing run artifacts
 under snapshots/ and writes an index under snapshots/manifest/.
@@ -195,11 +195,11 @@ def infer_method(run_dir: Path, cfg: dict[str, Any]) -> dict[str, Any]:
     budget_mode = cfg.get("budget_mode")
 
     if parent == "mtc_receiver" or "recv_w" in name:
-        method = "RASC"
+        method = "ReKV"
         if name.startswith("probe_"):
-            method = "RASC-probe"
+            method = "ReKV-probe"
     elif parent == "coverage" or name.startswith("cov_t"):
-        method = "Coverage-BRASC"
+        method = "B-ReKV"
     elif parent == "kvcomm" or name.startswith("kvcomm_top"):
         method = "KVComm"
     elif parent == "mtc_merge":
@@ -233,8 +233,8 @@ def infer_method(run_dir: Path, cfg: dict[str, Any]) -> dict[str, Any]:
         "window": window,
         "ratio_or_budget": ratio,
         "budget_mode": budget_mode,
-        "coverage_tau": coverage_tau if method == "Coverage-BRASC" else None,
-        "coverage_scale": coverage_scale if method == "Coverage-BRASC" else None,
+        "coverage_tau": coverage_tau if method == "B-ReKV" else None,
+        "coverage_scale": coverage_scale if method == "B-ReKV" else None,
     }
 
 

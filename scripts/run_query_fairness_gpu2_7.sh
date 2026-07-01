@@ -6,7 +6,7 @@ set -euo pipefail
 # Runs, per dataset and ratio:
 #   - Evict / ValueNorm: token-level, query-agnostic
 #   - Random-token: token-level random baseline
-#   - RASC: receiver-aware with recv_window={4,8,16,32,all}
+#   - ReKV: receiver-aware with recv_window={4,8,16,32,all}
 #
 # Default tasks:
 #   GPU2: hotpotqa
@@ -53,7 +53,7 @@ run_one() {
       run_name="random_r${ratio}"
       extra_args=(--merge --merge_mode evict --score_mode random --recv_window 0)
       ;;
-    rasc)
+    rekv)
       out="${ROOT}/${task}/mtc_receiver"
       run_name="recv_w${win}_r${ratio}"
       extra_args=(--merge --merge_mode evict --score_mode receiver --recv_window "${win}")
@@ -86,7 +86,7 @@ run_task() {
     run_one "${task}" "${gpu}" evict "${ratio}"
     run_one "${task}" "${gpu}" random "${ratio}"
     for win in ${WINDOWS}; do
-      run_one "${task}" "${gpu}" rasc "${ratio}" "${win}"
+      run_one "${task}" "${gpu}" rekv "${ratio}" "${win}"
     done
   done
 }

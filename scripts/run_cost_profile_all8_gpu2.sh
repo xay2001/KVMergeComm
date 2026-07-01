@@ -5,8 +5,8 @@ set -euo pipefail
 #
 # This runs all samples (LIMIT=0) for:
 #   - KVComm top={0.3,0.5,0.7}
-#   - RASC w8/w16 r={0.3,0.5,0.7}
-#   - Coverage-BRASC t0.95_s0.75_w8 and t0.95_s0.85_w8
+#   - ReKV w8/w16 r={0.3,0.5,0.7}
+#   - B-ReKV t0.95_s0.75_w8 and t0.95_s0.85_w8
 #
 # Output root:
 #   snapshots/cost_profile/pair1_llama31_same_all8_full/

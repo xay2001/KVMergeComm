@@ -7,7 +7,7 @@ cd /home/xay/KVComm || exit 1
 #   M_s = meta-llama/Llama-3.2-3B-Instruct
 #   M_r = meta-llama/Llama-3.2-3B-Instruct
 #
-# This script only runs our methods (RASC / Coverage-BRASC). KVComm paper
+# This script only runs our methods (ReKV / B-ReKV). KVComm paper
 # baselines are taken from the paper table.
 
 MODEL=${MODEL:-/sharedspace/models/Llama-3.2-3B-Instruct}
@@ -31,7 +31,7 @@ print("transformers", m.version("transformers"))
 print("huggingface-hub", m.version("huggingface-hub"))
 PY
 
-run_rasc() {
+run_rekv() {
   local task=$1
   local gpu=$2
   local win=$3
@@ -71,18 +71,18 @@ run_task() {
 
   for win in 8 16; do
     for ratio in 0.3 0.5 0.7; do
-      echo "==== [pair2 llama32_same GPU${gpu}] ${task} RASC w${win} r=${ratio} $(date '+%F %T') ===="
-      run_rasc "${task}" "${gpu}" "${win}" "${ratio}"
+      echo "==== [pair2 llama32_same GPU${gpu}] ${task} ReKV w${win} r=${ratio} $(date '+%F %T') ===="
+      run_rekv "${task}" "${gpu}" "${win}" "${ratio}"
     done
   done
 
-  echo "==== [pair2 llama32_same GPU${gpu}] ${task} Coverage w8 tau=0.95 scale=0.75 $(date '+%F %T') ===="
+  echo "==== [pair2 llama32_same GPU${gpu}] ${task} B-ReKV w8 tau=0.95 scale=0.75 $(date '+%F %T') ===="
   run_cov "${task}" "${gpu}" 8 0.95 0.75
 
-  echo "==== [pair2 llama32_same GPU${gpu}] ${task} Coverage w8 tau=0.95 scale=0.85 $(date '+%F %T') ===="
+  echo "==== [pair2 llama32_same GPU${gpu}] ${task} B-ReKV w8 tau=0.95 scale=0.85 $(date '+%F %T') ===="
   run_cov "${task}" "${gpu}" 8 0.95 0.85
 
-  echo "==== [pair2 llama32_same GPU${gpu}] ${task} Coverage w16 tau=0.95 scale=0.90 $(date '+%F %T') ===="
+  echo "==== [pair2 llama32_same GPU${gpu}] ${task} B-ReKV w16 tau=0.95 scale=0.90 $(date '+%F %T') ===="
   run_cov "${task}" "${gpu}" 16 0.95 0.90
 }
 

@@ -44,7 +44,7 @@ run_kvcomm() {
     --run_name "kvcomm_top${top}_cost"
 }
 
-run_rasc() {
+run_rekv() {
   local task=$1
   local win=$2
   local ratio=$3
@@ -72,17 +72,17 @@ for task in ${TASKS}; do
     echo "==== [cost GPU${GPU}] ${task} KVComm top=${ratio} ===="
     run_kvcomm "${task}" "${ratio}"
 
-    echo "==== [cost GPU${GPU}] ${task} RASC w8 r=${ratio} ===="
-    run_rasc "${task}" 8 "${ratio}"
+    echo "==== [cost GPU${GPU}] ${task} ReKV w8 r=${ratio} ===="
+    run_rekv "${task}" 8 "${ratio}"
 
-    echo "==== [cost GPU${GPU}] ${task} RASC w16 r=${ratio} ===="
-    run_rasc "${task}" 16 "${ratio}"
+    echo "==== [cost GPU${GPU}] ${task} ReKV w16 r=${ratio} ===="
+    run_rekv "${task}" 16 "${ratio}"
   done
 
-  echo "==== [cost GPU${GPU}] ${task} Coverage w8 tau=0.95 scale=0.75 ===="
+  echo "==== [cost GPU${GPU}] ${task} B-ReKV w8 tau=0.95 scale=0.75 ===="
   run_coverage "${task}" 8 0.95 0.75
 
-  echo "==== [cost GPU${GPU}] ${task} Coverage w8 tau=0.95 scale=0.85 ===="
+  echo "==== [cost GPU${GPU}] ${task} B-ReKV w8 tau=0.95 scale=0.85 ===="
   run_coverage "${task}" 8 0.95 0.85
 done
 

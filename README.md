@@ -208,7 +208,7 @@ python com.py \
 # KVMergeComm
 
 Token 级 KV 压缩通信：不再像 KVComm 那样丢弃整层，而是保留全部层、在每层内选择重要的
-**token**。接收方感知打分（RASC）按*接收方*模型的问题对*发送方*模型 KV 的注意力来选 token。
+**token**。接收方感知打分（ReKV）按*接收方*模型的问题对*发送方*模型 KV 的注意力来选 token。
 
 ## 新增参数
 
@@ -222,7 +222,7 @@ Token 级 KV 压缩通信：不再像 KVComm 那样丢弃整层，而是保留�
 | `--merge_sink` | 整数 | 始终保留的前 N 个 token（attention sink） |
 | `--merge_recent` | 整数 | 始终保留的后 N 个 token（recency） |
 
-示例（RASC，接收方感知，窗口 8，每层保留 30% token）：
+示例（ReKV，接收方感知，窗口 8，每层保留 30% token）：
 ```bash
 CUDA_VISIBLE_DEVICES=0 python com.py \
     --test_task hotpotqa --do_test \
@@ -242,7 +242,7 @@ CUDA_VISIBLE_DEVICES=0 python com.py \
 | `run_baseline.sh` | KVComm 层丢弃（top 0.3/0.5/0.7）+ Full 上界 |
 | `run_merge.sh` | 归一化 value 合并扫描（r=0.1..0.9） |
 | `run_evict.sh` | token 选择、只丢弃、value-norm 打分（r=0.1..0.9） |
-| `run_receiver.sh` | RASC：接收方感知 + 观测窗口（`WIN=8/16`） |
+| `run_receiver.sh` | ReKV：接收方感知 + 观测窗口（`WIN=8/16`） |
 | `run_dataset.sh` | 对单个数据集跑完整套方法 |
 
 ### 第一步 —— 下载数据集（一次性）

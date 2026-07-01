@@ -1,0 +1,4 @@
+task,n,rekv_answer_recall,evict_answer_recall,random_answer_recall
+hotpotqa,50,0.32466668,0.1330769,0.14706834000000002
+multifieldqa_en,50,0.29325558,0.01673086,0.09862728000000001
+musique,50,0.35307144,0.1420476,0.14338094

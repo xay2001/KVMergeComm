@@ -62,7 +62,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.recv_window = recv_window  # 0 = all question tokens; >0 = only last N (SnapKV-style observation window)
         self.token_importance = None  # filled per-sample by compute_receiver_importance when score_mode=="receiver"
         # budget-aware allocation (Step 1): how the per-query / per-layer keep ratio is set.
-        #   uniform      -> every layer keeps self.merge_ratio (original RASC behaviour)
+        #   uniform      -> every layer keeps self.merge_ratio (original ReKV behaviour)
         #   query        -> per-query total budget B(Q) from importance entropy, uniform across layers
         #   layer        -> fixed total budget self.merge_ratio, softmax-allocated across layers by importance
         #   query+layer  -> both: B(Q) total, softmax-allocated across layers

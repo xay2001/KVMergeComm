@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Plot fixed-r RASC vs Coverage-BRASC accuracy-budget curve.
+"""Plot fixed-r ReKV vs B-ReKV accuracy-budget curve.
 
-Default is MuSiQue because it is the clearest Coverage-BRASC result.
+Default is MuSiQue because it is the clearest B-ReKV result.
 
 Usage:
   python scripts/plot_coverage_pareto.py --task musique --tau 0.5
@@ -93,7 +93,7 @@ def main():
 
     plt.figure(figsize=(8.5, 5.8))
     fx, fy = zip(*fixed)
-    plt.plot(fx, fy, "o-", color="#4c78a8", lw=2.2, ms=6, label="Fixed-r RASC")
+    plt.plot(fx, fy, "o-", color="#4c78a8", lw=2.2, ms=6, label="Fixed-r ReKV")
 
     markers = {8: "s", 16: "^"}
     colors = {8: "#e45756", 16: "#54a24b"}
@@ -108,7 +108,7 @@ def main():
             color=colors.get(win, None),
             edgecolors="white",
             linewidths=0.8,
-            label=f"Coverage-BRASC (w{win})",
+            label=f"B-ReKV (w{win})",
         )
 
     # Label the strongest MuSiQue points.
@@ -138,7 +138,7 @@ def main():
 
     plt.xlabel("Average KV Budget (kept fraction)")
     plt.ylabel("Accuracy / Score")
-    plt.title(f"{args.task}: Fixed-r RASC vs Coverage-BRASC")
+    plt.title(f"{args.task}: Fixed-r ReKV vs B-ReKV")
     plt.grid(alpha=0.25)
     plt.xlim(0.04, 0.72)
     plt.ylim(max(0, min(fy) - 0.04), min(1.0, max([p["acc"] for p in coverage] + list(fy)) + 0.04))

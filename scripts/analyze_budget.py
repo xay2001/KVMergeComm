@@ -2,7 +2,7 @@
 """Step-1 budget-allocation analysis.
 
 Reads per_sample.jsonl under snapshots/<dataset>/budget/* (emitted by run_budget.sh)
-and compares budget modes against the uniform RASC baseline on two axes:
+and compares budget modes against the uniform ReKV baseline on two axes:
 
   - equal-budget gain:  at the *same* achieved KV budget, does layer / query+layer
     allocation give a higher mean score than uniform?

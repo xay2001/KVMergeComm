@@ -53,7 +53,7 @@ def infer(path: Path, meta: dict) -> dict:
         ratio = float(m.group(1)) if m else meta.get("merge_ratio")
         sketch = 0
     else:
-        method = "RASC"
+        method = "ReKV"
         m = RECV_RE.search(run)
         win = int(m.group(1)) if m else meta.get("recv_window")
         ratio = float(m.group(2)) if m else meta.get("merge_ratio")

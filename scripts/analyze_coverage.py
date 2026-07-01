@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Analyze Coverage-BRASC runs against fixed-r RASC probes.
+"""Analyze B-ReKV runs against fixed-r ReKV probes.
 
 Inputs:
   fixed curve: snapshots/<task>/mtc_receiver/probe_recv_w16_r*/per_sample.jsonl
@@ -54,12 +54,18 @@ def load_fixed(task):
 
 def load_coverage(task):
     out = []
+    latest = {}
     for path in glob.glob(f"snapshots/{task}/coverage/**/per_sample.jsonl", recursive=True):
         base = os.path.basename(os.path.dirname(path))
         m = COV_RE.search(base)
         if not m:
             continue
-        cov_tau, scale, win = float(m.group(1)), float(m.group(2)), int(m.group(3))
+        key = (float(m.group(1)), float(m.group(2)), int(m.group(3)))
+        if key not in latest or os.path.getmtime(path) > os.path.getmtime(latest[key]):
+            latest[key] = path
+
+    for (cov_tau, scale, win), path in sorted(latest.items()):
+        base = os.path.basename(os.path.dirname(path))
         meta, rows = read_rows(path)
         scores = [float(row["score"]) for row in rows.values()]
         budgets = [float(row.get("budget", meta.get("merge_ratio", 0.0))) for row in rows.values()]

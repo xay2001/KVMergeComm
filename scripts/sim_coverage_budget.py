@@ -15,7 +15,7 @@ This is a zero-GPU simulation. It reuses:
 For each sample, the policy chooses a dynamic budget from rcapXX, optionally
 scales/clamps it, snaps it to the nearest available probe rung, and looks up the
 sample score. The output compares this training-free coverage policy against
-the fixed-r RASC curve.
+the fixed-r ReKV curve.
 
 Usage:
   python scripts/sim_coverage_budget.py --tasks hotpotqa musique twowikimqa

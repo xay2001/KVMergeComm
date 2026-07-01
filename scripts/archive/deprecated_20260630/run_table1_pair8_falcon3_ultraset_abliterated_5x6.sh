@@ -8,8 +8,8 @@ cd /home/xay/KVComm || exit 1
 #   M_r = huihui-ai/Falcon3-7B-Instruct-abliterated
 #
 # This script runs our methods only:
-#   - RASC: w8/w16 x r in {0.3, 0.5, 0.7}
-#   - Coverage-BRASC: three representative points
+#   - ReKV: w8/w16 x r in {0.3, 0.5, 0.7}
+#   - B-ReKV: three representative points
 #
 # Results are separated from other model pairs under:
 #   snapshots/table1_pair8_falcon3_ultraset_abliterated/
@@ -49,7 +49,7 @@ print("transformers", m.version("transformers"))
 print("huggingface-hub", m.version("huggingface-hub"))
 PY
 
-run_rasc() {
+run_rekv() {
   local task=$1
   local gpu=$2
   local win=$3
@@ -89,18 +89,18 @@ run_task() {
 
   for win in 8 16; do
     for ratio in 0.3 0.5 0.7; do
-      echo "==== [table1 pair8 GPU${gpu}] ${task} RASC w${win} r=${ratio} $(date '+%F %T') ===="
-      run_rasc "${task}" "${gpu}" "${win}" "${ratio}"
+      echo "==== [table1 pair8 GPU${gpu}] ${task} ReKV w${win} r=${ratio} $(date '+%F %T') ===="
+      run_rekv "${task}" "${gpu}" "${win}" "${ratio}"
     done
   done
 
-  echo "==== [table1 pair8 GPU${gpu}] ${task} Coverage w8 tau=0.95 scale=0.75 $(date '+%F %T') ===="
+  echo "==== [table1 pair8 GPU${gpu}] ${task} B-ReKV w8 tau=0.95 scale=0.75 $(date '+%F %T') ===="
   run_cov "${task}" "${gpu}" 8 0.95 0.75
 
-  echo "==== [table1 pair8 GPU${gpu}] ${task} Coverage w8 tau=0.95 scale=0.85 $(date '+%F %T') ===="
+  echo "==== [table1 pair8 GPU${gpu}] ${task} B-ReKV w8 tau=0.95 scale=0.85 $(date '+%F %T') ===="
   run_cov "${task}" "${gpu}" 8 0.95 0.85
 
-  echo "==== [table1 pair8 GPU${gpu}] ${task} Coverage w16 tau=0.95 scale=0.90 $(date '+%F %T') ===="
+  echo "==== [table1 pair8 GPU${gpu}] ${task} B-ReKV w16 tau=0.95 scale=0.90 $(date '+%F %T') ===="
   run_cov "${task}" "${gpu}" 16 0.95 0.90
 }
 

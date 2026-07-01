@@ -1,6 +1,6 @@
 # Snapshots Index
 
-This is the working index for KVComm / RASC experiment assets. It points to the
+This is the working index for KVComm / ReKV experiment assets. It points to the
 large narrative document, the pair registry, and the machine-readable run
 manifest.
 
@@ -35,11 +35,11 @@ Generated from `snapshots/**/log.log`.
 For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 9 runs:
 
-- `RASC-w8`: `r=0.3`, `r=0.5`, `r=0.7`
-- `RASC-w16`: `r=0.3`, `r=0.5`, `r=0.7`
-- `Coverage-BRASC`: `cov_t0.95_s0.75_w8`
-- `Coverage-BRASC`: `cov_t0.95_s0.85_w8`
-- `Coverage-BRASC`: `cov_t0.95_s0.90_w16`
+- `ReKV-w8`: `r=0.3`, `r=0.5`, `r=0.7`
+- `ReKV-w16`: `r=0.3`, `r=0.5`, `r=0.7`
+- `B-ReKV`: `cov_t0.95_s0.75_w8`
+- `B-ReKV`: `cov_t0.95_s0.85_w8`
+- `B-ReKV`: `cov_t0.95_s0.90_w16`
 
 ## Table 1: Main KVComm Model Pairs
 
@@ -53,7 +53,7 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 
 | Pair | Dataset coverage | Notes |
 |---:|---|---|
-| #1 | Full legacy sweep under `snapshots/<dataset>/` | Includes KVComm, merge, evict, RASC, budget, coverage, progressive, features |
+| #1 | Full legacy sweep under `snapshots/<dataset>/` | Includes KVComm, merge, evict, ReKV, budget, coverage, progressive, features |
 | #2 | 8 datasets have 9 completed paper-table runs | Two extra incomplete coverage directories are indexed as `unknown` |
 | #3 | 8 datasets have 9 completed paper-table runs | Complete paper-table queue |
 
@@ -64,9 +64,9 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 | `kvcomm/` | KVComm layer selection | Mostly legacy pair #1 |
 | `mtc_merge/` | token-level merge | Query-agnostic merge baseline |
 | `mtc_evict/` | token-level evict | Query-agnostic value-norm baseline |
-| `mtc_receiver/` | RASC | Receiver-aware token selection; includes probe runs |
+| `mtc_receiver/` | ReKV | Receiver-aware token selection; includes probe runs |
 | `budget/` | budget negative results | `uniform`, `layer`, `query`, `query+layer` |
-| `coverage/` | Coverage-BRASC | receiver-attention evidence coverage budget |
+| `coverage/` | B-ReKV | receiver-attention evidence coverage budget |
 | `progressive/` | online progressive negative result | per-sample progressive traces |
 | `features/` | Pass-1 feature dump | budget predictor / LODO studies |
 | `logs/` | queue logs | Operational shell logs, not metric sources |
@@ -78,7 +78,18 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 - Pair #7 needs `tmath` completion.
 - Pair #8 needs model path/startup issue resolution before continuing the queue.
 - Pair #1 `qasper` remains sparse relative to other datasets.
-- Add Receiver-Initiated KV Communication reviewer-risk experiments:
-  `recv_window={4,8,16,32,all}` sketch-size ablation, query-sketch
-  communication accounting, RASC vs Evict/Random-token, and evidence
-  concentration analysis on `hotpotqa`, `musique`, `multifieldqa_en`.
+
+## Reviewer-Risk Experiment Status
+
+These experiments were added to support the paper framing beyond raw accuracy.
+
+| Module | Output | Status |
+|---|---|---|
+| Cost / efficiency | `snapshots/cost_profile/pair1_llama31_same_all8_full/cost_table.csv` | Done |
+| Coverage robustness / Pareto | `snapshots/coverage_robustness_summary.txt`, `snapshots/{musique,hotpotqa,multifieldqa_en}/coverage_pareto.png` | Done |
+| Receiver-initiated fairness | `snapshots/query_fairness/pair1_llama31_same/query_fairness.csv` | Done |
+| Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md` | Done |
+
+Main remaining work is consolidation: choose final paper tables/figures, polish
+Pareto plots, and select 3-6 qualitative examples for the interpretability
+section.

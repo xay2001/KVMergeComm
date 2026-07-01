@@ -1,5 +1,5 @@
 #!/bin/bash
-# Stage-1 Coverage-BRASC queue from the offline pre-check.
+# Stage-1 B-ReKV queue from the offline pre-check.
 #
 # Usage:
 #   GPU=2 TASK=musique bash scripts/run_coverage_stage1.sh

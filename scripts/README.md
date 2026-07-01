@@ -20,7 +20,7 @@ caller passes another `--snapshot_path` through a wrapper.
 | `run_baseline.sh` | KVComm layer-selection baseline | `TASK`, `GPU` |
 | `run_merge.sh` | token-level merge baseline | `TASK`, `GPU` |
 | `run_evict.sh` | value-norm evict baseline | `TASK`, `GPU` |
-| `run_receiver.sh` | fixed-r RASC sweep | `TASK`, `GPU`, `WIN` |
+| `run_receiver.sh` | fixed-r ReKV sweep | `TASK`, `GPU`, `WIN` |
 | `run_dataset.sh` | full legacy pair #1 method suite | `TASK`, `GPU` |
 
 ### Paper Table Queues
@@ -38,10 +38,10 @@ bash scripts/run_paper_table_queue.sh
 
 The paper-table queue runs 9 points per dataset:
 
-- RASC `w8/w16 x r={0.3,0.5,0.7}`
-- Coverage-BRASC `t0.95_s0.75_w8`
-- Coverage-BRASC `t0.95_s0.85_w8`
-- Coverage-BRASC `t0.95_s0.90_w16`
+- ReKV `w8/w16 x r={0.3,0.5,0.7}`
+- B-ReKV `t0.95_s0.75_w8`
+- B-ReKV `t0.95_s0.85_w8`
+- B-ReKV `t0.95_s0.90_w16`
 
 Older pair-specific scripts have been archived under
 `scripts/archive/deprecated_20260630/` after the unified runner was added.
@@ -50,12 +50,12 @@ Older pair-specific scripts have been archived under
 
 | Script | Purpose |
 |---|---|
-| `run_probe.sh` | dense fixed-r RASC probes for oracle / coverage comparisons |
+| `run_probe.sh` | dense fixed-r ReKV probes for oracle / coverage comparisons |
 | `run_budget.sh` | Step 1 open-loop budget modes |
 | `run_budget_all.sh` | legacy 7-dataset budget queue |
 | `run_progressive.sh` | Step 2b online progressive runs |
 | `run_features.sh` | Pass-1 features for budget predictor |
-| `run_coverage.sh` | canonical Coverage-BRASC single-task runner |
+| `run_coverage.sh` | canonical B-ReKV single-task runner |
 | `run_cost_profile.sh` | controlled timing / payload runs for the paper cost table |
 
 Coverage wrapper scripts such as `run_coverage_stage1.sh` are retained only as

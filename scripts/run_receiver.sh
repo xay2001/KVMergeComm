@@ -1,5 +1,5 @@
 #!/bin/bash
-# RASC: receiver-aware token selection w/ observation window (r=0.1..0.9)
+# ReKV: receiver-aware token selection w/ observation window (r=0.1..0.9)
 # usage:  TASK=2wikimqa GPU=0 WIN=8 bash scripts/run_receiver.sh
 set -e
 TASK=${TASK:-hotpotqa}

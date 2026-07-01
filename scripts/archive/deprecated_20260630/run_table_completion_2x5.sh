@@ -38,7 +38,7 @@ P2=$!
 
 # GPU5 queue: QASPER -> TMATH -> HotpotQA extra
 (
-  echo "######## [GPU5] QASPER fixed RASC w16 first $(date '+%F %T') ########"
+  echo "######## [GPU5] QASPER fixed ReKV w16 first $(date '+%F %T') ########"
   TASK=qasper GPU=5 WIN=16 bash scripts/run_receiver.sh
 
   echo "######## [GPU5] QASPER table coverage $(date '+%F %T') ########"

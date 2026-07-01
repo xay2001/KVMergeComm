@@ -2,7 +2,7 @@
 """Dump receiver-aware top-token examples for interpretability analysis.
 
 This script does not generate answers. It runs A-prefill + receiver scoring,
-then records which context tokens are selected by RASC, ValueNorm, Random, and
+then records which context tokens are selected by ReKV, ValueNorm, Random, and
 a simple aggregate coverage rule. Plotting is intentionally left for later.
 """
 
@@ -169,14 +169,14 @@ def dump_task(args, task: str, model_a, model_b, tokenizer) -> None:
             usable_ids = input_ids_A[0, : receiver_scores.numel()].cpu()
             k = min(args.top_k, receiver_scores.numel())
 
-            rasc_idx = top_indices(receiver_scores, k)
+            rekv_idx = top_indices(receiver_scores, k)
             evict_idx = top_indices(value_scores[: receiver_scores.numel()], k)
             rng = random.Random(args.seed + i)
             random_idx = rng.sample(range(receiver_scores.numel()), k)
             cov_idx = coverage_indices(receiver_scores, args.coverage_tau, args.coverage_scale, k)
 
             answers = answers_for_item(item)
-            rasc_texts = [tokenizer.decode([int(usable_ids[j])], skip_special_tokens=True) for j in rasc_idx]
+            rekv_texts = [tokenizer.decode([int(usable_ids[j])], skip_special_tokens=True) for j in rekv_idx]
             evict_texts = [tokenizer.decode([int(usable_ids[j])], skip_special_tokens=True) for j in evict_idx]
             random_texts = [tokenizer.decode([int(usable_ids[j])], skip_special_tokens=True) for j in random_idx]
 
@@ -190,12 +190,12 @@ def dump_task(args, task: str, model_a, model_b, tokenizer) -> None:
                 "ratio": args.ratio,
                 "top_k": k,
                 "query_sketch": sketch_stats,
-                "rasc_top": [token_record(tokenizer, usable_ids, receiver_scores, j) for j in rasc_idx],
+                "rekv_top": [token_record(tokenizer, usable_ids, receiver_scores, j) for j in rekv_idx],
                 "evict_top": [token_record(tokenizer, usable_ids, value_scores, j) for j in evict_idx],
                 "random_top": [token_record(tokenizer, usable_ids, receiver_scores, j) for j in random_idx],
                 "coverage_top": [token_record(tokenizer, usable_ids, receiver_scores, j) for j in cov_idx],
                 "overlap": {
-                    "rasc": overlap_with_answers(rasc_texts, answers),
+                    "rekv": overlap_with_answers(rekv_texts, answers),
                     "evict": overlap_with_answers(evict_texts, answers),
                     "random": overlap_with_answers(random_texts, answers),
                 },
@@ -203,7 +203,7 @@ def dump_task(args, task: str, model_a, model_b, tokenizer) -> None:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
             summary_rows.append({
                 "idx": i,
-                "rasc_recall": row["overlap"]["rasc"]["recall"],
+                "rekv_recall": row["overlap"]["rekv"]["recall"],
                 "evict_recall": row["overlap"]["evict"]["recall"],
                 "random_recall": row["overlap"]["random"]["recall"],
                 **sketch_stats,
@@ -211,10 +211,10 @@ def dump_task(args, task: str, model_a, model_b, tokenizer) -> None:
 
     summary_path = out_dir / f"answer_overlap_w{args.recv_window}_r{args.ratio}.csv"
     with summary_path.open("w") as f:
-        f.write("idx,rasc_recall,evict_recall,random_recall,query_tokens,sketch_tokens,sketch_query_ratio,sketch_token_id_bytes,sketch_hidden_bytes\n")
+        f.write("idx,rekv_recall,evict_recall,random_recall,query_tokens,sketch_tokens,sketch_query_ratio,sketch_token_id_bytes,sketch_hidden_bytes\n")
         for row in summary_rows:
             f.write(
-                f"{row['idx']},{row['rasc_recall']},{row['evict_recall']},{row['random_recall']},"
+                f"{row['idx']},{row['rekv_recall']},{row['evict_recall']},{row['random_recall']},"
                 f"{row['query_tokens']},{row['sketch_tokens']},{row['sketch_query_ratio']},"
                 f"{row['sketch_token_id_bytes']},{row['sketch_hidden_bytes']}\n"
             )

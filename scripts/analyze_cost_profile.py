@@ -19,9 +19,9 @@ def method_label(run_dir: Path, summary: dict) -> str:
     name = run_dir.name
     parent = run_dir.parent.name
     if m := RECV_RE.search(name):
-        return f"RASC-w{m.group(1)} r={m.group(2)}"
+        return f"ReKV-w{m.group(1)} r={m.group(2)}"
     if m := COV_RE.search(name):
-        return f"Coverage t={m.group(1)} s={m.group(2)} w{m.group(3)}"
+        return f"B-ReKV t={m.group(1)} s={m.group(2)} w{m.group(3)}"
     if m := KVCOMM_RE.search(name):
         return f"KVComm top={m.group(1)}"
     meta = summary.get("_meta", {})
@@ -30,7 +30,7 @@ def method_label(run_dir: Path, summary: dict) -> str:
     if meta.get("budget_mode") == "coverage":
         return "Coverage"
     if meta.get("score_mode") == "receiver":
-        return "RASC"
+        return "ReKV"
     return name
 
 

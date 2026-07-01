@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plot actual per-sample budget distribution for Coverage-BRASC.
+"""Plot actual per-sample budget distribution for B-ReKV.
 
 This figure is meant to show where "aware" appears: tau/scale are global
 hyperparameters, but the actual transmitted KV budget varies per query because
@@ -39,7 +39,7 @@ def setting_name(path):
     m = re.search(r"cov_t([0-9.]+)_s([0-9.]+)_w(\d+)", base)
     if not m:
         return base
-    return f"Coverage-BRASC (tau={float(m.group(1)):.2f}, scale={float(m.group(2)):g}, w={m.group(3)})"
+    return f"B-ReKV (tau={float(m.group(1)):.2f}, scale={float(m.group(2)):g}, w={m.group(3)})"
 
 
 def main():

@@ -1,0 +1,125 @@
+
+=== musique ===
+fixed-r: r0.05:acc0.088, r0.1:acc0.294, r0.15:acc0.374, r0.2:acc0.404, r0.3:acc0.462, r0.4:acc0.470, r0.5:acc0.474, r0.7:acc0.478
+
+coverage runs:
+  tau=0.90 scale=0.65 win=8 acc=0.428 score=0.428 budget=0.142  +41.1% vs fixed b0.241
+  tau=0.90 scale=0.65 win=16 acc=0.410 score=0.410 budget=0.181  +13.9% vs fixed b0.210
+  tau=0.90 scale=0.7  win=16 acc=0.406 score=0.406 budget=0.192  +5.6% vs fixed b0.203
+  tau=0.90 scale=0.75 win=8 acc=0.442 score=0.442 budget=0.158  +40.7% vs fixed b0.266
+  tau=0.90 scale=0.75 win=16 acc=0.418 score=0.418 budget=0.203  +9.4% vs fixed b0.224
+  tau=0.90 scale=0.8  win=8 acc=0.440 score=0.440 budget=0.165  +36.9% vs fixed b0.262
+  tau=0.90 scale=0.8  win=16 acc=0.424 score=0.424 budget=0.214  +8.6% vs fixed b0.234
+  tau=0.90 scale=0.85 win=8 acc=0.446 score=0.446 budget=0.173  +36.5% vs fixed b0.272
+  tau=0.90 scale=0.85 win=16 acc=0.448 score=0.448 budget=0.225  +18.3% vs fixed b0.276
+  tau=0.90 scale=0.9  win=8 acc=0.428 score=0.428 budget=0.181  +25.0% vs fixed b0.241
+  tau=0.90 scale=0.9  win=16 acc=0.442 score=0.442 budget=0.236  +11.0% vs fixed b0.266
+  tau=0.90 scale=0.95 win=8 acc=0.450 score=0.450 budget=0.189  +32.4% vs fixed b0.279
+  tau=0.90 scale=0.95 win=16 acc=0.442 score=0.442 budget=0.248  +6.8% vs fixed b0.266
+  tau=0.95 scale=0.65 win=8 acc=0.464 score=0.464 budget=0.246  +24.2% vs fixed b0.325
+  tau=0.95 scale=0.65 win=16 acc=0.450 score=0.450 budget=0.295  -5.8% vs fixed b0.279
+  tau=0.95 scale=0.7  win=8 acc=0.470 score=0.470 budget=0.263  +34.3% vs fixed b0.400
+  tau=0.95 scale=0.7  win=16 acc=0.456 score=0.456 budget=0.316  -9.0% vs fixed b0.290
+  tau=0.95 scale=0.75 win=8 acc=0.482 score=0.482 budget=0.279  acc>fixed-ceiling
+  tau=0.95 scale=0.75 win=16 acc=0.470 score=0.470 budget=0.336  +16.0% vs fixed b0.400
+  tau=0.95 scale=0.8  win=8 acc=0.470 score=0.470 budget=0.296  +26.0% vs fixed b0.400
+  tau=0.95 scale=0.8  win=16 acc=0.472 score=0.472 budget=0.356  +20.8% vs fixed b0.450
+  tau=0.95 scale=0.85 win=8 acc=0.490 score=0.490 budget=0.313  acc>fixed-ceiling
+  tau=0.95 scale=0.85 win=16 acc=0.474 score=0.474 budget=0.377  +24.7% vs fixed b0.500
+  tau=0.95 scale=0.9  win=8 acc=0.480 score=0.480 budget=0.329  acc>fixed-ceiling
+  tau=0.95 scale=0.9  win=16 acc=0.480 score=0.480 budget=0.397  acc>fixed-ceiling
+  tau=0.95 scale=0.95 win=8 acc=0.474 score=0.474 budget=0.346  +30.9% vs fixed b0.500
+  tau=0.95 scale=0.95 win=16 acc=0.472 score=0.472 budget=0.417  +7.3% vs fixed b0.450
+  tau=0.98 scale=0.65 win=8 acc=0.480 score=0.480 budget=0.393  acc>fixed-ceiling
+  tau=0.98 scale=0.7  win=8 acc=0.478 score=0.478 budget=0.420  +39.9% vs fixed b0.700
+  tau=0.98 scale=0.75 win=8 acc=0.470 score=0.470 budget=0.448  -12.1% vs fixed b0.400
+  tau=0.98 scale=0.8  win=8 acc=0.474 score=0.474 budget=0.476  +4.8% vs fixed b0.500
+
+pareto front:
+  tau=0.90 scale=0.65 win=8 acc=0.428 budget=0.142  +41.1% vs fixed b0.241
+  tau=0.90 scale=0.75 win=8 acc=0.442 budget=0.158  +40.7% vs fixed b0.266
+  tau=0.90 scale=0.85 win=8 acc=0.446 budget=0.173  +36.5% vs fixed b0.272
+  tau=0.90 scale=0.95 win=8 acc=0.450 budget=0.189  +32.4% vs fixed b0.279
+  tau=0.95 scale=0.65 win=8 acc=0.464 budget=0.246  +24.2% vs fixed b0.325
+  tau=0.95 scale=0.7  win=8 acc=0.470 budget=0.263  +34.3% vs fixed b0.400
+  tau=0.95 scale=0.75 win=8 acc=0.482 budget=0.279  acc>fixed-ceiling
+  tau=0.95 scale=0.85 win=8 acc=0.490 budget=0.313  acc>fixed-ceiling
+
+=== hotpotqa ===
+fixed-r: r0.05:acc0.072, r0.1:acc0.230, r0.15:acc0.488, r0.2:acc0.614, r0.3:acc0.700, r0.4:acc0.726, r0.5:acc0.746, r0.7:acc0.748
+
+coverage runs:
+  tau=0.90 scale=0.7  win=16 acc=0.580 score=0.580 budget=0.206  -10.4% vs fixed b0.187
+  tau=0.90 scale=0.9  win=16 acc=0.660 score=0.660 budget=0.251  +0.9% vs fixed b0.253
+  tau=0.95 scale=0.75 win=8 acc=0.708 score=0.708 budget=0.306  +7.4% vs fixed b0.331
+  tau=0.95 scale=0.75 win=16 acc=0.718 score=0.718 budget=0.339  +8.1% vs fixed b0.369
+  tau=0.95 scale=0.8  win=8 acc=0.708 score=0.708 budget=0.324  +1.9% vs fixed b0.331
+  tau=0.95 scale=0.8  win=16 acc=0.720 score=0.720 budget=0.360  +4.6% vs fixed b0.377
+  tau=0.95 scale=0.85 win=8 acc=0.716 score=0.716 budget=0.343  +5.3% vs fixed b0.362
+  tau=0.95 scale=0.85 win=16 acc=0.730 score=0.730 budget=0.380  +9.5% vs fixed b0.420
+  tau=0.95 scale=0.9  win=8 acc=0.712 score=0.712 budget=0.361  -4.2% vs fixed b0.346
+  tau=0.95 scale=0.9  win=16 acc=0.732 score=0.732 budget=0.400  +6.9% vs fixed b0.430
+  tau=0.95 scale=0.95 win=8 acc=0.718 score=0.718 budget=0.379  -2.6% vs fixed b0.369
+  tau=0.95 scale=0.95 win=16 acc=0.726 score=0.726 budget=0.421  -5.2% vs fixed b0.400
+  tau=0.95 scale=1    win=8 acc=0.728 score=0.728 budget=0.397  +3.1% vs fixed b0.410
+  tau=0.95 scale=1    win=16 acc=0.738 score=0.738 budget=0.441  +4.1% vs fixed b0.460
+  tau=0.98 scale=0.75 win=8 acc=0.726 score=0.726 budget=0.477  -19.2% vs fixed b0.400
+  tau=0.98 scale=0.75 win=16 acc=0.736 score=0.736 budget=0.499  -10.8% vs fixed b0.450
+  tau=0.98 scale=0.8  win=8 acc=0.718 score=0.718 budget=0.507  -37.2% vs fixed b0.369
+  tau=0.98 scale=0.8  win=16 acc=0.734 score=0.734 budget=0.530  -20.4% vs fixed b0.440
+  tau=0.98 scale=0.85 win=8 acc=0.724 score=0.724 budget=0.536  -36.7% vs fixed b0.392
+  tau=0.98 scale=0.85 win=16 acc=0.734 score=0.734 budget=0.561  -27.5% vs fixed b0.440
+  tau=0.98 scale=0.9  win=8 acc=0.720 score=0.720 budget=0.566  -50.1% vs fixed b0.377
+  tau=0.98 scale=0.9  win=16 acc=0.744 score=0.744 budget=0.592  -20.8% vs fixed b0.490
+  tau=0.98 scale=0.95 win=8 acc=0.728 score=0.728 budget=0.593  -44.7% vs fixed b0.410
+  tau=0.98 scale=0.95 win=16 acc=0.742 score=0.742 budget=0.620  -29.1% vs fixed b0.480
+  tau=0.98 scale=1    win=8 acc=0.726 score=0.726 budget=0.617  -54.2% vs fixed b0.400
+  tau=0.98 scale=1    win=16 acc=0.746 score=0.746 budget=0.643  -28.6% vs fixed b0.500
+
+pareto front:
+  tau=0.90 scale=0.7  win=16 acc=0.580 budget=0.206  -10.4% vs fixed b0.187
+  tau=0.90 scale=0.9  win=16 acc=0.660 budget=0.251  +0.9% vs fixed b0.253
+  tau=0.95 scale=0.75 win=8 acc=0.708 budget=0.306  +7.4% vs fixed b0.331
+  tau=0.95 scale=0.75 win=16 acc=0.718 budget=0.339  +8.1% vs fixed b0.369
+  tau=0.95 scale=0.8  win=16 acc=0.720 budget=0.360  +4.6% vs fixed b0.377
+  tau=0.95 scale=0.85 win=16 acc=0.730 budget=0.380  +9.5% vs fixed b0.420
+  tau=0.95 scale=0.9  win=16 acc=0.732 budget=0.400  +6.9% vs fixed b0.430
+  tau=0.95 scale=1    win=16 acc=0.738 budget=0.441  +4.1% vs fixed b0.460
+  tau=0.98 scale=0.9  win=16 acc=0.744 budget=0.592  -20.8% vs fixed b0.490
+  tau=0.98 scale=1    win=16 acc=0.746 budget=0.643  -28.6% vs fixed b0.500
+
+=== multifieldqa_en ===
+fixed-r: r0.05:acc0.513, r0.1:acc0.533, r0.15:acc0.500, r0.2:acc0.507, r0.3:acc0.513, r0.4:acc0.520, r0.5:acc0.520, r0.7:acc0.540
+
+coverage runs:
+  tau=0.90 scale=0.6  win=8 acc=0.540 score=0.540 budget=0.099  +85.9% vs fixed b0.700
+  tau=0.90 scale=0.6  win=16 acc=0.513 score=0.513 budget=0.121  -141.9% vs fixed b0.050
+  tau=0.90 scale=0.65 win=8 acc=0.527 score=0.527 budget=0.103  +65.8% vs fixed b0.300
+  tau=0.90 scale=0.65 win=16 acc=0.520 score=0.520 budget=0.128  +68.1% vs fixed b0.400
+  tau=0.90 scale=0.7  win=8 acc=0.533 score=0.533 budget=0.106  -6.3% vs fixed b0.100
+  tau=0.90 scale=0.7  win=16 acc=0.520 score=0.520 budget=0.134  +66.4% vs fixed b0.400
+  tau=0.90 scale=0.75 win=8 acc=0.527 score=0.527 budget=0.110  +63.3% vs fixed b0.300
+  tau=0.90 scale=0.75 win=16 acc=0.527 score=0.527 budget=0.141  +53.0% vs fixed b0.300
+  tau=0.90 scale=0.8  win=8 acc=0.533 score=0.533 budget=0.114  -14.0% vs fixed b0.100
+  tau=0.90 scale=0.8  win=16 acc=0.533 score=0.533 budget=0.148  -47.9% vs fixed b0.100
+  tau=0.90 scale=0.85 win=8 acc=0.527 score=0.527 budget=0.118  +60.7% vs fixed b0.300
+  tau=0.90 scale=0.85 win=16 acc=0.533 score=0.533 budget=0.155  -54.8% vs fixed b0.100
+  tau=0.90 scale=0.9  win=8 acc=0.540 score=0.540 budget=0.122  +82.6% vs fixed b0.700
+  tau=0.90 scale=0.9  win=16 acc=0.533 score=0.533 budget=0.162  -61.7% vs fixed b0.100
+  tau=0.95 scale=0.6  win=8 acc=0.520 score=0.520 budget=0.165  +58.7% vs fixed b0.400
+  tau=0.95 scale=0.6  win=16 acc=0.520 score=0.520 budget=0.208  +48.1% vs fixed b0.400
+  tau=0.95 scale=0.65 win=8 acc=0.507 score=0.507 budget=0.176  +12.0% vs fixed b0.200
+  tau=0.95 scale=0.65 win=16 acc=0.520 score=0.520 budget=0.222  +44.4% vs fixed b0.400
+  tau=0.95 scale=0.7  win=8 acc=0.533 score=0.533 budget=0.187  -86.8% vs fixed b0.100
+  tau=0.95 scale=0.7  win=16 acc=0.520 score=0.520 budget=0.237  +40.7% vs fixed b0.400
+  tau=0.95 scale=0.75 win=8 acc=0.520 score=0.520 budget=0.198  +50.5% vs fixed b0.400
+  tau=0.95 scale=0.75 win=16 acc=0.513 score=0.513 budget=0.252  -403.4% vs fixed b0.050
+  tau=0.95 scale=0.8  win=8 acc=0.527 score=0.527 budget=0.209  +30.4% vs fixed b0.300
+  tau=0.95 scale=0.8  win=16 acc=0.520 score=0.520 budget=0.266  +33.4% vs fixed b0.400
+  tau=0.95 scale=0.85 win=8 acc=0.527 score=0.527 budget=0.220  +26.7% vs fixed b0.300
+  tau=0.95 scale=0.85 win=16 acc=0.513 score=0.513 budget=0.281  -462.2% vs fixed b0.050
+  tau=0.95 scale=0.9  win=8 acc=0.513 score=0.513 budget=0.231  -361.7% vs fixed b0.050
+  tau=0.95 scale=0.9  win=16 acc=0.520 score=0.520 budget=0.296  +26.1% vs fixed b0.400
+
+pareto front:
+  tau=0.90 scale=0.6  win=8 acc=0.540 budget=0.099  +85.9% vs fixed b0.700

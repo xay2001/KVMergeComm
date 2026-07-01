@@ -1,4 +1,4 @@
-idx,rasc_recall,evict_recall,random_recall,query_tokens,sketch_tokens,sketch_query_ratio,sketch_token_id_bytes,sketch_hidden_bytes
+idx,rekv_recall,evict_recall,random_recall,query_tokens,sketch_tokens,sketch_query_ratio,sketch_token_id_bytes,sketch_hidden_bytes
 0,0.0,0.0,0.0,68,8,0.117647,32,65536
 1,0.0,0.0,0.0,74,8,0.108108,32,65536
 2,0.0,0.0,0.0,76,8,0.105263,32,65536

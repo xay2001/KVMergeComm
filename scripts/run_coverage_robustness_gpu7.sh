@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Coverage-BRASC robustness / Pareto sweep on GPU 7.
+# B-ReKV robustness / Pareto sweep on GPU 7.
 #
-# Goal: show Coverage-BRASC has a stable Pareto region rather than one
+# Goal: show B-ReKV has a stable Pareto region rather than one
 # cherry-picked point.
 #
 # Default first batch:

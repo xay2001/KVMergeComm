@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run missing Coverage-BRASC experiments for remaining datasets.
+# Run missing B-ReKV experiments for remaining datasets.
 #
 # Usage:
 #   GPU=0 TASK=countries bash scripts/run_coverage_remaining.sh
@@ -26,8 +26,8 @@ run_one() {
             TASK=${task} GPU=${GPU} WIN=16 TAUS="0.90 0.95" SCALES="0.7 0.8 0.9 1.0" bash scripts/run_coverage.sh
             ;;
         qasper)
-            # No existing RASC fixed curve in current snapshot; run coverage first.
-            # Afterwards run fixed RASC with scripts/run_receiver.sh if needed.
+            # No existing ReKV fixed curve in current snapshot; run coverage first.
+            # Afterwards run fixed ReKV with scripts/run_receiver.sh if needed.
             TASK=${task} GPU=${GPU} WIN=8  TAUS="0.90 0.95" SCALES="0.6 0.7 0.75 0.8 0.9" bash scripts/run_coverage.sh
             TASK=${task} GPU=${GPU} WIN=16 TAUS="0.90 0.95" SCALES="0.6 0.7 0.75 0.8 0.9" bash scripts/run_coverage.sh
             ;;

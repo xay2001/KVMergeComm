@@ -14,7 +14,7 @@ achievable region with two policies:
         This is the best any uncertainty trigger could do -> lower bound on budget /
         rounds at full (solvable) accuracy.
   * FIXED-r      (floor):   no feedback, every sample pays a single fixed budget.
-        This is the current RASC baseline.
+        This is the current ReKV baseline.
 
 A real trigger (Step-2b, needs GPU) lives between these two; the oracle-vs-fixed gap
 is exactly the prize an uncertainty predictor must capture.

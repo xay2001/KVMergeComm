@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Unified queue for paper-aligned Table 1 / Table 8 RASC and Coverage-BRASC runs.
+# Unified queue for paper-aligned Table 1 / Table 8 ReKV and B-ReKV runs.
 #
 # Required:
 #   TABLE_ID=1|8
@@ -48,7 +48,7 @@ if [[ ${#GPUS[@]} -eq 0 ]]; then
   exit 1
 fi
 
-run_rasc() {
+run_rekv() {
   local task=$1
   local gpu=$2
   local win=$3
@@ -88,18 +88,18 @@ run_task() {
 
   for win in 8 16; do
     for ratio in 0.3 0.5 0.7; do
-      echo "==== [table${TABLE_ID} pair${PAIR_ID} GPU${gpu}] ${task} RASC w${win} r=${ratio} $(date '+%F %T') ===="
-      run_rasc "${task}" "${gpu}" "${win}" "${ratio}"
+      echo "==== [table${TABLE_ID} pair${PAIR_ID} GPU${gpu}] ${task} ReKV w${win} r=${ratio} $(date '+%F %T') ===="
+      run_rekv "${task}" "${gpu}" "${win}" "${ratio}"
     done
   done
 
-  echo "==== [table${TABLE_ID} pair${PAIR_ID} GPU${gpu}] ${task} Coverage w8 tau=0.95 scale=0.75 $(date '+%F %T') ===="
+  echo "==== [table${TABLE_ID} pair${PAIR_ID} GPU${gpu}] ${task} B-ReKV w8 tau=0.95 scale=0.75 $(date '+%F %T') ===="
   run_cov "${task}" "${gpu}" 8 0.95 0.75
 
-  echo "==== [table${TABLE_ID} pair${PAIR_ID} GPU${gpu}] ${task} Coverage w8 tau=0.95 scale=0.85 $(date '+%F %T') ===="
+  echo "==== [table${TABLE_ID} pair${PAIR_ID} GPU${gpu}] ${task} B-ReKV w8 tau=0.95 scale=0.85 $(date '+%F %T') ===="
   run_cov "${task}" "${gpu}" 8 0.95 0.85
 
-  echo "==== [table${TABLE_ID} pair${PAIR_ID} GPU${gpu}] ${task} Coverage w16 tau=0.95 scale=0.90 $(date '+%F %T') ===="
+  echo "==== [table${TABLE_ID} pair${PAIR_ID} GPU${gpu}] ${task} B-ReKV w16 tau=0.95 scale=0.90 $(date '+%F %T') ===="
   run_cov "${task}" "${gpu}" 16 0.95 0.90
 }
 

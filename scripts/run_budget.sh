@@ -1,6 +1,6 @@
 #!/bin/bash
-# Step-1 预算分配实验:在 receiver-w16 (RASC) 基础上对比四种预算模式。
-#   uniform      每层固定 merge_ratio(原版 RASC,作为基线)
+# Step-1 预算分配实验:在 receiver-w16 (ReKV) 基础上对比四种预算模式。
+#   uniform      每层固定 merge_ratio(原版 ReKV,作为基线)
 #   layer        总预算固定=merge_ratio,按层重要性 softmax 分配(等预算,只改分配)
 #   query        每条 query 按重要性熵自适应总预算 [budget_min, budget_max],层间均匀
 #   query+layer  自适应总预算 + 层间分配(最终方法)
