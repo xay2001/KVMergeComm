@@ -541,6 +541,8 @@ snapshots/brekv_budget_distribution_summary.csv
 scripts/run_query_fairness_gpu2_7.sh
 scripts/analyze_query_fairness.py
 snapshots/query_fairness/pair1_llama31_same/query_fairness.csv
+scripts/run_pair6_pair7_query_fairness_brekv_gpu7.sh
+snapshots/query_fairness/pair6_pair7_query_fairness_brekv_summary.csv
 ```
 
 同预算 `r=0.3` 下,query-aware receiver signal 是主要增益来源:
@@ -559,6 +561,19 @@ snapshots/query_fairness/pair1_llama31_same/query_fairness.csv
   - token-id 口径:`w8` 仅 32 bytes,`w16` 仅 64 bytes。
   - hidden-state BF16 口径:`w8` 约 64KB,`w16` 约 128KB,相对 A→B selected KV MB 级 payload 仍很小。
 
+2026-07-02 补充:pair #6/#7 fine-tuned model pairs 上的 fairness extension 已完成,并加入 B-ReKV canonical 点:
+
+- Pair #6:
+  - HotpotQA: Evict `0.516`, Random `0.406`, best ReKV `0.668`, best B-ReKV `0.674`。
+  - MuSiQue: Evict `0.236`, Random `0.182`, best ReKV `0.362`, best B-ReKV `0.384`。
+  - MultiFieldQA-en: Evict `0.327`, Random `0.320`, best ReKV `0.467`, best B-ReKV `0.493`。
+- Pair #7:
+  - HotpotQA: Evict `0.124`, Random `0.118`, best ReKV `0.396`, best B-ReKV `0.446`。
+  - MuSiQue: Evict `0.144`, Random `0.080`, best ReKV `0.298`, best B-ReKV `0.308`。
+  - MultiFieldQA-en: Evict `0.080`, Random `0.140`, best ReKV `0.393`, best B-ReKV `0.393`。
+
+结论:在异构 fine-tuned pair 上,ReKV/B-ReKV 仍显著优于 query-agnostic Evict/Random,说明 receiver-aware query sketch 不是 pair #1 same-model 的偶然收益。
+
 #### 10.4.4 Interpretability / evidence proxy
 
 脚本与产物:
@@ -570,6 +585,9 @@ snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.c
 snapshots/interpretability/pair1_llama31_same/interpretability_examples.md
 snapshots/interpretability/pair1_llama31_same/cleaned/clean_interpretability_examples.md
 snapshots/interpretability/pair1_llama31_same/cleaned/*_clean_top_tokens.png
+scripts/run_deletion_ablation_gpu2.sh
+scripts/run_deletion_ablation.py
+snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv
 ```
 
 答案词 overlap(50 samples/task, top-20 tokens):
@@ -589,6 +607,16 @@ snapshots/interpretability/pair1_llama31_same/cleaned/*_clean_top_tokens.png
 - MultiFieldQA-en idx=27:ReKV clean top tokens 命中 `wearable/sensors`,answer-term recall `1.0`,Evict/Random 为 0。
 
 这些 examples 对应 `hotpotqa_clean_top_tokens.png`,`musique_clean_top_tokens.png`,`multifieldqa_en_clean_top_tokens.png`,适合作为论文中 token bar / qualitative evidence figure 的候选。
+
+2026-07-02 补充:deletion ablation 已完成。设置为 pair #1, `recv_window=8`, `r=0.3`,每任务 50 samples,删除/屏蔽 ReKV、Evict、Random 各自 top-20 content tokens 后重新生成答案。
+
+| Dataset | Base score | Delete ReKV score / drop | Delete Evict score / drop | Delete Random score / drop |
+|---|---:|---:|---:|---:|
+| HotpotQA | 0.78 | 0.42 / **0.36** | 0.62 / 0.16 | 0.64 / 0.14 |
+| MuSiQue | 0.58 | 0.22 / **0.36** | 0.44 / 0.14 | 0.54 / 0.04 |
+| MultiFieldQA-en | 0.48 | 0.24 / **0.24** | 0.48 / 0.00 | 0.50 / -0.02 |
+
+样本级统计也支持同一结论:删除 ReKV tokens 后的平均 drop 最大,且 ReKV deletion 在 HotpotQA/MuSiQue/MultiFieldQA-en 上分别有 `44/50`, `47/50`, `47/50` 个样本达到或并列达到最大 drop。该结果把 interpretability 从 lexical overlap 推进到 causal-ish evidence:ReKV-selected tokens 被移除后,答案质量下降明显更大。
 
 ---
 

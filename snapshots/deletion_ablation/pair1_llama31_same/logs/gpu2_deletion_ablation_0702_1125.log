@@ -1,0 +1,32 @@
+######## deletion ablation GPU2 START 2026-07-02 11:25:15 ########
+MODEL=/sharedspace/models/Llama-3.1-8B-Instruct
+TASKS=hotpotqa musique multifieldqa_en
+LIMIT=50
+TOP_K=20
+RATIO=0.3
+RECV_WINDOW=8
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:18<00:56, 18.76s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:37<00:37, 18.66s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:58<00:19, 19.96s/it]Loading checkpoint shards: 100%|██████████| 4/4 [01:01<00:00, 13.25s/it]Loading checkpoint shards: 100%|██████████| 4/4 [01:01<00:00, 15.45s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:04<00:12,  4.17s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:08<00:08,  4.02s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:12<00:04,  4.10s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  2.68s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:12<00:00,  3.20s/it]
+hotpotqa deletion ablation:   0%|          | 0/500 [00:00<?, ?it/s]hotpotqa deletion ablation:   0%|          | 0/500 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/scripts/run_deletion_ablation.py", line 289, in <module>
+    main()
+  File "/home/xay/KVComm/scripts/run_deletion_ablation.py", line 276, in main
+    summaries.append(run_task(args, task, model_a, model_b, tokenizer))
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/scripts/run_deletion_ablation.py", line 201, in run_task
+    base_response, base_budget = generate_response(model_a, cv, comm_eval, input_ids_a, input_ids_b)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/scripts/run_deletion_ablation.py", line 130, in generate_response
+    output = cv.generate(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 2375, in generate
+    self._validate_model_kwargs(model_kwargs.copy())
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 1561, in _validate_model_kwargs
+    raise ValueError(
+ValueError: CVCommunicator does not support an instance of `Cache` as `past_key_values`. Please check the model documentation for supported cache formats.

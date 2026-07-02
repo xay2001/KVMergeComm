@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Query fairness extension for Table 1 pair #6/#7 on GPU 7.
+# Query fairness extension for Table 1 pair #6/#7 on GPU 2 by default.
 #
 # Tasks:
 #   hotpotqa, musique, multifieldqa_en
@@ -20,7 +20,7 @@ set -euo pipefail
 
 cd /home/xay/KVComm || exit 1
 
-GPU=${GPU:-7}
+GPU=${GPU:-2}
 TASKS=${TASKS:-"hotpotqa musique multifieldqa_en"}
 RATIO=${RATIO:-0.3}
 WINDOWS=${WINDOWS:-"8 16"}

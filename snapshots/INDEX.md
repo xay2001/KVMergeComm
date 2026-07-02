@@ -90,7 +90,7 @@ These experiments were added to support the paper framing beyond raw accuracy.
 | Coverage robustness / Pareto | `snapshots/coverage_robustness_summary.txt`, `snapshots/{musique,hotpotqa,multifieldqa_en}/coverage_pareto.png` | Done |
 | B-ReKV budget adaptivity | `snapshots/brekv_budget_distribution.png`, `snapshots/brekv_budget_distribution_summary.csv` | Done |
 | Receiver-initiated fairness | `snapshots/query_fairness/pair1_llama31_same/query_fairness.csv` | Done |
-| Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md`, `cleaned/*_clean_top_tokens.png` | Done |
+| Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md`, `cleaned/*_clean_top_tokens.png`, `snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv` | Done |
 
 Main remaining work is consolidation: choose final paper tables/figures, polish
 Pareto/budget-distribution plots, and decide which cleaned qualitative examples
