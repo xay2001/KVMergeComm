@@ -7,3 +7,13 @@
 2026-07-02 14:07:15,428 - root - INFO - Using GPU: NVIDIA RTX A6000
 2026-07-02 14:07:15,428 - root - INFO - CUDA_VISIBLE_DEVICES: 2
 2026-07-02 14:07:33,254 - root - INFO - CVCommunicator initialized
+2026-07-02 14:07:46,692 - root - INFO - communication result: 0.0000, communication time: 13.42s
+2026-07-02 14:07:46,694 - root - INFO - Layer ranking: [ 0 12 13 10  8  9 26 15 14  7  5 18 24  6 11 19 20 16 23 17 27  4 21  3
+  1 22 25  2]
+2026-07-02 14:07:46,695 - root - INFO - Top 0.3 from 28 layers: [ 0 12 13 10  8  9 26 15 14  7  5 18 24  6 11 19 20 16 23 17 27  4 21  3
+  1 22 25  2]
+2026-07-02 14:07:46,695 - root - INFO - New layers list: [ 0 12 13 10  8  9 26 15]
+2026-07-02 14:07:46,716 - root - INFO - CVCommunicator initialized
+2026-07-02 14:22:01,940 - root - INFO - cost profile written to /home/xay/KVComm/snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/qasper/kvcomm/kvcomm_top0.3_cost_0702_1407/cost_profile.jsonl
+2026-07-02 14:22:01,940 - root - INFO - cost summary written to /home/xay/KVComm/snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/qasper/kvcomm/kvcomm_top0.3_cost_0702_1407/cost_summary.json
+2026-07-02 14:22:01,940 - root - INFO - communication cost profile result: 0.0929, measured=495, warmup=5
