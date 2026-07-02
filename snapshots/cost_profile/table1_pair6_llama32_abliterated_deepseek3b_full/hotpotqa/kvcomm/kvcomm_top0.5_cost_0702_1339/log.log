@@ -14,3 +14,6 @@
   3 22  1  2]
 2026-07-02 13:39:33,396 - root - INFO - New layers list: [12 13 10  8  9 14 15 26  7  5  0 11  6 18]
 2026-07-02 13:39:33,400 - root - INFO - CVCommunicator initialized
+2026-07-02 13:41:45,925 - root - INFO - cost profile written to /home/xay/KVComm/snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/hotpotqa/kvcomm/kvcomm_top0.5_cost_0702_1339/cost_profile.jsonl
+2026-07-02 13:41:45,926 - root - INFO - cost summary written to /home/xay/KVComm/snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/hotpotqa/kvcomm/kvcomm_top0.5_cost_0702_1339/cost_summary.json
+2026-07-02 13:41:45,926 - root - INFO - communication cost profile result: 0.5596, measured=495, warmup=5
