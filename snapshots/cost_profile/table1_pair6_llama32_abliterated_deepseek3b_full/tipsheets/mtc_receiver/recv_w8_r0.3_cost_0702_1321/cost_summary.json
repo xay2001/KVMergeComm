@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "dataset": "tipsheets",
+    "score_mode": "receiver",
+    "recv_window": 8,
+    "merge": true,
+    "merge_mode": "evict",
+    "merge_ratio": 0.3,
+    "budget_mode": "uniform",
+    "budget_min": 0.05,
+    "budget_max": 0.5,
+    "coverage_tau": 0.9,
+    "coverage_scale": 1.0,
+    "warmup": 5,
+    "n": 495
+  },
+  "score_mean": 0.488889,
+  "budget_mean": 0.324976,
+  "query_budget_mean": null,
+  "kv_token_ratio_mean": 0.324976,
+  "kv_byte_ratio_mean": 0.324976,
+  "kv_tokens_sent_mean": 837.393939,
+  "kv_bytes_sent_mean": 3429965.575758,
+  "ctx_tokens_A_mean": 92.030303,
+  "query_tokens_B_mean": 67.969697,
+  "output_tokens_mean": 3.860606,
+  "t_prepare_inputs_mean": 0.00168,
+  "t_a_prefill_mean": 0.041101,
+  "t_receiver_score_mean": 0.060013,
+  "t_generate_total_mean": 0.180163,
+  "t_total_mean": 0.282958,
+  "peak_mem_gb_mean": 12.056307
+}

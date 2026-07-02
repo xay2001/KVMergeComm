@@ -15,8 +15,8 @@
 | 主表 ReKV 覆盖 | 已完成核心覆盖 | Table 1 pair #6/#7 完整；Table 8 pair #1/#2/#3 完整。 |
 | B-ReKV 稳健性 | pair #1 核心任务已完成 | MuSiQue / HotpotQA / MultiFieldQA-en 的 Pareto 图和 budget distribution 已完成。 |
 | Cost profiling | pair #1 已完成 | 8 个主数据集都有 cost 表。pair #6/#7 的 cost 是推荐补充项。 |
-| Query-aware fairness | pair #1 已完成 | ReKV vs Evict vs Random，query sketch window ablation 已完成。推荐补 pair #6/#7 轻量版。 |
-| 可解释性 | pair #1 已完成 | answer overlap、清洗后的 qualitative examples、token bar 图已完成。 |
+| Query-aware fairness | pair #1/#6/#7 已完成 | pair #1 完成 ReKV vs Evict vs Random 和 query sketch window ablation；pair #6/#7 完成 ReKV/Evict/Random/B-ReKV 扩展。 |
+| 可解释性 | pair #1 已完成 | answer overlap、清洗后的 qualitative examples、token bar 图、deletion ablation 已完成。 |
 | Table 1 pair #8 Falcon | 暂缓/最后处理 | `Falcon3-7B-Instruct-abliterated` checkpoint 目前不可获得或目录不完整；不阻塞主线，放到最后可选处理。 |
 | Table 6 / 10 / 11 | 未完成 | extended tasks、multi-source、positional coherence 都是附录/机制级实验。 |
 
@@ -92,16 +92,24 @@
 - Query windows：`recv_window={4,8,16,32,all}`。
 - 产物：`snapshots/query_fairness/pair1_llama31_same/query_fairness.csv`。
 
-推荐补充：
+Pair #6/#7 扩展已完成：
 
-- Pair #6 和 pair #7。
 - 任务：`hotpotqa`, `musique`, `multifieldqa_en`。
-- 方法：
-  - ReKV `r=0.3`, `recv_window=8/16`
-  - Evict/ValueNorm `r=0.3`
-  - Random-token `r=0.3`
+- 方法：Evict/ValueNorm、Random-token、ReKV `w8/w16 r=0.3`、B-ReKV 三个 canonical 点。
+- 产物：`snapshots/query_fairness/pair6_pair7_query_fairness_brekv_summary.csv`。
 
-优先级：高。这个直接回答“query-aware selection 是否真的有用”。
+关键结果：
+
+- Pair #6:
+  - HotpotQA: Evict `0.516`, Random `0.406`, best ReKV `0.668`, best B-ReKV `0.674`。
+  - MuSiQue: Evict `0.236`, Random `0.182`, best ReKV `0.362`, best B-ReKV `0.384`。
+  - MultiFieldQA-en: Evict `0.327`, Random `0.320`, best ReKV `0.467`, best B-ReKV `0.493`。
+- Pair #7:
+  - HotpotQA: Evict `0.124`, Random `0.118`, best ReKV `0.396`, best B-ReKV `0.446`。
+  - MuSiQue: Evict `0.144`, Random `0.080`, best ReKV `0.298`, best B-ReKV `0.308`。
+  - MultiFieldQA-en: Evict `0.080`, Random `0.140`, best ReKV `0.393`, best B-ReKV `0.393`。
+
+结论：跨 fine-tuned pairs 后，query-aware ReKV/B-ReKV 仍显著强于 query-agnostic Evict/Random，能直接回应 “ReKV 只是因为用了 query / 不公平” 的审稿风险。
 
 ### 1.5 Table 10：Multi-Source KV Communication
 
@@ -236,21 +244,26 @@ KVComm-S 是什么：
   - `snapshots/interpretability/pair1_llama31_same/cleaned/clean_interpretability_examples.md`
   - `snapshots/interpretability/pair1_llama31_same/cleaned/*_clean_top_tokens.png`
 
+Deletion ablation 已完成：
+
+- 脚本：`scripts/run_deletion_ablation_gpu2.sh`。
+- 产物：
+  - `snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv`
+  - `snapshots/deletion_ablation/pair1_llama31_same/{hotpotqa,musique,multifieldqa_en}/deletion_ablation_w8_r0.3_k20.jsonl`
+- 设置：pair #1, `recv_window=8`, `r=0.3`, 每任务 50 samples, 删除 top-20 content tokens。
+- 结果：
+  - HotpotQA: base `0.78`; 删除 ReKV tokens 后 `0.42`, drop `0.36`; 删除 Evict/Random 后 drop `0.16/0.14`。
+  - MuSiQue: base `0.58`; 删除 ReKV tokens 后 `0.22`, drop `0.36`; 删除 Evict/Random 后 drop `0.14/0.04`。
+  - MultiFieldQA-en: base `0.48`; 删除 ReKV tokens 后 `0.24`, drop `0.24`; 删除 Evict/Random 后 drop `0.00/-0.02`。
+- 结论：删除 ReKV-selected tokens 的性能下降最大，说明 ReKV 选到的 token 更接近实际证据，不只是 lexical overlap。
+
 推荐补充：
 
-1. Deletion ablation。
-   - 删除或 mask ReKV top tokens。
-   - 删除或 mask Evict top tokens。
-   - 删除或 mask Random top tokens。
-   - 测答案分数下降。
-   - 任务：`hotpotqa`, `musique`, `multifieldqa_en`。
-   - 样本数：50-100。
-
-2. Supporting-facts overlap。
+1. Supporting-facts overlap。
    - 优先 HotpotQA。
    - 测 selected tokens 是否落在 supporting sentences 内。
 
-优先级：deletion ablation 高；supporting facts 中高。
+优先级：supporting facts 中高。
 
 ## 3. 方法消融
 
@@ -391,13 +404,11 @@ KVComm-S 是什么：
 
 ### Stage B：最高审稿风险实验
 
-2. Pair #6/#7 query fairness extension。
-   - ReKV vs Evict vs Random-token。
-   - 任务：`hotpotqa`, `musique`, `multifieldqa_en`。
+2. Pair #6/#7 query fairness extension 已完成。
+   - 产物：`snapshots/query_fairness/pair6_pair7_query_fairness_brekv_summary.csv`。
 
-3. Deletion ablation。
-   - 任务：`hotpotqa`, `musique`, `multifieldqa_en`。
-   - 50-100 samples。
+3. Deletion ablation 已完成。
+   - 产物：`snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv`。
 
 4. Pair #6/#7 lightweight cost profile。
    - 任务：`hotpotqa`, `musique`, `multifieldqa_en`。

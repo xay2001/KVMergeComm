@@ -1,0 +1,43 @@
+pair,task,method,setting,n,score,budget,run_dir
+pair6,hotpotqa,Evict/ValueNorm,r=0.3,500,0.516000,0.324936,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_evict/evict_r0.3_0701_2346
+pair6,hotpotqa,Random-token,r=0.3,500,0.406000,0.324936,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_random/random_r0.3_0701_2350
+pair6,hotpotqa,ReKV,w8 r=0.3,500,0.646000,0.324936,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_receiver/recv_w8_r0.3_0701_2354
+pair6,hotpotqa,ReKV,w16 r=0.3,500,0.668000,0.324936,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_receiver/recv_w16_r0.3_0701_2357
+pair6,hotpotqa,B-ReKV,w8 t=0.95 s=0.75,500,0.642000,0.271506,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.75_w8_0702_0001
+pair6,hotpotqa,B-ReKV,w8 t=0.95 s=0.85,500,0.640000,0.300380,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.85_w8_0702_0004
+pair6,hotpotqa,B-ReKV,w16 t=0.95 s=0.90,500,0.674000,0.367717,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.90_w16_0702_0008
+pair6,multifieldqa_en,Evict/ValueNorm,r=0.3,150,0.326667,0.325000,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_evict/evict_r0.3_0702_0038
+pair6,multifieldqa_en,Random-token,r=0.3,150,0.320000,0.325000,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_random/random_r0.3_0702_0042
+pair6,multifieldqa_en,ReKV,w8 r=0.3,150,0.466667,0.325000,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_receiver/recv_w8_r0.3_0702_0045
+pair6,multifieldqa_en,ReKV,w16 r=0.3,150,0.466667,0.325000,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_receiver/recv_w16_r0.3_0702_0049
+pair6,multifieldqa_en,B-ReKV,w8 t=0.95 s=0.75,150,0.466667,0.231166,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/coverage/cov_t0.95_s0.75_w8_0702_0054
+pair6,multifieldqa_en,B-ReKV,w8 t=0.95 s=0.85,150,0.486667,0.257068,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/coverage/cov_t0.95_s0.85_w8_0702_0058
+pair6,multifieldqa_en,B-ReKV,w16 t=0.95 s=0.90,150,0.493333,0.328363,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/coverage/cov_t0.95_s0.90_w16_0702_0102
+pair6,musique,Evict/ValueNorm,r=0.3,500,0.236000,0.324975,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_evict/evict_r0.3_0702_0011
+pair6,musique,Random-token,r=0.3,500,0.182000,0.324975,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_random/random_r0.3_0702_0015
+pair6,musique,ReKV,w8 r=0.3,500,0.362000,0.324975,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_receiver/recv_w8_r0.3_0702_0019
+pair6,musique,ReKV,w16 r=0.3,500,0.354000,0.324975,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_receiver/recv_w16_r0.3_0702_0023
+pair6,musique,B-ReKV,w8 t=0.95 s=0.75,500,0.384000,0.250506,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.75_w8_0702_0026
+pair6,musique,B-ReKV,w8 t=0.95 s=0.85,500,0.370000,0.278840,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.85_w8_0702_0030
+pair6,musique,B-ReKV,w16 t=0.95 s=0.90,500,0.368000,0.360302,snapshots/query_fairness/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.90_w16_0702_0034
+pair7,hotpotqa,Evict/ValueNorm,r=0.3,500,0.124000,0.324975,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_evict/evict_r0.3_0702_0107
+pair7,hotpotqa,Random-token,r=0.3,500,0.118000,0.324975,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_random/random_r0.3_0702_0130
+pair7,hotpotqa,ReKV,w8 r=0.3,500,0.396000,0.324975,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_receiver/recv_w8_r0.3_0702_0148
+pair7,hotpotqa,ReKV,w16 r=0.3,500,0.376000,0.324975,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_receiver/recv_w16_r0.3_0702_0200
+pair7,hotpotqa,B-ReKV,w8 t=0.95 s=0.75,500,0.414000,0.330761,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.75_w8_0702_0212
+pair7,hotpotqa,B-ReKV,w8 t=0.95 s=0.85,500,0.446000,0.369025,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.85_w8_0702_0224
+pair7,hotpotqa,B-ReKV,w16 t=0.95 s=0.90,500,0.402000,0.435622,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.90_w16_0702_0236
+pair7,multifieldqa_en,Evict/ValueNorm,r=0.3,150,0.080000,0.325001,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_evict/evict_r0.3_0702_0437
+pair7,multifieldqa_en,Random-token,r=0.3,150,0.140000,0.325001,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_random/random_r0.3_0702_0450
+pair7,multifieldqa_en,ReKV,w8 r=0.3,150,0.380000,0.325001,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_receiver/recv_w8_r0.3_0702_0503
+pair7,multifieldqa_en,ReKV,w16 r=0.3,150,0.393333,0.325001,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_receiver/recv_w16_r0.3_0702_0513
+pair7,multifieldqa_en,B-ReKV,w8 t=0.95 s=0.75,150,0.393333,0.209358,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/coverage/cov_t0.95_s0.75_w8_0702_0524
+pair7,multifieldqa_en,B-ReKV,w8 t=0.95 s=0.85,150,0.380000,0.232162,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/coverage/cov_t0.95_s0.85_w8_0702_0533
+pair7,multifieldqa_en,B-ReKV,w16 t=0.95 s=0.90,150,0.373333,0.309112,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/coverage/cov_t0.95_s0.90_w16_0702_0543
+pair7,musique,Evict/ValueNorm,r=0.3,500,0.144000,0.324937,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_evict/evict_r0.3_0702_0248
+pair7,musique,Random-token,r=0.3,500,0.080000,0.324937,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_random/random_r0.3_0702_0307
+pair7,musique,ReKV,w8 r=0.3,500,0.288000,0.324937,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_receiver/recv_w8_r0.3_0702_0326
+pair7,musique,ReKV,w16 r=0.3,500,0.298000,0.324937,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_receiver/recv_w16_r0.3_0702_0340
+pair7,musique,B-ReKV,w8 t=0.95 s=0.75,500,0.300000,0.292021,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.75_w8_0702_0354
+pair7,musique,B-ReKV,w8 t=0.95 s=0.85,500,0.308000,0.325507,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.85_w8_0702_0409
+pair7,musique,B-ReKV,w16 t=0.95 s=0.90,500,0.300000,0.412138,snapshots/query_fairness/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.90_w16_0702_0422
