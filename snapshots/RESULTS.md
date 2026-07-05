@@ -773,14 +773,14 @@ KVComm 原论文共 9 个 model pairs:
 | Pair | Sender `M_s` | Receiver `M_r` | 类型 | 我们当前状态 |
 |---:|---|---|---|---|
 | 1 | `meta-llama/Llama-3.1-8B-Instruct` | `meta-llama/Llama-3.1-8B-Instruct` | Same model | 已在跑/已有大量结果 |
-| 2 | `meta-llama/Llama-3.2-3B-Instruct` | `meta-llama/Llama-3.2-3B-Instruct` | Same model | 未跑 ReKV |
-| 3 | `Qwen/Qwen2.5-7B-Instruct` | `Qwen/Qwen2.5-7B-Instruct` | Same model | 未跑 ReKV |
-| 4 | `tiiuae/Falcon3-7B-Instruct` | `tiiuae/Falcon3-7B-Instruct` | Same model | 未跑 ReKV |
-| 5 | `yuvraj17/EvolCodeLlama-3.1-8B-Instruct` | `Team-ACE/ToolACE-2-Llama-3.1-8B` | fine-tuned from pair #1 base | 未跑 ReKV |
-| 6 | `huihui-ai/Llama-3.2-3B-Instruct-abliterated` | `suayptalha/DeepSeek-R1-Distill-Llama-3B` | fine-tuned from pair #2 base | KVComm 主文 Table 1,未跑 ReKV |
-| 7 | `Orion-zhen/Qwen2.5-7B-Instruct-Uncensored` | `bespokelabs/Bespoke-Stratos-7B` | fine-tuned from pair #3 base | KVComm 主文 Table 1,未跑 ReKV |
-| 8 | `ehristoforu/falcon3-ultraset` | `huihui-ai/Falcon3-7B-Instruct-abliterated` | fine-tuned from pair #4 base | KVComm 主文 Table 1,未跑 ReKV |
-| 9 | `arcee-ai/Llama-3.1-SuperNova-Lite` | `deepseek-ai/DeepSeek-R1-Distill-Llama-8B` | fine-tuned from pair #1 base | 未跑 ReKV |
+| 2 | `meta-llama/Llama-3.2-3B-Instruct` | `meta-llama/Llama-3.2-3B-Instruct` | Same model | Table 8 ReKV/B-ReKV 已完成 |
+| 3 | `Qwen/Qwen2.5-7B-Instruct` | `Qwen/Qwen2.5-7B-Instruct` | Same model | Table 8 ReKV/B-ReKV 已完成 |
+| 4 | `tiiuae/Falcon3-7B-Instruct` | `tiiuae/Falcon3-7B-Instruct` | Same model | Table 8 ReKV/B-ReKV 已完成 |
+| 5 | `yuvraj17/EvolCodeLlama-3.1-8B-Instruct` | `Team-ACE/ToolACE-2-Llama-3.1-8B` | fine-tuned from pair #1 base | Table 8 ReKV/B-ReKV 已完成 |
+| 6 | `huihui-ai/Llama-3.2-3B-Instruct-abliterated` | `suayptalha/DeepSeek-R1-Distill-Llama-3B` | fine-tuned from pair #2 base | Table 1 ReKV/B-ReKV 已完成 |
+| 7 | `Orion-zhen/Qwen2.5-7B-Instruct-Uncensored` | `bespokelabs/Bespoke-Stratos-7B` | fine-tuned from pair #3 base | Table 1 ReKV/B-ReKV 已完成 |
+| 8 | `ehristoforu/falcon3-ultraset` | `huihui-ai/Falcon3-7B-Instruct-abliterated` | fine-tuned from pair #4 base | 暂缓；receiver checkpoint 不可获得或目录不完整 |
+| 9 | `arcee-ai/Llama-3.1-SuperNova-Lite` | `deepseek-ai/DeepSeek-R1-Distill-Llama-8B` | fine-tuned from pair #1 base | Table 8 ReKV/B-ReKV 已完成；非 `tmath` 结果异常偏低 |
 
 注意:
 
@@ -1597,6 +1597,85 @@ M_r = /sharedspace/models/Qwen2.5-7B-Instruct
 | `tmath` | 0.311 / 0.311 / 0.317 | 0.310 / 0.316 / 0.316 | 0.312 / 0.318 / 0.311 |
 
 初步观察:pair #3 的固定 ReKV 在 `tipsheets/hotpotqa/musique/twowikimqa/qasper` 上整体稳定;B-ReKV 在 `tmath` 的 `w8-s0.85` 略高于固定 ReKV 最优,但在 `qasper/tipsheets/musique` 上代表点偏保守,需要依赖后续平均预算分析判断是否有 Pareto 优势。
+
+### Table 8 pair #4:Falcon3-7B-Instruct same-model(已完成)
+
+模型对:
+
+```text
+M_s = /NAS/models/Falcon3-7B-Instruct
+M_r = /NAS/models/Falcon3-7B-Instruct
+```
+
+日志:
+
+- 初始 GPU1 队列 `snapshots/table8_pair4_falcon3_7b_same/logs/gpu1_pair4_0702_1507.log` 在本地数据集缺失时停在 `hotpotqa`。
+- 续跑 GPU2 队列 `snapshots/table8_pair4_falcon3_7b_same/logs/gpu2_pair4_0702_1558.log` 已完成,`2026-07-02 21:44:01`。
+
+状态:8 datasets x 9 paper-table runs 完整。
+
+| Dataset | ReKV-w8 r=.3/.5/.7 | ReKV-w16 r=.3/.5/.7 | B-ReKV 3 pts |
+|---|---|---|---|
+| `countries` | 0.045 / 0.360 / 0.445 | 0.040 / 0.395 / 0.425 | 0.270 / 0.315 / 0.365 |
+| `tipsheets` | 0.804 / 0.930 / 0.942 | 0.664 / 0.922 / 0.944 | 0.908 / 0.922 / 0.900 |
+| `hotpotqa` | 0.534 / 0.616 / 0.606 | 0.554 / 0.604 / 0.624 | 0.556 / 0.570 / 0.598 |
+| `musique` | 0.382 / 0.394 / 0.416 | 0.372 / 0.402 / 0.418 | 0.374 / 0.366 / 0.386 |
+| `multifieldqa_en` | 0.467 / 0.453 / 0.473 | 0.433 / 0.447 / 0.480 | 0.413 / 0.400 / 0.440 |
+| `twowikimqa` | 0.380 / 0.405 / 0.410 | 0.395 / 0.385 / 0.405 | 0.385 / 0.400 / 0.395 |
+| `qasper` | 0.236 / 0.242 / 0.248 | 0.230 / 0.236 / 0.252 | 0.226 / 0.214 / 0.226 |
+| `tmath` | 0.300 / 0.305 / 0.307 | 0.299 / 0.304 / 0.304 | 0.302 / 0.300 / 0.301 |
+
+初步观察:Falcon3 same-model 上固定 ReKV 在 `tipsheets/hotpotqa/musique/multifieldqa_en` 表现稳定;B-ReKV 代表点整体偏保守,但在 `tipsheets` 和 `countries` 上仍有可用信号。
+
+### Table 8 pair #5:EvolCodeLlama -> ToolACE(已完成)
+
+模型对:
+
+```text
+M_s = /NAS/models/EvolCodeLlama-3.1-8B-Instruct
+M_r = /NAS/models/ToolACE-2-Llama-3.1-8B
+```
+
+日志:`snapshots/table8_pair5_then_pair9_gpu3_0702_1601.log`。状态:已完成,`2026-07-02 22:22:45`。
+
+实现注意:本地 `EvolCodeLlama-3.1-8B-Instruct` 目录包含 full weights 和 PEFT adapter metadata。运行脚本使用 no-adapter symlink view 避免 `AutoModelForCausalLM` 联网加载 `meta-llama/Meta-Llama-3.1-8B-Instruct` base。
+
+| Dataset | ReKV-w8 r=.3/.5/.7 | ReKV-w16 r=.3/.5/.7 | B-ReKV 3 pts |
+|---|---|---|---|
+| `countries` | 0.330 / 0.590 / 0.580 | 0.380 / 0.605 / 0.595 | 0.165 / 0.290 / 0.320 |
+| `tipsheets` | 0.852 / 0.908 / 0.906 | 0.906 / 0.906 / 0.902 | 0.848 / 0.868 / 0.914 |
+| `hotpotqa` | 0.554 / 0.580 / 0.614 | 0.538 / 0.614 / 0.618 | 0.552 / 0.552 / 0.542 |
+| `musique` | 0.320 / 0.334 / 0.348 | 0.314 / 0.334 / 0.340 | 0.310 / 0.308 / 0.322 |
+| `multifieldqa_en` | 0.567 / 0.560 / 0.567 | 0.553 / 0.560 / 0.560 | 0.553 / 0.547 / 0.547 |
+| `twowikimqa` | 0.350 / 0.360 / 0.385 | 0.360 / 0.380 / 0.390 | 0.320 / 0.330 / 0.365 |
+| `qasper` | 0.244 / 0.256 / 0.262 | 0.234 / 0.252 / 0.258 | 0.232 / 0.242 / 0.236 |
+| `tmath` | 0.361 / 0.368 / 0.372 | 0.357 / 0.364 / 0.375 | 0.361 / 0.363 / 0.358 |
+
+初步观察:pair #5 是较干净的 same-base fine-tuned pair 结果;固定 ReKV 在多数任务上随预算增加稳定提升。B-ReKV 代表点在 `tipsheets` 可达到或超过固定 ReKV,但在 `countries/hotpotqa/musique/twowikimqa/qasper` 上偏保守。
+
+### Table 8 pair #9:SuperNova -> DeepSeek-R1-Distill-Llama-8B(已完成)
+
+模型对:
+
+```text
+M_s = /NAS/models/Llama-3.1-SuperNova-Lite
+M_r = /NAS/models/DeepSeek-R1-Distill-Llama-8B
+```
+
+日志:`snapshots/table8_pair5_then_pair9_gpu3_0702_1601.log`。状态:已完成,`2026-07-03 09:04:02`。
+
+| Dataset | ReKV-w8 r=.3/.5/.7 | ReKV-w16 r=.3/.5/.7 | B-ReKV 3 pts |
+|---|---|---|---|
+| `countries` | 0.000 / 0.000 / 0.000 | 0.000 / 0.000 / 0.000 | 0.000 / 0.000 / 0.000 |
+| `tipsheets` | 0.000 / 0.000 / 0.000 | 0.000 / 0.000 / 0.000 | 0.000 / 0.000 / 0.000 |
+| `hotpotqa` | 0.000 / 0.000 / 0.000 | 0.000 / 0.000 / 0.000 | 0.000 / 0.000 / 0.000 |
+| `musique` | 0.000 / 0.000 / 0.000 | 0.000 / 0.000 / 0.000 | 0.000 / 0.000 / 0.000 |
+| `multifieldqa_en` | 0.020 / 0.013 / 0.013 | 0.013 / 0.013 / 0.013 | 0.020 / 0.013 / 0.013 |
+| `twowikimqa` | 0.005 / 0.005 / 0.005 | 0.005 / 0.005 / 0.005 | 0.005 / 0.005 / 0.005 |
+| `qasper` | 0.002 / 0.002 / 0.002 | 0.000 / 0.002 / 0.002 | 0.000 / 0.000 / 0.000 |
+| `tmath` | 0.325 / 0.322 / 0.327 | 0.325 / 0.323 / 0.328 | 0.321 / 0.325 / 0.324 |
+
+初步观察:pair #9 已完整跑完,但除 `tmath` 外结果几乎全为 0。这更像模型输出格式、prompt template、chat special tokens 或 sender/receiver fine-tune mismatch 导致的异常/负结果,不应直接作为 ReKV 泛化失败结论使用;写论文时建议放入 limitations 或先做输出样例检查。
 
 ### Table 1 pair #6:Llama-3.2 abliterated -> DeepSeek-R1-Distill-Llama-3B(已完成)
 

@@ -17,6 +17,9 @@ The shared 8-task set is:
 | Table 8 | #1 | `snapshots/<dataset>/` | `/sharedspace/models/Llama-3.1-8B-Instruct` | `/sharedspace/models/Llama-3.1-8B-Instruct` | Full sweep: KVComm, merge, evict, ReKV, budget, coverage, progressive, features |
 | Table 8 | #2 | `snapshots/table8_pair2_llama32_same/` | `/sharedspace/models/Llama-3.2-3B-Instruct` | `/sharedspace/models/Llama-3.2-3B-Instruct` | Paper-table queue: ReKV + B-ReKV |
 | Table 8 | #3 | `snapshots/table8_pair3_qwen25_7b_same/` | `/sharedspace/models/Qwen2.5-7B-Instruct` | `/sharedspace/models/Qwen2.5-7B-Instruct` | Paper-table queue: ReKV + B-ReKV |
+| Table 8 | #4 | `snapshots/table8_pair4_falcon3_7b_same/` | `/NAS/models/Falcon3-7B-Instruct` | `/NAS/models/Falcon3-7B-Instruct` | Paper-table queue complete: ReKV + B-ReKV |
+| Table 8 | #5 | `snapshots/table8_pair5_evolcodellama_toolace/` | `/NAS/models/EvolCodeLlama-3.1-8B-Instruct` | `/NAS/models/ToolACE-2-Llama-3.1-8B` | Paper-table queue complete: ReKV + B-ReKV |
+| Table 8 | #9 | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | `/NAS/models/Llama-3.1-SuperNova-Lite` | `/NAS/models/DeepSeek-R1-Distill-Llama-8B` | Paper-table queue complete: ReKV + B-ReKV; near-zero non-`tmath` scores need inspection |
 | Table 1 | #6 | `snapshots/table1_pair6_llama32_abliterated_deepseek3b/` | `/sharedspace/models/Llama-3.2-3B-Instruct-abliterated` | `/sharedspace/models/DeepSeek-R1-Distill-Llama-3B` | Paper-table queue: ReKV + B-ReKV |
 | Table 1 | #7 | `snapshots/table1_pair7_qwen25_uncensored_bespoke/` | `/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored` | `/sharedspace/models/Bespoke-Stratos-7B` | Paper-table queue: ReKV + B-ReKV |
 | Table 1 | #8 | `snapshots/table1_pair8_falcon3_ultraset_abliterated/` | `/sharedspace/models/falcon3-ultraset` | `/sharedspace/models/Falcon3-7B-Instruct-abliterated` | Paper-table queue: ReKV + B-ReKV |

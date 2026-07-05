@@ -12,7 +12,7 @@
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
-| 主表 ReKV 覆盖 | 已完成核心覆盖 | Table 1 pair #6/#7 完整；Table 8 pair #1/#2/#3 完整。 |
+| 主表 ReKV 覆盖 | 已完成扩展覆盖 | Table 1 pair #6/#7 完整；Table 8 pair #1/#2/#3/#4/#5/#9 完整。 |
 | B-ReKV 稳健性 | pair #1 核心任务已完成 | MuSiQue / HotpotQA / MultiFieldQA-en 的 Pareto 图和 budget distribution 已完成。 |
 | Cost profiling | pair #1 已完成 | 8 个主数据集都有 cost 表。pair #6/#7 的 cost 是推荐补充项。 |
 | Query-aware fairness | pair #1/#6/#7 已完成 | pair #1 完成 ReKV vs Evict vs Random 和 query sketch window ablation；pair #6/#7 完成 ReKV/Evict/Random/B-ReKV 扩展。 |
@@ -54,15 +54,15 @@
 | #1 Llama3.1 same-model | `snapshots/<dataset>/` | 已完成 | 5 个 fixed ReKV 小洞已补齐：HotpotQA `w8/w16 r=0.7`；QASPER `w8 r=0.3/0.5/0.7`。 |
 | #2 Llama3.2 same-model | `snapshots/table8_pair2_llama32_same/` | 已完成 | 无 |
 | #3 Qwen2.5 same-model | `snapshots/table8_pair3_qwen25_7b_same/` | 已完成 | 无 |
-| #4 Falcon3 same-model | 未开始 | 可选 | 只有追求完整 Table 8 时再跑。 |
-| #5 EvolCodeLlama -> ToolACE | 未开始 | 可选 | 只有追求完整 Table 8 时再跑。 |
+| #4 Falcon3 same-model | `snapshots/table8_pair4_falcon3_7b_same/` | 已完成 | 8 datasets x 9 paper-table runs 完整。 |
+| #5 EvolCodeLlama -> ToolACE | `snapshots/table8_pair5_evolcodellama_toolace/` | 已完成 | 8 datasets x 9 paper-table runs 完整。 |
 | #8 Falcon fine-tuned pair | `snapshots/table1_pair8_falcon3_ultraset_abliterated/` | 暂缓/最后处理 | blocker 同 Table 1 pair #8；原 receiver checkpoint 不可获得时可写入 limitation。 |
-| #9 SuperNova -> DeepSeek-Llama-8B | 未开始 | 可选 | 只有追求完整 Table 8 时再跑。 |
+| #9 SuperNova -> DeepSeek-Llama-8B | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | 已完成 | 8 datasets x 9 paper-table runs 完整；除 `tmath` 外多数任务结果接近 0，需作为异常/负结果单独解释。 |
 
 建议：
 
-- pair #1/#2/#3 已可作为 Table 8 appendix 核心覆盖。
-- pair #4/#5/#8/#9 等核心 reviewer-risk 实验补完后再考虑。
+- pair #1/#2/#3/#4/#5/#9 已可作为 Table 8 appendix 覆盖。
+- pair #8 仍受 Falcon receiver checkpoint blocker 影响；原 checkpoint 不可获得时可写入 limitation。
 
 ### 1.3 Table 6：Extended Tasks
 
@@ -426,7 +426,10 @@ Deletion ablation 已完成：
 
 ### Stage D：大型可选实验
 
-11. 跑 Table 8 pair #4/#5/#9 完整队列。
+11. Table 8 pair #4/#5/#9 完整队列已完成。
+    - #4 Falcon3 same-model：`snapshots/table8_pair4_falcon3_7b_same/`。
+    - #5 EvolCodeLlama -> ToolACE：`snapshots/table8_pair5_evolcodellama_toolace/`。
+    - #9 SuperNova -> DeepSeek-Llama-8B：`snapshots/table8_pair9_supernova_deepseek_llama8b/`；结果大多接近 0，需检查是否为模型输出/模板/对齐问题。
 12. 最后再处理 Table 1/Table 8 pair #8 Falcon；若原 checkpoint 仍不可获得，则标记为 checkpoint unavailable，或改跑 Falcon-family substitute 作为额外鲁棒性实验。
 13. Table 10 multi-source ReKV。
 14. Head-wise B-ReKV。
@@ -436,7 +439,7 @@ Deletion ablation 已完成：
 如果时间有限，最稳的论文呈现方式是：
 
 - 正文：Table 1 pair #6/#7，Table 8 pair #1/#2/#3，cost，fairness，B-ReKV Pareto，interpretability。
-- 附录：budget-aware negative ablations，cleaned examples，budget distribution，additional pair tables。
-- Future work：完整 Table 8 pair #4/#5/#8/#9，multi-source，positional-coherence variants，head-wise B-ReKV。
+- 附录：Table 8 pair #4/#5/#9，budget-aware negative ablations，cleaned examples，budget distribution，additional pair tables。
+- Future work：Table 8 pair #8 checkpoint-unavailable case，multi-source，positional-coherence variants，head-wise B-ReKV。
 
 这样写比较诚实：我们不声称完整复现 KVComm 所有 appendix 实验，但已经覆盖核心方法、跨模型泛化、效率、公平性、鲁棒性和可解释性风险。

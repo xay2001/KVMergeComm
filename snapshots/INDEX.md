@@ -30,6 +30,9 @@ Generated from `snapshots/**/log.log`.
 | Table 8 | #1 | `snapshots/<dataset>/` | 511 | Main full sweep; paper-table ReKV/B-ReKV block is complete |
 | Table 8 | #2 | `snapshots/table8_pair2_llama32_same/` | 74 | 72 completed paper-table runs plus 2 incomplete duplicate coverage dirs |
 | Table 8 | #3 | `snapshots/table8_pair3_qwen25_7b_same/` | 72 | Complete for 8 datasets x 9 paper-table runs |
+| Table 8 | #4 | `snapshots/table8_pair4_falcon3_7b_same/` | 72 | Complete for 8 datasets x 9 paper-table runs |
+| Table 8 | #5 | `snapshots/table8_pair5_evolcodellama_toolace/` | 72 | Complete for 8 datasets x 9 paper-table runs |
+| Table 8 | #9 | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | 72 | Complete for 8 datasets x 9 paper-table runs; most non-`tmath` scores are near zero |
 
 ## Paper-Table Run Definition
 
@@ -57,6 +60,9 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 | #1 | Full legacy sweep under `snapshots/<dataset>/` | Includes KVComm, merge, evict, ReKV, budget, coverage, progressive, features; paper-table ReKV/B-ReKV block complete |
 | #2 | 8 datasets have 9 completed paper-table runs | Two extra incomplete coverage directories are indexed as `unknown` |
 | #3 | 8 datasets have 9 completed paper-table runs | Complete paper-table queue |
+| #4 | 8 datasets have 9 completed paper-table runs | Falcon3 same-model queue complete |
+| #5 | 8 datasets have 9 completed paper-table runs | EvolCodeLlama -> ToolACE queue complete |
+| #9 | 8 datasets have 9 completed paper-table runs | SuperNova -> DeepSeek-Llama-8B queue complete; inspect near-zero non-`tmath` results before using as positive evidence |
 
 ## Method Directory Legend
 
@@ -79,6 +85,7 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 - Pair #7 needs `tmath` completion.
 - Pair #8 needs model path/startup issue resolution before continuing the queue.
 - Pair #1 `qasper` remains sparse relative to other datasets.
+- Pair #9 complete results are mostly near zero outside `tmath`; check prompt/template/model-output behavior before presenting them as robustness evidence.
 
 ## Reviewer-Risk Experiment Status
 

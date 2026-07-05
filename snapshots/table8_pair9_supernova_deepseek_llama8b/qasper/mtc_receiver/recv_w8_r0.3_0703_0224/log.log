@@ -1,0 +1,12 @@
+2026-07-03 02:24:20,151 - root - INFO - Logging setup completed. Log file: snapshots/table8_pair9_supernova_deepseek_llama8b/qasper/mtc_receiver/recv_w8_r0.3_0703_0224/log.log
+2026-07-03 02:24:20,151 - root - INFO - Log level: INFO
+2026-07-03 02:24:20,151 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/table8_pair9_supernova_deepseek_llama8b/qasper/mtc_receiver', model_A='/NAS/models/Llama-3.1-SuperNova-Lite', model_B='/NAS/models/DeepSeek-R1-Distill-Llama-8B', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.3, merge_sink=4, merge_recent=8, merge_mode='evict', score_mode='receiver', recv_window=8, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='qasper', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='recv_w8_r0.3', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-03 02:24:20,151 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/table8_pair9_supernova_deepseek_llama8b/qasper/mtc_receiver/recv_w8_r0.3_0703_0224
+2026-07-03 02:24:20,151 - root - INFO - Log level: INFO
+2026-07-03 02:24:20,382 - root - INFO - Number of GPU: 1
+2026-07-03 02:24:20,382 - root - INFO - Using GPU: NVIDIA RTX PRO 6000 Blackwell Server Edition
+2026-07-03 02:24:20,383 - root - INFO - CUDA_VISIBLE_DEVICES: 3
+2026-07-03 02:24:36,056 - root - INFO - CVCommunicator initialized
+2026-07-03 02:24:36,763 - root - INFO - [merge] mode=evict score=receiver budget=uniform layer compress: L=4091 -> k=1227 (r_eff=0.300, base_ratio=0.3, sink=4, recent=8)
+2026-07-03 02:45:20,969 - root - INFO - per-sample scores written to /home/xay/KVMergeComm/snapshots/table8_pair9_supernova_deepseek_llama8b/qasper/mtc_receiver/recv_w8_r0.3_0703_0224/per_sample.jsonl
+2026-07-03 02:45:20,969 - root - INFO - communication result: 0.0020, communication time: 1244.91s

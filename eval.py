@@ -9,6 +9,7 @@ import time
 import os
 import json
 import copy
+from pathlib import Path
 
 
 def _current_run_dir():
@@ -78,8 +79,14 @@ SENDER_SUMMARIZE_INSTRUCTION = "Summarize the content in a concise way, as it wi
 THINK_MODEL_LIST = ["deepseek-ai/DeepSeek-R1-Distill-Llama-8B"]
 
 def is_think_model(model):
+    model_name = str(getattr(model, "name", ""))
+    normalized_names = {
+        model_name.lower(),
+        Path(model_name).name.lower(),
+    }
     for think_model in THINK_MODEL_LIST:
-        if think_model.lower() == model.name.lower():
+        think_model = think_model.lower()
+        if think_model in normalized_names or Path(think_model).name in normalized_names:
             return True
     return False
 
