@@ -13,12 +13,36 @@
 | 模块 | 状态 | 说明 |
 |---|---|---|
 | 主表 ReKV 覆盖 | 已完成扩展覆盖 | Table 1 pair #6/#7 完整；Table 8 pair #1/#2/#3/#4/#5/#9 完整。 |
-| B-ReKV 稳健性 | pair #1 核心任务已完成 | MuSiQue / HotpotQA / MultiFieldQA-en 的 Pareto 图和 budget distribution 已完成。 |
-| Cost profiling | pair #1 已完成 | 8 个主数据集都有 cost 表。pair #6/#7 的 cost 是推荐补充项。 |
+| B-ReKV 稳健性 | 已完成核心覆盖 | pair #1 的 MuSiQue / HotpotQA / MultiFieldQA-en Pareto 与 budget distribution 已完成；pair #6/#7 的 HotpotQA / MuSiQue 小网格也已完成。 |
+| Cost profiling | pair #1/#6/#7 已完成 | pair #1 有 8 个主数据集 cost 表；pair #6/#7 full cost profile 已完成并生成 `cost_table.csv`。 |
 | Query-aware fairness | pair #1/#6/#7 已完成 | pair #1 完成 ReKV vs Evict vs Random 和 query sketch window ablation；pair #6/#7 完成 ReKV/Evict/Random/B-ReKV 扩展。 |
 | 可解释性 | pair #1 已完成 | answer overlap、清洗后的 qualitative examples、token bar 图、deletion ablation 已完成。 |
+| 机制消融 | 部分完成 | Sink/recent token ablation 已完成；positional coherence 队列在 B-ReKV-S shift-back 处触发断言中断；score/layer aggregation 尚未做。 |
 | Table 1 pair #8 Falcon | 暂缓/最后处理 | `Falcon3-7B-Instruct-abliterated` checkpoint 目前不可获得或目录不完整；不阻塞主线，放到最后可选处理。 |
-| Table 6 / 10 / 11 | 未完成 | extended tasks、multi-source、positional coherence 都是附录/机制级实验。 |
+| Table 6 / 10 / 11 | 部分准备/未完成 | Table 6 脚本已准备但尚未开始产出；Table 10 未做；Table 11 positional coherence 只完成 countries 的 normal/ReKV-S/B-ReKV normal，B-ReKV-S 报错中断。 |
+
+## 0.1 2026-07-05 最新审计记录
+
+这次审计基于 git 状态、`snapshots/` 产物数量和队列日志：
+
+- 审计开始时 git 工作区无可见未提交改动；本次审计只更新记录文档。大量实验产物可能被 `.gitignore` 忽略，因此以实际 `snapshots/` 产物为准。
+- 当前没有检测到本用户的 `com.py` / 队列脚本进程在运行；GPU 上剩余进程不是本实验队列。
+- Pair #6/#7 full cost profile 已全部完成：
+  - `snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/cost_table.csv`
+  - `snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/cost_table.csv`
+  - 每个 pair 都有 8 tasks x 10 methods = 80 个 `cost_summary.json`。
+- Pair #6/#7 B-ReKV robustness 小网格已完成：
+  - `snapshots/table1_pair6_llama32_abliterated_deepseek3b/{hotpotqa,musique}/coverage/`
+  - `snapshots/table1_pair7_qwen25_uncensored_bespoke/{hotpotqa,musique}/coverage/`
+  - 每个 pair 的 HotpotQA / MuSiQue 均有 canonical 点 + 小网格产物。
+- Sink/recent token ablation 已完成：
+  - 结果目录：`snapshots/mechanism/pair1_llama31_same/sink_recent/`
+  - 覆盖 8 个主任务，每个任务 ReKV/B-ReKV x 4 个 sink/recent 组合，共 64 个 `per_sample.jsonl`。
+- Positional coherence 队列部分完成后中断：
+  - 结果目录：`snapshots/mechanism/pair1_llama31_same/positional_coherence/`
+  - 已完成 countries 的 ReKV normal、ReKV-S、B-ReKV normal。
+  - B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `models.py:get_short_past_key_values` 的 `assert len(lengths) <= 2`，队列停止；Table 6 因此尚未开始。
+- Table 8 pair #4/#5/#9 的 paper-table 队列已完成；pair #9 结果多数接近 0，需要单独做输出 / prompt template / special token 诊断，不能直接作为正向泛化证据。
 
 ## 1. 论文表格主线
 
@@ -68,7 +92,13 @@
 
 目的：在 KVComm extended datasets 上验证鲁棒性。
 
-状态：未做。
+状态：未开始产出。
+
+说明：
+
+- 脚本已准备：`scripts/run_gpu7_mechanism_extended_full_queue.sh`。
+- 该脚本原计划在 sink/recent 和 positional coherence 后串行进入 Table 6。
+- 实际运行时 positional coherence 队列在 B-ReKV-S shift-back 处中断，因此 Table 6 尚未开始。
 
 推荐轻量版：
 
@@ -138,7 +168,7 @@ KVComm-S 是什么：
 - KVComm-S 去掉这部分 coherence 处理。
 - 该表用于证明 KV cache communication 需要位置一致性，不是随便拼 KV。
 
-状态：ReKV/B-ReKV 版本未做。
+状态：部分完成 / 当前阻塞。
 
 可做的 ReKV 版本：
 
@@ -146,6 +176,16 @@ KVComm-S 是什么：
 - B-ReKV normal vs B-ReKV-S。
 - 任务：`hotpotqa`, `musique`。
 - 先用 pair #1。
+
+当前实际进展：
+
+- 脚本：`scripts/run_gpu7_mechanism_extended_full_queue.sh`。
+- 结果目录：`snapshots/mechanism/pair1_llama31_same/positional_coherence/`。
+- 已完成 countries 的 ReKV normal、ReKV-S、B-ReKV normal。
+- B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `AssertionError`：
+  - 日志：`snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`。
+  - 报错位置：`models.py:get_short_past_key_values` 中 `assert len(lengths) <= 2`。
+- 后续需要先修复或绕开 B-ReKV-S，再继续 hotpotqa / musique 等任务。
 
 优先级：中。适合机制附录，但不如 fairness / deletion / cost 紧急。
 
@@ -188,18 +228,18 @@ KVComm-S 是什么：
 - Pair #1 的 8 个主任务完整 cost profile。
 - 产物：`snapshots/cost_profile/pair1_llama31_same_all8_full/cost_table.csv`。
 - 已包含 KV payload、timing、memory、output tokens。
+- Pair #6/#7 的 full cost profile 已完成，覆盖 8 个主任务和 10 个 method block：
+  - `snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/cost_table.csv`
+  - `snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/cost_table.csv`
+  - 日志：`snapshots/cost_profile/logs/gpu2_pair6_pair7_full_cost_0702_1256.log`，最终 `DONE 2026-07-04 04:21:54`。
 
-推荐补充：
+后续整理：
 
-- Pair #6/#7 的轻量 cost profile。
-- 任务：`hotpotqa`, `musique`, `multifieldqa_en`。
-- 方法：
-  - ReKV-w8 `r=0.3`
-  - ReKV-w16 `r=0.3`
-  - B-ReKV `w8 t0.95 s0.75`
-  - B-ReKV `w8 t0.95 s0.85`
+- 从 pair #6/#7 的 full cost 表中抽取论文需要的轻量子集：
+  - 任务：`hotpotqa`, `musique`, `multifieldqa_en`。
+  - 方法：ReKV-w8/w16 `r=0.3`，B-ReKV `w8 t0.95 s0.75/s0.85`。
 
-优先级：高。它能支撑跨模型 pair 下的 overhead 结论。
+优先级：已完成实验，剩余是表格整理和写作。
 
 ### 2.3 B-ReKV Robustness / Pareto
 
@@ -218,17 +258,17 @@ KVComm-S 是什么：
 - Budget distribution：
   - `snapshots/brekv_budget_distribution.png`
   - `snapshots/brekv_budget_distribution_summary.csv`
-
-推荐补充：
-
-- Pair #6/#7 小网格。
-- 任务：`hotpotqa`, `musique`。
-- 网格：
+- Pair #6/#7 小网格已完成。
+  - 任务：`hotpotqa`, `musique`。
+  - 结果目录：
+    - `snapshots/table1_pair6_llama32_abliterated_deepseek3b/{hotpotqa,musique}/coverage/`
+    - `snapshots/table1_pair7_qwen25_uncensored_bespoke/{hotpotqa,musique}/coverage/`
+  - 网格：
   - `window={8,16}`
   - `tau={0.90,0.95,0.98}`
   - `scale={0.65,0.75,0.85}`
 
-优先级：中高。
+后续整理：需要给 pair #6/#7 小网格生成或适配 Pareto 图 / summary 表。
 
 ### 2.4 Interpretability / Evidence
 
@@ -272,6 +312,15 @@ Deletion ablation 已完成：
 问题：
 
 - ReKV 是不是靠固定保留 sink/recent prompt tokens 才有效？
+
+状态：已完成。
+
+产物：
+
+- 脚本：`scripts/run_gpu7_mechanism_extended_full_queue.sh`。
+- 日志：`snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`。
+- 结果目录：`snapshots/mechanism/pair1_llama31_same/sink_recent/`。
+- 覆盖 8 个主任务；每个任务 ReKV-w8 `r=0.3` 和 B-ReKV `w8 t0.95 s0.75`，四组 sink/recent，共 64 个 `per_sample.jsonl`。
 
 设置：
 
@@ -328,7 +377,7 @@ Deletion ablation 已完成：
 - `hotpotqa`
 - `musique`
 
-优先级：中低。适合机制附录，但可以后放。
+状态：未做。优先级：中低。适合机制附录，但可以后放。
 
 ### 3.4 Score Function Ablation
 
@@ -349,7 +398,7 @@ Deletion ablation 已完成：
 - `musique`
 - `multifieldqa_en`
 
-优先级：中。用于解释为什么选择当前 score。
+状态：未做。当前代码已有 receiver attention、value norm、random；`attention x value norm` 和 `attention + recency prior` 需要新增或单独实现。优先级：中。
 
 ## 4. 失败案例与边界分析
 

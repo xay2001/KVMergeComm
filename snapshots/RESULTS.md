@@ -2159,3 +2159,35 @@ python scripts/analyze_coverage.py \
 - Countries/Tipsheets/TMath/2Wiki/QASPER 用于补完整主表,但不一定都作为主卖点。
 
 ---
+
+## 10. 2026-07-05 实验状态审计
+
+这次审计基于 git 状态、`snapshots/` 产物和队列日志。审计开始时 git 工作区无可见未提交改动；本次审计只更新记录文档。由于大量实验产物可能被 `.gitignore` 忽略，实验状态以 `snapshots/` 下的实际产物为准。
+
+已完成：
+
+- **Table 1 / Table 8 主表覆盖**：Table 1 pair #6/#7 已完整；Table 8 pair #1/#2/#3/#4/#5/#9 已完整。pair #9 的 8 datasets x 9 paper-table runs 虽完成，但多数非 `tmath` 结果接近 0，需要作为异常/负结果先诊断。
+- **Pair #6/#7 full cost profile**：已完成。每个 pair 覆盖 8 个主任务 x 10 个 method block，产物为 `snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/cost_table.csv` 和 `snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/cost_table.csv`。
+- **B-ReKV robustness**：pair #1 的 HotpotQA / MuSiQue / MultiFieldQA-en Pareto 与 budget distribution 已完成；pair #6/#7 的 HotpotQA / MuSiQue 小网格也已完成。
+- **Fairness / interpretability**：pair #1/#6/#7 的 ReKV vs Evict/Random fairness 已完成；answer overlap、cleaned examples、token bar、deletion ablation 已完成。
+- **Sink/recent ablation**：已完成。目录为 `snapshots/mechanism/pair1_llama31_same/sink_recent/`，覆盖 8 个主任务，每个任务 ReKV/B-ReKV x 4 个 sink/recent 组合。
+
+部分完成 / 中断：
+
+- **Table 11 positional coherence / ReKV-S**：队列已开始，完成 countries 的 ReKV normal、ReKV-S、B-ReKV normal；B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `models.py:get_short_past_key_values` 的 `assert len(lengths) <= 2`，队列中断。日志为 `snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`。
+
+尚未完成：
+
+- **Table 6 extended tasks**：脚本已准备，但因为 positional coherence 队列中断，尚未开始生成 `snapshots/table6_pair*` 结果目录。
+- **HotpotQA supporting-facts overlap**：未做，需要单独分析 selected tokens 是否落在 supporting sentences。
+- **Pair #9 异常诊断**：未做，需要抽样检查输出、prompt template、chat special tokens 和回答格式。
+- **Score function ablation / Layer aggregation ablation**：未做。当前代码已有 receiver attention、value norm、random；`attention x value norm`、`attention + recency prior` 和不同 layer aggregation 还需实现或脚本化。
+- **Table 10 multi-source / Head-wise B-ReKV / Falcon pair #8**：未做或暂缓。Falcon pair #8 仍受 checkpoint 不可用/不完整限制。
+
+下一步建议优先级：
+
+1. 整理 pair #6/#7 cost 表，抽出 HotpotQA / MuSiQue / MultiFieldQA-en 的论文子表。
+2. 给 pair #6/#7 B-ReKV 小网格生成 summary / Pareto 图。
+3. 先诊断 B-ReKV-S shift-back 断言；若短期不修，Table 11 只报告 ReKV-S 或把 B-ReKV-S 标为实现限制。
+4. 做 Pair #9 异常抽样诊断，再决定是否作为负结果或排除说明。
+5. 再考虑 Table 6 extended tasks、score/layer ablation、supporting-facts overlap。

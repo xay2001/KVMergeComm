@@ -50,7 +50,7 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 | Pair | Dataset coverage | Notes |
 |---:|---|---|
 | #6 | `countries`, `tipsheets`, `hotpotqa`, `qasper`, `musique`, `multifieldqa_en`, `twowikimqa`, `tmath`: 9/9 each | Complete paper-table queue |
-| #7 | Seven datasets: 9/9 each; `tmath`: 1/9 | Finish `tmath` before treating pair #7 as complete |
+| #7 | `countries`, `tipsheets`, `hotpotqa`, `qasper`, `musique`, `multifieldqa_en`, `twowikimqa`, `tmath`: 9/9 each | Complete paper-table queue |
 | #8 | `countries`: 1/9; `multifieldqa_en`: 1/9 | Falcon pair currently has incomplete/failed startup runs |
 
 ## Table 8: Appendix Model Pairs
@@ -93,12 +93,16 @@ These experiments were added to support the paper framing beyond raw accuracy.
 
 | Module | Output | Status |
 |---|---|---|
-| Cost / efficiency | `snapshots/cost_profile/pair1_llama31_same_all8_full/cost_table.csv` | Done |
-| Coverage robustness / Pareto | `snapshots/coverage_robustness_summary.txt`, `snapshots/{musique,hotpotqa,multifieldqa_en}/coverage_pareto.png` | Done |
+| Cost / efficiency | `snapshots/cost_profile/pair1_llama31_same_all8_full/cost_table.csv`, `snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/cost_table.csv`, `snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/cost_table.csv` | Done for pair #1/#6/#7 |
+| Coverage robustness / Pareto | `snapshots/coverage_robustness_summary.txt`, `snapshots/{musique,hotpotqa,multifieldqa_en}/coverage_pareto.png`, pair #6/#7 HotpotQA/MuSiQue coverage grids under `snapshots/table1_pair{6,7}_*/` | Done; pair #6/#7 grids still need final summary plots |
 | B-ReKV budget adaptivity | `snapshots/brekv_budget_distribution.png`, `snapshots/brekv_budget_distribution_summary.csv` | Done |
 | Receiver-initiated fairness | `snapshots/query_fairness/pair1_llama31_same/query_fairness.csv` | Done |
 | Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md`, `cleaned/*_clean_top_tokens.png`, `snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv` | Done |
+| Sink/recent token ablation | `snapshots/mechanism/pair1_llama31_same/sink_recent/` | Done for 8 main tasks |
+| Positional coherence / ReKV-S | `snapshots/mechanism/pair1_llama31_same/positional_coherence/`, `snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log` | Partial; B-ReKV-S shift-back run hit `AssertionError` |
+| Table 6 extended tasks | `scripts/run_gpu7_mechanism_extended_full_queue.sh` | Script prepared; no Table 6 result root yet |
 
-Main remaining work is consolidation: choose final paper tables/figures, polish
-Pareto/budget-distribution plots, and decide which cleaned qualitative examples
-enter the final interpretability section.
+Main remaining work is consolidation plus a few targeted unfinished items:
+summarize pair #6/#7 cost tables, plot pair #6/#7 robustness grids, diagnose
+pair #9 near-zero behavior, fix or scope down B-ReKV-S positional coherence, and
+decide whether to run Table 6 after the positional-coherence blocker is resolved.
