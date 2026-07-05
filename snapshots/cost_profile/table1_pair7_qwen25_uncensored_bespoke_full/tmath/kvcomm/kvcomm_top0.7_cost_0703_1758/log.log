@@ -1,0 +1,19 @@
+2026-07-03 17:58:31,604 - root - INFO - Logging setup completed. Log file: snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/tmath/kvcomm/kvcomm_top0.7_cost_0703_1758/log.log
+2026-07-03 17:58:31,604 - root - INFO - Log level: INFO
+2026-07-03 17:58:31,604 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/tmath/kvcomm', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.7, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', score_mode='value_norm', recv_window=0, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=True, profile_limit=0, profile_warmup=5, test_task='tmath', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='kvcomm_top0.7_cost', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-03 17:58:31,605 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/tmath/kvcomm/kvcomm_top0.7_cost_0703_1758
+2026-07-03 17:58:31,605 - root - INFO - Log level: INFO
+2026-07-03 17:58:31,751 - root - INFO - Number of GPU: 1
+2026-07-03 17:58:31,756 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-03 17:58:31,757 - root - INFO - CUDA_VISIBLE_DEVICES: 2
+2026-07-03 17:58:56,675 - root - INFO - CVCommunicator initialized
+2026-07-03 17:59:08,954 - root - INFO - communication result: 0.6364, communication time: 12.27s
+2026-07-03 17:59:08,956 - root - INFO - Layer ranking: [ 4  5 26 22 23  8 24 14  6  7 11 10  9 25 12 17 21 27 15 16 19 20 13 18
+  2  1  0  3]
+2026-07-03 17:59:08,956 - root - INFO - Top 0.7 from 28 layers: [ 4  5 26 22 23  8 24 14  6  7 11 10  9 25 12 17 21 27 15 16 19 20 13 18
+  2  1  0  3]
+2026-07-03 17:59:08,956 - root - INFO - New layers list: [ 4  5 26 22 23  8 24 14  6  7 11 10  9 25 12 17 21 27 15]
+2026-07-03 17:59:08,960 - root - INFO - CVCommunicator initialized
+2026-07-03 19:06:42,105 - root - INFO - cost profile written to /home/xay/KVComm/snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/tmath/kvcomm/kvcomm_top0.7_cost_0703_1758/cost_profile.jsonl
+2026-07-03 19:06:42,105 - root - INFO - cost summary written to /home/xay/KVComm/snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/tmath/kvcomm/kvcomm_top0.7_cost_0703_1758/cost_summary.json
+2026-07-03 19:06:42,105 - root - INFO - communication cost profile result: 0.3219, measured=295, warmup=5

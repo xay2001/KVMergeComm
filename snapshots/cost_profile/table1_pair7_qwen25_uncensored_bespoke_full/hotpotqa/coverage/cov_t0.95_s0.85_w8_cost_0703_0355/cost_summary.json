@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "dataset": "hotpotqa",
+    "score_mode": "receiver",
+    "recv_window": 8,
+    "merge": true,
+    "merge_mode": "evict",
+    "merge_ratio": 0.2,
+    "budget_mode": "coverage",
+    "budget_min": 0.05,
+    "budget_max": 0.7,
+    "coverage_tau": 0.95,
+    "coverage_scale": 0.85,
+    "warmup": 5,
+    "n": 495
+  },
+  "score_mean": 0.446465,
+  "budget_mean": 0.369068,
+  "query_budget_mean": 0.345724,
+  "kv_token_ratio_mean": 0.369068,
+  "kv_byte_ratio_mean": 0.369068,
+  "kv_tokens_sent_mean": 1433.238384,
+  "kv_bytes_sent_mean": 2935272.210101,
+  "ctx_tokens_A_mean": 139.909091,
+  "query_tokens_B_mean": 69.694949,
+  "output_tokens_mean": 20.911111,
+  "t_prepare_inputs_mean": 0.001987,
+  "t_a_prefill_mean": 0.035735,
+  "t_receiver_score_mean": 0.053306,
+  "t_generate_total_mean": 1.015666,
+  "t_total_mean": 1.106694,
+  "peak_mem_gb_mean": 28.48078
+}

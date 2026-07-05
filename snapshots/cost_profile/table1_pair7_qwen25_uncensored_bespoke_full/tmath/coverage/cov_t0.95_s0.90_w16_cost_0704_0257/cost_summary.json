@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "dataset": "tmath",
+    "score_mode": "receiver",
+    "recv_window": 16,
+    "merge": true,
+    "merge_mode": "evict",
+    "merge_ratio": 0.2,
+    "budget_mode": "coverage",
+    "budget_min": 0.05,
+    "budget_max": 0.7,
+    "coverage_tau": 0.95,
+    "coverage_scale": 0.9,
+    "warmup": 5,
+    "n": 295
+  },
+  "score_mean": 0.329538,
+  "budget_mean": 0.369575,
+  "query_budget_mean": 0.346047,
+  "kv_token_ratio_mean": 0.369575,
+  "kv_byte_ratio_mean": 0.369575,
+  "kv_tokens_sent_mean": 2258.708475,
+  "kv_bytes_sent_mean": 4625834.955932,
+  "ctx_tokens_A_mean": 217.80339,
+  "query_tokens_B_mean": 115.125424,
+  "output_tokens_mean": 256.0,
+  "t_prepare_inputs_mean": 0.002853,
+  "t_a_prefill_mean": 0.044828,
+  "t_receiver_score_mean": 0.062097,
+  "t_generate_total_mean": 16.520882,
+  "t_total_mean": 16.630661,
+  "peak_mem_gb_mean": 28.654665
+}
