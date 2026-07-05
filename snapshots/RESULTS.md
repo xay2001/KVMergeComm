@@ -2171,23 +2171,22 @@ python scripts/analyze_coverage.py \
 - **B-ReKV robustness**：pair #1 的 HotpotQA / MuSiQue / MultiFieldQA-en Pareto 与 budget distribution 已完成；pair #6/#7 的 HotpotQA / MuSiQue 小网格也已完成。
 - **Fairness / interpretability**：pair #1/#6/#7 的 ReKV vs Evict/Random fairness 已完成；answer overlap、cleaned examples、token bar、deletion ablation 已完成。
 - **Sink/recent ablation**：已完成。目录为 `snapshots/mechanism/pair1_llama31_same/sink_recent/`，覆盖 8 个主任务，每个任务 ReKV/B-ReKV x 4 个 sink/recent 组合。
+- **2026-07-05 收尾分析产物**：pair #6/#7 cost 论文子表已生成到 `snapshots/analysis/cost/pair6_pair7_cost_focus_hotpotqa_musique_multifieldqa.csv`；pair #6/#7 robustness summary 与 Pareto 图已生成到 `snapshots/analysis/robustness/`；pair #9 分数异常诊断已生成到 `snapshots/analysis/pair9/pair9_diagnostic_report.md`。
 
 部分完成 / 中断：
 
-- **Table 11 positional coherence / ReKV-S**：队列已开始，完成 countries 的 ReKV normal、ReKV-S、B-ReKV normal；B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `models.py:get_short_past_key_values` 的 `assert len(lengths) <= 2`，队列中断。日志为 `snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`。
+- **Table 11 positional coherence / ReKV-S**：队列已开始，完成 countries 的 ReKV normal、ReKV-S、B-ReKV normal；B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `models.py:get_short_past_key_values` 的 `assert len(lengths) <= 2`，队列中断。日志为 `snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`。已确认根因是 coverage budget 造成多层 KV 长度档位超过 shift-back 当前实现假设；诊断报告见 `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md`，队列脚本已默认 `RUN_BREKV_SHIFT=0` 绕开该项。
 
 尚未完成：
 
-- **Table 6 extended tasks**：脚本已准备，但因为 positional coherence 队列中断，尚未开始生成 `snapshots/table6_pair*` 结果目录。
+- **Table 6 extended tasks**：脚本已准备；当前已可通过 `RUN_SINK_RECENT=0 RUN_POSITIONAL=1 RUN_BREKV_SHIFT=0 RUN_TABLE6=1 GPU=7 bash scripts/run_gpu7_mechanism_extended_full_queue.sh` 绕开 B-ReKV-S 并继续后续队列，但尚未开始生成 `snapshots/table6_pair*` 结果目录。
 - **HotpotQA supporting-facts overlap**：未做，需要单独分析 selected tokens 是否落在 supporting sentences。
-- **Pair #9 异常诊断**：未做，需要抽样检查输出、prompt template、chat special tokens 和回答格式。
+- **Pair #9 raw-output 异常诊断**：分数分布诊断已做，确认非 `tmath` 多数任务接近 0，不是单个 run 偶发；但现有 `per_sample.jsonl` 不保存 raw response，仍需运行 `scripts/run_pair9_raw_output_probe_gpu7.sh` 抽样检查输出、prompt template、chat special tokens 和回答格式。
 - **Score function ablation / Layer aggregation ablation**：未做。当前代码已有 receiver attention、value norm、random；`attention x value norm`、`attention + recency prior` 和不同 layer aggregation 还需实现或脚本化。
 - **Table 10 multi-source / Head-wise B-ReKV / Falcon pair #8**：未做或暂缓。Falcon pair #8 仍受 checkpoint 不可用/不完整限制。
 
 下一步建议优先级：
 
-1. 整理 pair #6/#7 cost 表，抽出 HotpotQA / MuSiQue / MultiFieldQA-en 的论文子表。
-2. 给 pair #6/#7 B-ReKV 小网格生成 summary / Pareto 图。
-3. 先诊断 B-ReKV-S shift-back 断言；若短期不修，Table 11 只报告 ReKV-S 或把 B-ReKV-S 标为实现限制。
-4. 做 Pair #9 异常抽样诊断，再决定是否作为负结果或排除说明。
-5. 再考虑 Table 6 extended tasks、score/layer ablation、supporting-facts overlap。
+1. 运行 `scripts/run_pair9_raw_output_probe_gpu7.sh`，看 pair #9 的 raw response 是否是格式/模板问题。
+2. 继续 Table 6 extended tasks；若短期不修 shift-back，Table 11 只报告 ReKV-S 或把 B-ReKV-S 标为实现限制。
+3. 再考虑 score/layer ablation、supporting-facts overlap。

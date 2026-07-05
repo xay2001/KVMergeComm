@@ -13,6 +13,7 @@ set -euo pipefail
 #   MAIN_TASKS="countries tipsheets hotpotqa qasper musique multifieldqa_en twowikimqa tmath"
 #   EXT_TASKS="hotpotqa_full qasper_full musique_full samsum repobench"
 #   RUN_SINK_RECENT=1 RUN_POSITIONAL=1 RUN_TABLE6=1
+#   RUN_BREKV_SHIFT=0   # keep off until B-ReKV-S shift_back assertion is fixed
 #   TABLE6_PAIR_IDS="6 7"
 #
 # Run:
@@ -26,8 +27,10 @@ SKIP_EXISTING=${SKIP_EXISTING:-1}
 RUN_SINK_RECENT=${RUN_SINK_RECENT:-1}
 RUN_POSITIONAL=${RUN_POSITIONAL:-1}
 RUN_TABLE6=${RUN_TABLE6:-1}
+RUN_BREKV_SHIFT=${RUN_BREKV_SHIFT:-0}
 
 MAIN_TASKS=${MAIN_TASKS:-"countries tipsheets hotpotqa qasper musique multifieldqa_en twowikimqa tmath"}
+POSITIONAL_TASKS=${POSITIONAL_TASKS:-"${MAIN_TASKS}"}
 EXT_TASKS=${EXT_TASKS:-"hotpotqa_full qasper_full musique_full samsum repobench"}
 
 SINK_RECENT_PAIRS=${SINK_RECENT_PAIRS:-"0:0 4:0 0:8 4:8"}
@@ -162,13 +165,18 @@ run_positional_phase() {
 
   echo "######## Positional coherence ablation START $(date '+%F %T') ########"
   echo "ROOT=${root}"
-  echo "TASKS=${MAIN_TASKS}"
+  echo "TASKS=${POSITIONAL_TASKS}"
+  echo "RUN_BREKV_SHIFT=${RUN_BREKV_SHIFT}"
 
-  for task in ${MAIN_TASKS}; do
+  for task in ${POSITIONAL_TASKS}; do
     run_rekv "${MODEL_A_1}" "${MODEL_B_1}" "${root}" "${task}" 8 0.3 4 8 "_normal"
     run_rekv_shift "${MODEL_A_1}" "${MODEL_B_1}" "${root}" "${task}" 8 0.3 "_shiftback"
     run_brekv "${MODEL_A_1}" "${MODEL_B_1}" "${root}" "${task}" 8 0.95 0.75 4 8 "_normal"
-    run_brekv_shift "${MODEL_A_1}" "${MODEL_B_1}" "${root}" "${task}" 8 0.95 0.75 "_shiftback"
+    if [[ "${RUN_BREKV_SHIFT}" == "1" ]]; then
+      run_brekv_shift "${MODEL_A_1}" "${MODEL_B_1}" "${root}" "${task}" 8 0.95 0.75 "_shiftback"
+    else
+      echo "==== [skip] ${root}/${task} B-ReKV-S shiftback disabled; set RUN_BREKV_SHIFT=1 to retry ===="
+    fi
   done
 
   echo "######## Positional coherence ablation DONE $(date '+%F %T') ########"
@@ -249,7 +257,9 @@ LOG_PATH="${LOG_ROOT}/gpu${GPU}_mechanism_extended_full_${TAG}.log"
   echo "RUN_SINK_RECENT=${RUN_SINK_RECENT}"
   echo "RUN_POSITIONAL=${RUN_POSITIONAL}"
   echo "RUN_TABLE6=${RUN_TABLE6}"
+  echo "RUN_BREKV_SHIFT=${RUN_BREKV_SHIFT}"
   echo "MAIN_TASKS=${MAIN_TASKS}"
+  echo "POSITIONAL_TASKS=${POSITIONAL_TASKS}"
   echo "EXT_TASKS=${EXT_TASKS}"
 
   if [[ "${RUN_SINK_RECENT}" == "1" ]]; then

@@ -99,8 +99,8 @@ def run_task(args, task: str, model_a, model_b, tokenizer, mode: str) -> list[di
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_a", default="/NAS/models/Llama-3.1-SuperNova-Lite")
-    parser.add_argument("--model_b", default="/NAS/models/DeepSeek-R1-Distill-Llama-8B")
+    parser.add_argument("--model_a", default="/sharedspace/models/Llama-3.1-SuperNova-Lite")
+    parser.add_argument("--model_b", default="/sharedspace/models/DeepSeek-R1-Distill-Llama-8B")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--tasks", nargs="+", default=["countries", "tipsheets", "hotpotqa", "musique"])
     parser.add_argument("--limit", type=int, default=5)

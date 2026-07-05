@@ -85,7 +85,7 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 - Pair #7 needs `tmath` completion.
 - Pair #8 needs model path/startup issue resolution before continuing the queue.
 - Pair #1 `qasper` remains sparse relative to other datasets.
-- Pair #9 complete results are mostly near zero outside `tmath`; check prompt/template/model-output behavior before presenting them as robustness evidence.
+- Pair #9 complete results are mostly near zero outside `tmath`; score-distribution diagnosis is in `snapshots/analysis/pair9/pair9_diagnostic_report.md`, and raw-output probing should be run before presenting it as robustness evidence.
 
 ## Reviewer-Risk Experiment Status
 
@@ -93,16 +93,15 @@ These experiments were added to support the paper framing beyond raw accuracy.
 
 | Module | Output | Status |
 |---|---|---|
-| Cost / efficiency | `snapshots/cost_profile/pair1_llama31_same_all8_full/cost_table.csv`, `snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/cost_table.csv`, `snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/cost_table.csv` | Done for pair #1/#6/#7 |
-| Coverage robustness / Pareto | `snapshots/coverage_robustness_summary.txt`, `snapshots/{musique,hotpotqa,multifieldqa_en}/coverage_pareto.png`, pair #6/#7 HotpotQA/MuSiQue coverage grids under `snapshots/table1_pair{6,7}_*/` | Done; pair #6/#7 grids still need final summary plots |
+| Cost / efficiency | `snapshots/cost_profile/pair1_llama31_same_all8_full/cost_table.csv`, `snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/cost_table.csv`, `snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/cost_table.csv`, `snapshots/analysis/cost/pair6_pair7_cost_focus_hotpotqa_musique_multifieldqa.csv` | Done for pair #1/#6/#7; pair #6/#7 paper-focused cost subset generated |
+| Coverage robustness / Pareto | `snapshots/coverage_robustness_summary.txt`, `snapshots/{musique,hotpotqa,multifieldqa_en}/coverage_pareto.png`, `snapshots/analysis/robustness/pair6_pair7_brekv_robustness_summary.csv`, `snapshots/analysis/robustness/pair{6,7}_{hotpotqa,musique}_brekv_pareto.png` | Done; pair #6/#7 summary and Pareto plots generated |
 | B-ReKV budget adaptivity | `snapshots/brekv_budget_distribution.png`, `snapshots/brekv_budget_distribution_summary.csv` | Done |
 | Receiver-initiated fairness | `snapshots/query_fairness/pair1_llama31_same/query_fairness.csv` | Done |
 | Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md`, `cleaned/*_clean_top_tokens.png`, `snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv` | Done |
 | Sink/recent token ablation | `snapshots/mechanism/pair1_llama31_same/sink_recent/` | Done for 8 main tasks |
-| Positional coherence / ReKV-S | `snapshots/mechanism/pair1_llama31_same/positional_coherence/`, `snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log` | Partial; B-ReKV-S shift-back run hit `AssertionError` |
-| Table 6 extended tasks | `scripts/run_gpu7_mechanism_extended_full_queue.sh` | Script prepared; no Table 6 result root yet |
+| Positional coherence / ReKV-S | `snapshots/mechanism/pair1_llama31_same/positional_coherence/`, `snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`, `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md` | Partial; B-ReKV-S shift-back diagnosed and disabled by default in queue script |
+| Table 6 extended tasks | `scripts/run_gpu7_mechanism_extended_full_queue.sh` | Script prepared; can continue with `RUN_BREKV_SHIFT=0`; no Table 6 result root yet |
 
-Main remaining work is consolidation plus a few targeted unfinished items:
-summarize pair #6/#7 cost tables, plot pair #6/#7 robustness grids, diagnose
-pair #9 near-zero behavior, fix or scope down B-ReKV-S positional coherence, and
-decide whether to run Table 6 after the positional-coherence blocker is resolved.
+Main remaining work is now narrower: run the pair #9 raw-output probe, decide
+whether Table 11 should omit B-ReKV-S or wait for a deeper shift-back fix, then
+continue Table 6 extended tasks if GPU budget allows.

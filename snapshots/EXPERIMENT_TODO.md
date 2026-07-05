@@ -13,11 +13,11 @@
 | 模块 | 状态 | 说明 |
 |---|---|---|
 | 主表 ReKV 覆盖 | 已完成扩展覆盖 | Table 1 pair #6/#7 完整；Table 8 pair #1/#2/#3/#4/#5/#9 完整。 |
-| B-ReKV 稳健性 | 已完成核心覆盖 | pair #1 的 MuSiQue / HotpotQA / MultiFieldQA-en Pareto 与 budget distribution 已完成；pair #6/#7 的 HotpotQA / MuSiQue 小网格也已完成。 |
-| Cost profiling | pair #1/#6/#7 已完成 | pair #1 有 8 个主数据集 cost 表；pair #6/#7 full cost profile 已完成并生成 `cost_table.csv`。 |
+| B-ReKV 稳健性 | 已完成核心覆盖 | pair #1 的 MuSiQue / HotpotQA / MultiFieldQA-en Pareto 与 budget distribution 已完成；pair #6/#7 的 HotpotQA / MuSiQue 小网格已完成，并已生成 summary / Pareto 图。 |
+| Cost profiling | pair #1/#6/#7 已完成 | pair #1 有 8 个主数据集 cost 表；pair #6/#7 full cost profile 已完成，并已生成 HotpotQA / MuSiQue / MultiFieldQA-en 论文子表。 |
 | Query-aware fairness | pair #1/#6/#7 已完成 | pair #1 完成 ReKV vs Evict vs Random 和 query sketch window ablation；pair #6/#7 完成 ReKV/Evict/Random/B-ReKV 扩展。 |
 | 可解释性 | pair #1 已完成 | answer overlap、清洗后的 qualitative examples、token bar 图、deletion ablation 已完成。 |
-| 机制消融 | 部分完成 | Sink/recent token ablation 已完成；positional coherence 队列在 B-ReKV-S shift-back 处触发断言中断；score/layer aggregation 尚未做。 |
+| 机制消融 | 部分完成 | Sink/recent token ablation 已完成；B-ReKV-S shift-back 报错已诊断并在队列脚本中默认绕开；score/layer aggregation 尚未做。 |
 | Table 1 pair #8 Falcon | 暂缓/最后处理 | `Falcon3-7B-Instruct-abliterated` checkpoint 目前不可获得或目录不完整；不阻塞主线，放到最后可选处理。 |
 | Table 6 / 10 / 11 | 部分准备/未完成 | Table 6 脚本已准备但尚未开始产出；Table 10 未做；Table 11 positional coherence 只完成 countries 的 normal/ReKV-S/B-ReKV normal，B-ReKV-S 报错中断。 |
 
@@ -31,18 +31,21 @@
   - `snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/cost_table.csv`
   - `snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/cost_table.csv`
   - 每个 pair 都有 8 tasks x 10 methods = 80 个 `cost_summary.json`。
+  - 论文子表已整理：`snapshots/analysis/cost/pair6_pair7_cost_focus_hotpotqa_musique_multifieldqa.csv`。
 - Pair #6/#7 B-ReKV robustness 小网格已完成：
   - `snapshots/table1_pair6_llama32_abliterated_deepseek3b/{hotpotqa,musique}/coverage/`
   - `snapshots/table1_pair7_qwen25_uncensored_bespoke/{hotpotqa,musique}/coverage/`
   - 每个 pair 的 HotpotQA / MuSiQue 均有 canonical 点 + 小网格产物。
+  - 汇总表和 Pareto 图已生成：`snapshots/analysis/robustness/pair6_pair7_brekv_robustness_summary.csv` 和 `snapshots/analysis/robustness/pair{6,7}_{hotpotqa,musique}_brekv_pareto.png`。
 - Sink/recent token ablation 已完成：
   - 结果目录：`snapshots/mechanism/pair1_llama31_same/sink_recent/`
   - 覆盖 8 个主任务，每个任务 ReKV/B-ReKV x 4 个 sink/recent 组合，共 64 个 `per_sample.jsonl`。
 - Positional coherence 队列部分完成后中断：
   - 结果目录：`snapshots/mechanism/pair1_llama31_same/positional_coherence/`
   - 已完成 countries 的 ReKV normal、ReKV-S、B-ReKV normal。
-  - B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `models.py:get_short_past_key_values` 的 `assert len(lengths) <= 2`，队列停止；Table 6 因此尚未开始。
-- Table 8 pair #4/#5/#9 的 paper-table 队列已完成；pair #9 结果多数接近 0，需要单独做输出 / prompt template / special token 诊断，不能直接作为正向泛化证据。
+  - B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `models.py:get_short_past_key_values` 的 `assert len(lengths) <= 2`，队列停止；诊断见 `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md`。
+  - `scripts/run_gpu7_mechanism_extended_full_queue.sh` 已默认 `RUN_BREKV_SHIFT=0` 绕开 B-ReKV-S，避免后续 Table 6 被阻塞。
+- Table 8 pair #4/#5/#9 的 paper-table 队列已完成；pair #9 结果多数接近 0，分数分布诊断见 `snapshots/analysis/pair9/pair9_diagnostic_report.md`，raw-output 抽样脚本为 `scripts/run_pair9_raw_output_probe_gpu7.sh`。
 
 ## 1. 论文表格主线
 
@@ -99,6 +102,12 @@
 - 脚本已准备：`scripts/run_gpu7_mechanism_extended_full_queue.sh`。
 - 该脚本原计划在 sink/recent 和 positional coherence 后串行进入 Table 6。
 - 实际运行时 positional coherence 队列在 B-ReKV-S shift-back 处中断，因此 Table 6 尚未开始。
+- 当前脚本已默认跳过 B-ReKV-S，可用下面命令继续：
+
+```bash
+RUN_SINK_RECENT=0 RUN_POSITIONAL=1 RUN_BREKV_SHIFT=0 RUN_TABLE6=1 GPU=7 \
+  bash scripts/run_gpu7_mechanism_extended_full_queue.sh
+```
 
 推荐轻量版：
 
@@ -185,7 +194,8 @@ KVComm-S 是什么：
 - B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `AssertionError`：
   - 日志：`snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`。
   - 报错位置：`models.py:get_short_past_key_values` 中 `assert len(lengths) <= 2`。
-- 后续需要先修复或绕开 B-ReKV-S，再继续 hotpotqa / musique 等任务。
+- 已确认 B-ReKV-S 报错来自 coverage budget 造成多层 KV 长度档位超过 shift-back 当前实现假设；目前先默认绕开 B-ReKV-S。
+- 后续若要补 Table 11，建议先跑完整 ReKV normal / ReKV-S / B-ReKV normal；B-ReKV-S 只在专门修复 shift-back 后再补。
 
 优先级：中。适合机制附录，但不如 fairness / deletion / cost 紧急。
 
@@ -459,26 +469,32 @@ Deletion ablation 已完成：
 3. Deletion ablation 已完成。
    - 产物：`snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv`。
 
-4. Pair #6/#7 lightweight cost profile。
+4. Pair #6/#7 lightweight cost profile 已完成整理。
    - 任务：`hotpotqa`, `musique`, `multifieldqa_en`。
+   - 产物：`snapshots/analysis/cost/pair6_pair7_cost_focus_hotpotqa_musique_multifieldqa.csv`。
 
-5. Pair #6/#7 B-ReKV small robustness grid。
+5. Pair #6/#7 B-ReKV small robustness grid 已完成整理。
    - 任务：`hotpotqa`, `musique`。
+   - 产物：`snapshots/analysis/robustness/pair6_pair7_brekv_robustness_summary.csv`。
 
 ### Stage C：附录 / 机制实验
 
-6. HotpotQA supporting-facts overlap。
-7. Sink/recent token ablation。
-8. Failure case analysis。
-9. Table 6 extended tasks 轻量版。
-10. Table 11 positional coherence ablation。
+6. Pair #9 raw-output probe。
+   - 脚本：`scripts/run_pair9_raw_output_probe_gpu7.sh`。
+   - 目的：确认 near-zero 是输出格式/模板问题，还是模型 pair 本身不适合。
+7. Table 6 extended tasks。
+   - B-ReKV-S 先跳过，避免阻塞后续队列。
+8. Table 11 positional coherence ablation。
+   - 先报告 ReKV normal / ReKV-S / B-ReKV normal；B-ReKV-S 等 shift-back 修复后再补。
+9. HotpotQA supporting-facts overlap。
+10. Failure case analysis。
 
 ### Stage D：大型可选实验
 
 11. Table 8 pair #4/#5/#9 完整队列已完成。
     - #4 Falcon3 same-model：`snapshots/table8_pair4_falcon3_7b_same/`。
     - #5 EvolCodeLlama -> ToolACE：`snapshots/table8_pair5_evolcodellama_toolace/`。
-    - #9 SuperNova -> DeepSeek-Llama-8B：`snapshots/table8_pair9_supernova_deepseek_llama8b/`；结果大多接近 0，需检查是否为模型输出/模板/对齐问题。
+    - #9 SuperNova -> DeepSeek-Llama-8B：`snapshots/table8_pair9_supernova_deepseek_llama8b/`；结果大多接近 0，分数分布诊断见 `snapshots/analysis/pair9/pair9_diagnostic_report.md`。
 12. 最后再处理 Table 1/Table 8 pair #8 Falcon；若原 checkpoint 仍不可获得，则标记为 checkpoint unavailable，或改跑 Falcon-family substitute 作为额外鲁棒性实验。
 13. Table 10 multi-source ReKV。
 14. Head-wise B-ReKV。
