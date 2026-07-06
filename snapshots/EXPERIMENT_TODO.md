@@ -12,14 +12,14 @@
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
-| 主表 ReKV 覆盖 | 已完成扩展覆盖 | Table 1 pair #6/#7 完整；Table 8 pair #1/#2/#3/#4/#5/#9 完整。 |
+| 主表 ReKV 覆盖 | 已完成扩展覆盖 | Table 1 pair #6/#7 完整；Table 8 pair #1/#2/#3/#4/#5 完整可用；pair #9 已完成但暂缓作为正向对比。 |
 | B-ReKV 稳健性 | 已完成核心覆盖 | pair #1 的 MuSiQue / HotpotQA / MultiFieldQA-en Pareto 与 budget distribution 已完成；pair #6/#7 的 HotpotQA / MuSiQue 小网格已完成，并已生成 summary / Pareto 图。 |
 | Cost profiling | pair #1/#6/#7 已完成 | pair #1 有 8 个主数据集 cost 表；pair #6/#7 full cost profile 已完成，并已生成 HotpotQA / MuSiQue / MultiFieldQA-en 论文子表。 |
 | Query-aware fairness | pair #1/#6/#7 已完成 | pair #1 完成 ReKV vs Evict vs Random 和 query sketch window ablation；pair #6/#7 完成 ReKV/Evict/Random/B-ReKV 扩展。 |
 | 可解释性 | pair #1 已完成 | answer overlap、清洗后的 qualitative examples、token bar 图、deletion ablation 已完成。 |
-| 机制消融 | 部分完成 | Sink/recent token ablation 已完成；B-ReKV-S shift-back 报错已诊断并在队列脚本中默认绕开；score/layer aggregation 尚未做。 |
+| 机制消融 | 主要机制已完成 | Sink/recent token ablation 已完成；Table 11 positional coherence 可跑部分已完成 8 个主任务；B-ReKV-S 因 shift-back 实现限制暂缓；score/layer aggregation 尚未做。 |
 | Table 1 pair #8 Falcon | 暂缓/最后处理 | `Falcon3-7B-Instruct-abliterated` checkpoint 目前不可获得或目录不完整；不阻塞主线，放到最后可选处理。 |
-| Table 6 / 10 / 11 | 部分准备/未完成 | Table 6 脚本已准备但尚未开始产出；Table 10 未做；Table 11 positional coherence 只完成 countries 的 normal/ReKV-S/B-ReKV normal，B-ReKV-S 报错中断。 |
+| Table 6 / 10 / 11 | Table 11 可跑部分完成 | Table 6 脚本已准备但尚未开始产出；Table 10 未做；Table 11 已完成 ReKV normal / ReKV-S / B-ReKV normal x 8 主任务，B-ReKV-S 暂缓。 |
 
 ## 0.1 2026-07-05 最新审计记录
 
@@ -40,12 +40,13 @@
 - Sink/recent token ablation 已完成：
   - 结果目录：`snapshots/mechanism/pair1_llama31_same/sink_recent/`
   - 覆盖 8 个主任务，每个任务 ReKV/B-ReKV x 4 个 sink/recent 组合，共 64 个 `per_sample.jsonl`。
-- Positional coherence 队列部分完成后中断：
+- Positional coherence 队列状态：
   - 结果目录：`snapshots/mechanism/pair1_llama31_same/positional_coherence/`
-  - 已完成 countries 的 ReKV normal、ReKV-S、B-ReKV normal。
+  - 已完成 8 个主任务的 ReKV normal、ReKV-S、B-ReKV normal。
+  - 汇总：`snapshots/analysis/mechanism/positional_coherence_summary.md`。
   - B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `models.py:get_short_past_key_values` 的 `assert len(lengths) <= 2`，队列停止；诊断见 `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md`。
   - `scripts/run_gpu7_mechanism_extended_full_queue.sh` 已默认 `RUN_BREKV_SHIFT=0` 绕开 B-ReKV-S，避免后续 Table 6 被阻塞。
-- Table 8 pair #4/#5/#9 的 paper-table 队列已完成；pair #9 结果多数接近 0，分数分布诊断见 `snapshots/analysis/pair9/pair9_diagnostic_report.md`，raw-output 抽样脚本为 `scripts/run_pair9_raw_output_probe_gpu7.sh`。
+- Table 8 pair #4/#5/#9 的 paper-table 队列已完成；pair #9 结果多数接近 0，分数分布、raw-output 和 KVComm probe 诊断见 `snapshots/analysis/pair9/pair9_diagnostic_report.md`。KVComm top=0.3 limit=50 probe 在 `hotpotqa=0.060`, `musique=0.020`, `qasper=0.000`，说明不是 ReKV 独有失败；pair #9 暂缓作为正向对比。
 
 ## 1. 论文表格主线
 
@@ -84,11 +85,11 @@
 | #4 Falcon3 same-model | `snapshots/table8_pair4_falcon3_7b_same/` | 已完成 | 8 datasets x 9 paper-table runs 完整。 |
 | #5 EvolCodeLlama -> ToolACE | `snapshots/table8_pair5_evolcodellama_toolace/` | 已完成 | 8 datasets x 9 paper-table runs 完整。 |
 | #8 Falcon fine-tuned pair | `snapshots/table1_pair8_falcon3_ultraset_abliterated/` | 暂缓/最后处理 | blocker 同 Table 1 pair #8；原 receiver checkpoint 不可获得时可写入 limitation。 |
-| #9 SuperNova -> DeepSeek-Llama-8B | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | 已完成 | 8 datasets x 9 paper-table runs 完整；除 `tmath` 外多数任务结果接近 0，需作为异常/负结果单独解释。 |
+| #9 SuperNova -> DeepSeek-Llama-8B | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | 已完成但暂缓 | 8 datasets x 9 paper-table runs 完整；除 `tmath` 外多数任务结果接近 0。raw-output / KVComm probe 显示更像 hard heterogeneous pair 的 KV 兼容问题，不作为正向对比。 |
 
 建议：
 
-- pair #1/#2/#3/#4/#5/#9 已可作为 Table 8 appendix 覆盖。
+- pair #1/#2/#3/#4/#5 已可作为 Table 8 appendix 正向覆盖；pair #9 只作为 hard negative / limitation 记录，暂缓放入正向对比。
 - pair #8 仍受 Falcon receiver checkpoint blocker 影响；原 checkpoint 不可获得时可写入 limitation。
 
 ### 1.3 Table 6：Extended Tasks
@@ -190,12 +191,20 @@ KVComm-S 是什么：
 
 - 脚本：`scripts/run_gpu7_mechanism_extended_full_queue.sh`。
 - 结果目录：`snapshots/mechanism/pair1_llama31_same/positional_coherence/`。
-- 已完成 countries 的 ReKV normal、ReKV-S、B-ReKV normal。
+- 已完成 8 个主任务的 ReKV normal、ReKV-S、B-ReKV normal。
+- 汇总产物：`snapshots/analysis/mechanism/positional_coherence_summary.md`。
+- 主要观察：
+  - HotpotQA: ReKV normal `0.6960` -> ReKV-S `0.6120`。
+  - MuSiQue: `0.4800` -> `0.3440`。
+  - MultiFieldQA-en: `0.5067` -> `0.4267`。
+  - 2Wiki: `0.4050` -> `0.2600`。
+  - QASPER: `0.3440` -> `0.2900`。
+  - 这支持 positional coherence 对长文 / 多跳任务很重要。
 - B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `AssertionError`：
   - 日志：`snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`。
   - 报错位置：`models.py:get_short_past_key_values` 中 `assert len(lengths) <= 2`。
 - 已确认 B-ReKV-S 报错来自 coverage budget 造成多层 KV 长度档位超过 shift-back 当前实现假设；目前先默认绕开 B-ReKV-S。
-- 后续若要补 Table 11，建议先跑完整 ReKV normal / ReKV-S / B-ReKV normal；B-ReKV-S 只在专门修复 shift-back 后再补。
+- 后续若要补 B-ReKV-S，需要专门修复 shift-back 的 dynamic-cache 长度处理；当前论文先不把它作为必跑项。
 
 优先级：中。适合机制附录，但不如 fairness / deletion / cost 紧急。
 
@@ -479,32 +488,28 @@ Deletion ablation 已完成：
 
 ### Stage C：附录 / 机制实验
 
-6. Pair #9 raw-output probe。
-   - 脚本：`scripts/run_pair9_raw_output_probe_gpu7.sh`。
-   - 目的：确认 near-zero 是输出格式/模板问题，还是模型 pair 本身不适合。
-7. Table 6 extended tasks。
+6. Table 6 extended tasks。
    - B-ReKV-S 先跳过，避免阻塞后续队列。
-8. Table 11 positional coherence ablation。
-   - 先报告 ReKV normal / ReKV-S / B-ReKV normal；B-ReKV-S 等 shift-back 修复后再补。
-9. HotpotQA supporting-facts overlap。
-10. Failure case analysis。
+7. HotpotQA supporting-facts overlap。
+8. Failure case analysis。
+9. Score / layer aggregation ablation。
 
 ### Stage D：大型可选实验
 
-11. Table 8 pair #4/#5/#9 完整队列已完成。
+10. Table 8 pair #4/#5/#9 完整队列已完成。
     - #4 Falcon3 same-model：`snapshots/table8_pair4_falcon3_7b_same/`。
     - #5 EvolCodeLlama -> ToolACE：`snapshots/table8_pair5_evolcodellama_toolace/`。
-    - #9 SuperNova -> DeepSeek-Llama-8B：`snapshots/table8_pair9_supernova_deepseek_llama8b/`；结果大多接近 0，分数分布诊断见 `snapshots/analysis/pair9/pair9_diagnostic_report.md`。
-12. 最后再处理 Table 1/Table 8 pair #8 Falcon；若原 checkpoint 仍不可获得，则标记为 checkpoint unavailable，或改跑 Falcon-family substitute 作为额外鲁棒性实验。
-13. Table 10 multi-source ReKV。
-14. Head-wise B-ReKV。
+    - #9 SuperNova -> DeepSeek-Llama-8B：`snapshots/table8_pair9_supernova_deepseek_llama8b/`；暂缓作为正向对比，分数分布 / raw-output / KVComm probe 诊断见 `snapshots/analysis/pair9/pair9_diagnostic_report.md`。
+11. 最后再处理 Table 1/Table 8 pair #8 Falcon；若原 checkpoint 仍不可获得，则标记为 checkpoint unavailable，或改跑 Falcon-family substitute 作为额外鲁棒性实验。
+12. Table 10 multi-source ReKV。
+13. Head-wise B-ReKV。
 
 ## 6. 如果最后没法全部跑完，论文怎么说
 
 如果时间有限，最稳的论文呈现方式是：
 
 - 正文：Table 1 pair #6/#7，Table 8 pair #1/#2/#3，cost，fairness，B-ReKV Pareto，interpretability。
-- 附录：Table 8 pair #4/#5/#9，budget-aware negative ablations，cleaned examples，budget distribution，additional pair tables。
-- Future work：Table 8 pair #8 checkpoint-unavailable case，multi-source，positional-coherence variants，head-wise B-ReKV。
+- 附录：Table 8 pair #4/#5，pair #9 hard negative / limitation，budget-aware negative ablations，cleaned examples，budget distribution，additional pair tables。
+- Future work：Table 8 pair #8 checkpoint-unavailable case，multi-source，B-ReKV-S dynamic-cache shift-back fix，head-wise B-ReKV。
 
 这样写比较诚实：我们不声称完整复现 KVComm 所有 appendix 实验，但已经覆盖核心方法、跨模型泛化、效率、公平性、鲁棒性和可解释性风险。

@@ -1,0 +1,18 @@
+2026-07-05 12:13:14,018 - root - INFO - Logging setup completed. Log file: snapshots/diagnostics/pair9_kvcomm_probe/tipsheets/kvcomm/kvcomm_top0.3_limit50_0705_1213/log.log
+2026-07-05 12:13:14,018 - root - INFO - Log level: INFO
+2026-07-05 12:13:14,018 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/diagnostics/pair9_kvcomm_probe/tipsheets/kvcomm', model_A='/sharedspace/models/Llama-3.1-SuperNova-Lite', model_B='/sharedspace/models/DeepSeek-R1-Distill-Llama-8B', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.3, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', score_mode='value_norm', recv_window=0, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='tipsheets', task_name='', limit=50, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='kvcomm_top0.3_limit50', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-05 12:13:14,018 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/diagnostics/pair9_kvcomm_probe/tipsheets/kvcomm/kvcomm_top0.3_limit50_0705_1213
+2026-07-05 12:13:14,018 - root - INFO - Log level: INFO
+2026-07-05 12:13:14,101 - root - INFO - Number of GPU: 1
+2026-07-05 12:13:14,107 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-05 12:13:14,108 - root - INFO - CUDA_VISIBLE_DEVICES: 7
+2026-07-05 12:13:52,441 - root - INFO - CVCommunicator initialized
+2026-07-05 12:13:58,380 - root - INFO - communication result: 1.0000, communication time: 5.93s
+2026-07-05 12:13:58,382 - root - INFO - Layer ranking: [ 0 13  9 11  8 14 10 15 12  7  5 30  6 17 16 20  4 26 22 19 27 28 29 31
+ 21 24 25 18 23  3  1  2]
+2026-07-05 12:13:58,382 - root - INFO - Top 0.3 from 32 layers: [ 0 13  9 11  8 14 10 15 12  7  5 30  6 17 16 20  4 26 22 19 27 28 29 31
+ 21 24 25 18 23  3  1  2]
+2026-07-05 12:13:58,382 - root - INFO - New layers list: [ 0 13  9 11  8 14 10 15 12]
+2026-07-05 12:13:58,388 - root - INFO - CVCommunicator initialized
+2026-07-05 12:14:15,633 - root - INFO - per-sample scores written to /home/xay/KVComm/snapshots/diagnostics/pair9_kvcomm_probe/tipsheets/kvcomm/kvcomm_top0.3_limit50_0705_1213/per_sample.jsonl
+2026-07-05 12:14:15,633 - root - INFO - communication result: 0.5600, communication time: 17.24s

@@ -780,7 +780,7 @@ KVComm 原论文共 9 个 model pairs:
 | 6 | `huihui-ai/Llama-3.2-3B-Instruct-abliterated` | `suayptalha/DeepSeek-R1-Distill-Llama-3B` | fine-tuned from pair #2 base | Table 1 ReKV/B-ReKV 已完成 |
 | 7 | `Orion-zhen/Qwen2.5-7B-Instruct-Uncensored` | `bespokelabs/Bespoke-Stratos-7B` | fine-tuned from pair #3 base | Table 1 ReKV/B-ReKV 已完成 |
 | 8 | `ehristoforu/falcon3-ultraset` | `huihui-ai/Falcon3-7B-Instruct-abliterated` | fine-tuned from pair #4 base | 暂缓；receiver checkpoint 不可获得或目录不完整 |
-| 9 | `arcee-ai/Llama-3.1-SuperNova-Lite` | `deepseek-ai/DeepSeek-R1-Distill-Llama-8B` | fine-tuned from pair #1 base | Table 8 ReKV/B-ReKV 已完成；非 `tmath` 结果异常偏低 |
+| 9 | `arcee-ai/Llama-3.1-SuperNova-Lite` | `deepseek-ai/DeepSeek-R1-Distill-Llama-8B` | fine-tuned from pair #1 base | Table 8 ReKV/B-ReKV 已完成但暂缓作为正向对比；KVComm probe 在 QA/multi-hop 上也很差 |
 
 注意:
 
@@ -1675,7 +1675,7 @@ M_r = /NAS/models/DeepSeek-R1-Distill-Llama-8B
 | `qasper` | 0.002 / 0.002 / 0.002 | 0.000 / 0.002 / 0.002 | 0.000 / 0.000 / 0.000 |
 | `tmath` | 0.325 / 0.322 / 0.327 | 0.325 / 0.323 / 0.328 | 0.321 / 0.325 / 0.324 |
 
-初步观察:pair #9 已完整跑完,但除 `tmath` 外结果几乎全为 0。这更像模型输出格式、prompt template、chat special tokens 或 sender/receiver fine-tune mismatch 导致的异常/负结果,不应直接作为 ReKV 泛化失败结论使用;写论文时建议放入 limitations 或先做输出样例检查。
+最终处理:pair #9 已完整跑完,但除 `tmath` 外结果几乎全为 0。2026-07-05 额外做了 raw-output probe 和 KVComm top=0.3 limit=50 probe。raw-output 显示模型并非乱码或模板污染,但经常选错 evidence 或只完成中间 hop；KVComm probe 也很差: `countries=0.120`, `tipsheets=0.560`, `hotpotqa=0.060`, `musique=0.020`, `qasper=0.000`。因此该异常不是 ReKV/B-ReKV 独有问题,更像 SuperNova -> DeepSeek-Llama-8B 这个 hard heterogeneous pair 的 KV 兼容/长上下文 grounding 问题。论文中暂缓把 pair #9 作为正向泛化对比,最多作为 hard negative / limitation 附录说明。
 
 ### Table 1 pair #6:Llama-3.2 abliterated -> DeepSeek-R1-Distill-Llama-3B(已完成)
 
@@ -2166,27 +2166,54 @@ python scripts/analyze_coverage.py \
 
 已完成：
 
-- **Table 1 / Table 8 主表覆盖**：Table 1 pair #6/#7 已完整；Table 8 pair #1/#2/#3/#4/#5/#9 已完整。pair #9 的 8 datasets x 9 paper-table runs 虽完成，但多数非 `tmath` 结果接近 0，需要作为异常/负结果先诊断。
+- **Table 1 / Table 8 主表覆盖**：Table 1 pair #6/#7 已完整；Table 8 pair #1/#2/#3/#4/#5 已完整并可作为正向附录证据。pair #9 的 8 datasets x 9 paper-table runs 虽完成，但已暂缓作为正向对比；KVComm probe 同样显示 QA/multi-hop 任务很差，倾向解释为 hard heterogeneous pair / KV compatibility issue。
 - **Pair #6/#7 full cost profile**：已完成。每个 pair 覆盖 8 个主任务 x 10 个 method block，产物为 `snapshots/cost_profile/table1_pair6_llama32_abliterated_deepseek3b_full/cost_table.csv` 和 `snapshots/cost_profile/table1_pair7_qwen25_uncensored_bespoke_full/cost_table.csv`。
 - **B-ReKV robustness**：pair #1 的 HotpotQA / MuSiQue / MultiFieldQA-en Pareto 与 budget distribution 已完成；pair #6/#7 的 HotpotQA / MuSiQue 小网格也已完成。
 - **Fairness / interpretability**：pair #1/#6/#7 的 ReKV vs Evict/Random fairness 已完成；answer overlap、cleaned examples、token bar、deletion ablation 已完成。
 - **Sink/recent ablation**：已完成。目录为 `snapshots/mechanism/pair1_llama31_same/sink_recent/`，覆盖 8 个主任务，每个任务 ReKV/B-ReKV x 4 个 sink/recent 组合。
-- **2026-07-05 收尾分析产物**：pair #6/#7 cost 论文子表已生成到 `snapshots/analysis/cost/pair6_pair7_cost_focus_hotpotqa_musique_multifieldqa.csv`；pair #6/#7 robustness summary 与 Pareto 图已生成到 `snapshots/analysis/robustness/`；pair #9 分数异常诊断已生成到 `snapshots/analysis/pair9/pair9_diagnostic_report.md`。
+- **2026-07-05 收尾分析产物**：pair #6/#7 cost 论文子表已生成到 `snapshots/analysis/cost/pair6_pair7_cost_focus_hotpotqa_musique_multifieldqa.csv`；pair #6/#7 robustness summary 与 Pareto 图已生成到 `snapshots/analysis/robustness/`；pair #9 分数异常、raw-output 和 KVComm probe 诊断已记录到 `snapshots/analysis/pair9/pair9_diagnostic_report.md`。
+- **Table 11 positional coherence 可跑部分**：2026-07-05 GPU2 队列已完成 8 个主任务的 ReKV normal / ReKV-S / B-ReKV normal，汇总见 `snapshots/analysis/mechanism/positional_coherence_summary.md`。ReKV-S 在 HotpotQA/MuSiQue/MultiFieldQA-en/2Wiki/QASPER 上均明显低于 normal，支持 positional coherence 很重要这一机制结论。
 
 部分完成 / 中断：
 
-- **Table 11 positional coherence / ReKV-S**：队列已开始，完成 countries 的 ReKV normal、ReKV-S、B-ReKV normal；B-ReKV-S 在 `--shift_back` + coverage budget 下触发 `models.py:get_short_past_key_values` 的 `assert len(lengths) <= 2`，队列中断。日志为 `snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`。已确认根因是 coverage budget 造成多层 KV 长度档位超过 shift-back 当前实现假设；诊断报告见 `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md`，队列脚本已默认 `RUN_BREKV_SHIFT=0` 绕开该项。
+- **B-ReKV-S positional coherence**：不再作为当前必跑项。`--shift_back` + coverage budget 会触发 `models.py:get_short_past_key_values` 的 `assert len(lengths) <= 2`，根因是 coverage budget 造成多层 KV 长度档位超过 shift-back 当前实现假设；诊断报告见 `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md`。当前论文写法建议只报告 ReKV-S 和 B-ReKV normal，B-ReKV-S 标为实现限制。
 
 尚未完成：
 
 - **Table 6 extended tasks**：脚本已准备；当前已可通过 `RUN_SINK_RECENT=0 RUN_POSITIONAL=1 RUN_BREKV_SHIFT=0 RUN_TABLE6=1 GPU=7 bash scripts/run_gpu7_mechanism_extended_full_queue.sh` 绕开 B-ReKV-S 并继续后续队列，但尚未开始生成 `snapshots/table6_pair*` 结果目录。
 - **HotpotQA supporting-facts overlap**：未做，需要单独分析 selected tokens 是否落在 supporting sentences。
-- **Pair #9 raw-output 异常诊断**：分数分布诊断已做，确认非 `tmath` 多数任务接近 0，不是单个 run 偶发；但现有 `per_sample.jsonl` 不保存 raw response，仍需运行 `scripts/run_pair9_raw_output_probe_gpu7.sh` 抽样检查输出、prompt template、chat special tokens 和回答格式。
+- **Pair #9 处理决定**：raw-output probe 和 KVComm top=0.3 limit=50 probe 已完成。KVComm 在 HotpotQA/MuSiQue/QASPER 上同样很差，因此 pair #9 不再作为正向对比补跑，暂缓/作为 hard negative 或 limitation 记录。
 - **Score function ablation / Layer aggregation ablation**：未做。当前代码已有 receiver attention、value norm、random；`attention x value norm`、`attention + recency prior` 和不同 layer aggregation 还需实现或脚本化。
 - **Table 10 multi-source / Head-wise B-ReKV / Falcon pair #8**：未做或暂缓。Falcon pair #8 仍受 checkpoint 不可用/不完整限制。
 
 下一步建议优先级：
 
-1. 运行 `scripts/run_pair9_raw_output_probe_gpu7.sh`，看 pair #9 的 raw response 是否是格式/模板问题。
-2. 继续 Table 6 extended tasks；若短期不修 shift-back，Table 11 只报告 ReKV-S 或把 B-ReKV-S 标为实现限制。
-3. 再考虑 score/layer ablation、supporting-facts overlap。
+1. 继续 Table 6 extended tasks。
+2. 做 HotpotQA supporting-facts overlap，补强 evidence grounding 解释。
+3. 再考虑 score/layer ablation。
+4. pair #9 和 B-ReKV-S 暂缓，不再投入 GPU 作为正向对比补跑。
+
+### 10.1 2026-07-06 Table 11 positional coherence 汇总
+
+产物：
+
+```text
+snapshots/analysis/mechanism/positional_coherence_summary.csv
+snapshots/analysis/mechanism/positional_coherence_summary.md
+snapshots/mechanism/logs/gpu2_mechanism_extended_full_0705_1217.log
+```
+
+核心数值：
+
+| Task | ReKV normal | ReKV-S | B-ReKV normal | B-ReKV-S |
+|---|---:|---:|---:|---|
+| countries | 0.6000 | 0.6000 | 0.6150 | skipped |
+| tipsheets | 0.8680 | 0.8620 | 0.8780 | skipped |
+| hotpotqa | 0.6960 | 0.6120 | 0.7080 | skipped |
+| qasper | 0.3440 | 0.2900 | 0.3320 | skipped |
+| musique | 0.4800 | 0.3440 | 0.4820 | skipped |
+| multifieldqa_en | 0.5067 | 0.4267 | 0.5200 | skipped |
+| twowikimqa | 0.4050 | 0.2600 | 0.4100 | skipped |
+| tmath | 0.3408 | 0.3494 | 0.3481 | skipped |
+
+结论：除 countries / tmath 这类较简单或形式特殊任务外，ReKV-S 相比 ReKV normal 普遍下降，尤其 HotpotQA、MuSiQue、2Wiki、QASPER、MultiFieldQA-en 更明显。这可以作为 Table 11 的主要机制结论：KV 通信不是随便拼接 cache，位置一致性/positional coherence 对长文和多跳任务很重要。B-ReKV-S 因当前 shift-back 实现不支持 coverage budget 的多层不规则长度，暂不报告为正向实验项。

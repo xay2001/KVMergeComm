@@ -18,5 +18,6 @@
 ## 结论
 
 - Pair #9 的异常不是单个 run 的偶发问题；多个非 `tmath` 数据集上大量 run 的均分接近 0。
-- 现有 per-sample 文件只能确认分数异常，不能确认是 prompt/template、chat special tokens、模型输出格式，还是模型能力/对齐问题。
-- 下一步应抽样重跑少量样本并保存 raw prompt / raw response / parsed answer，用于定位异常来源。
+- Raw-output probe 已完成。输出不是乱码或明显 template 污染，`as_run_local_path` 与 `forced_deepseek_think` 输出基本一致；问题更像 evidence grounding / multi-hop reasoning 不稳定。
+- KVComm top=0.3 limit=50 probe 也很差：`countries=0.120`, `tipsheets=0.560`, `hotpotqa=0.060`, `musique=0.020`, `qasper=0.000`。这说明 near-zero 不是 ReKV/B-ReKV 独有问题，而是 SuperNova -> DeepSeek-Llama-8B 这个 hard heterogeneous pair 的 KV compatibility / long-context grounding 问题。
+- 处理决定：pair #9 暂缓作为正向对比，不再继续投入 GPU 补跑；论文中最多作为 hard negative / limitation 附录说明。

@@ -1,0 +1,61 @@
+######## GPU2 mechanism + extended full queue START 2026-07-05 12:03:51 ########
+RUN_SINK_RECENT=0
+RUN_POSITIONAL=1
+RUN_TABLE6=0
+RUN_BREKV_SHIFT=1
+MAIN_TASKS=countries tipsheets hotpotqa qasper musique multifieldqa_en twowikimqa tmath
+POSITIONAL_TASKS=countries
+EXT_TASKS=hotpotqa_full qasper_full musique_full samsum repobench
+######## Positional coherence ablation START 2026-07-05 12:03:51 ########
+ROOT=snapshots/mechanism/pair1_llama31_same/positional_coherence
+TASKS=countries
+RUN_BREKV_SHIFT=1
+==== [skip] snapshots/mechanism/pair1_llama31_same/positional_coherence/countries ReKV recv_w8_r0.3_normal ====
+==== [skip] snapshots/mechanism/pair1_llama31_same/positional_coherence/countries ReKV-S recv_w8_r0.3_shiftback ====
+==== [skip] snapshots/mechanism/pair1_llama31_same/positional_coherence/countries B-ReKV cov_t0.95_s0.75_w8_normal ====
+==== [GPU2] snapshots/mechanism/pair1_llama31_same/positional_coherence/countries B-ReKV-S w8 tau=0.95 scale=0.75 2026-07-05 12:03:51 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-05 12:03:58,477 - root - INFO - Logging setup completed. Log file: snapshots/mechanism/pair1_llama31_same/positional_coherence/countries/coverage_shift/cov_t0.95_s0.75_w8_shiftback_0705_1203/log.log
+2026-07-05 12:03:58,477 - root - INFO - Log level: INFO
+2026-07-05 12:03:58,477 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/mechanism/pair1_llama31_same/positional_coherence/countries/coverage_shift', model_A='/sharedspace/models/Llama-3.1-8B-Instruct', model_B='/sharedspace/models/Llama-3.1-8B-Instruct', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=True, merge=True, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='evict', score_mode='receiver', recv_window=8, budget_mode='coverage', budget_min=0.05, budget_max=0.7, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.95, coverage_scale=0.75, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='countries', task_name='', limit=0, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, f='replace', layer_k=26, layer_j=26, run_name='cov_t0.95_s0.75_w8_shiftback', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-05 12:03:58,477 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/mechanism/pair1_llama31_same/positional_coherence/countries/coverage_shift/cov_t0.95_s0.75_w8_shiftback_0705_1203
+2026-07-05 12:03:58,477 - root - INFO - Log level: INFO
+2026-07-05 12:03:58,612 - root - INFO - Number of GPU: 1
+2026-07-05 12:03:58,617 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-05 12:03:58,617 - root - INFO - CUDA_VISIBLE_DEVICES: 2
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:44<02:14, 44.69s/it]Loading checkpoint shards:  50%|█████     | 2/4 [01:29<01:29, 44.94s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [02:13<00:44, 44.36s/it]Loading checkpoint shards: 100%|██████████| 4/4 [02:23<00:00, 30.69s/it]Loading checkpoint shards: 100%|██████████| 4/4 [02:23<00:00, 35.80s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.43s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:03,  2.00s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.77s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.21s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.50s/it]
+2026-07-05 12:06:45,274 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/200 [00:00<?, ?it/s]2026-07-05 12:06:46,299 - root - INFO - [merge] mode=evict score=receiver budget=coverage layer compress: L=64 -> k=12 (r_eff=0.141, base_ratio=0.2, sink=4, recent=8)
+communication result: 0.0000:   0%|          | 0/200 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 248, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 177, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 432, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 367, in _test
+    response = self.inference(model_A, cv, item)
+  File "/home/xay/KVComm/eval.py", line 282, in inference
+    output = cv.generate(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 2625, in generate
+    result = self._sample(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 3606, in _sample
+    outputs = self(**model_inputs, return_dict=True)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/KVComm/models.py", line 486, in forward
+    out_B = forward_shift_back_llama(
+  File "/home/xay/KVComm/models.py", line 638, in forward_shift_back_llama
+    short_past_key_values, short_length = get_short_past_key_values(past_key_values)
+  File "/home/xay/KVComm/models.py", line 601, in get_short_past_key_values
+    assert len(lengths) <= 2
+AssertionError

@@ -32,7 +32,7 @@ Generated from `snapshots/**/log.log`.
 | Table 8 | #3 | `snapshots/table8_pair3_qwen25_7b_same/` | 72 | Complete for 8 datasets x 9 paper-table runs |
 | Table 8 | #4 | `snapshots/table8_pair4_falcon3_7b_same/` | 72 | Complete for 8 datasets x 9 paper-table runs |
 | Table 8 | #5 | `snapshots/table8_pair5_evolcodellama_toolace/` | 72 | Complete for 8 datasets x 9 paper-table runs |
-| Table 8 | #9 | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | 72 | Complete for 8 datasets x 9 paper-table runs; most non-`tmath` scores are near zero |
+| Table 8 | #9 | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | 72 | Complete but deferred from positive comparison; KVComm probe is also poor on QA/multi-hop tasks |
 
 ## Paper-Table Run Definition
 
@@ -62,7 +62,7 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 | #3 | 8 datasets have 9 completed paper-table runs | Complete paper-table queue |
 | #4 | 8 datasets have 9 completed paper-table runs | Falcon3 same-model queue complete |
 | #5 | 8 datasets have 9 completed paper-table runs | EvolCodeLlama -> ToolACE queue complete |
-| #9 | 8 datasets have 9 completed paper-table runs | SuperNova -> DeepSeek-Llama-8B queue complete; inspect near-zero non-`tmath` results before using as positive evidence |
+| #9 | 8 datasets have 9 completed paper-table runs | SuperNova -> DeepSeek-Llama-8B queue complete, but deferred from Table 8 positive evidence because KVComm baseline probe is also unstable |
 
 ## Method Directory Legend
 
@@ -85,7 +85,7 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 - Pair #7 needs `tmath` completion.
 - Pair #8 needs model path/startup issue resolution before continuing the queue.
 - Pair #1 `qasper` remains sparse relative to other datasets.
-- Pair #9 complete results are mostly near zero outside `tmath`; score-distribution diagnosis is in `snapshots/analysis/pair9/pair9_diagnostic_report.md`, and raw-output probing should be run before presenting it as robustness evidence.
+- Pair #9 is now deferred from positive comparison. Score-distribution, raw-output, and KVComm probe diagnostics indicate a hard heterogeneous-pair issue rather than a ReKV-specific failure; see `snapshots/analysis/pair9/pair9_diagnostic_report.md`.
 
 ## Reviewer-Risk Experiment Status
 
@@ -99,9 +99,9 @@ These experiments were added to support the paper framing beyond raw accuracy.
 | Receiver-initiated fairness | `snapshots/query_fairness/pair1_llama31_same/query_fairness.csv` | Done |
 | Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md`, `cleaned/*_clean_top_tokens.png`, `snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv` | Done |
 | Sink/recent token ablation | `snapshots/mechanism/pair1_llama31_same/sink_recent/` | Done for 8 main tasks |
-| Positional coherence / ReKV-S | `snapshots/mechanism/pair1_llama31_same/positional_coherence/`, `snapshots/mechanism/logs/gpu7_mechanism_extended_full_0703_1144.log`, `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md` | Partial; B-ReKV-S shift-back diagnosed and disabled by default in queue script |
+| Positional coherence / ReKV-S | `snapshots/mechanism/pair1_llama31_same/positional_coherence/`, `snapshots/analysis/mechanism/positional_coherence_summary.md`, `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md` | Done for 8 main tasks for ReKV normal / ReKV-S / B-ReKV normal; B-ReKV-S omitted due to shift-back implementation limit |
 | Table 6 extended tasks | `scripts/run_gpu7_mechanism_extended_full_queue.sh` | Script prepared; can continue with `RUN_BREKV_SHIFT=0`; no Table 6 result root yet |
 
-Main remaining work is now narrower: run the pair #9 raw-output probe, decide
-whether Table 11 should omit B-ReKV-S or wait for a deeper shift-back fix, then
-continue Table 6 extended tasks if GPU budget allows.
+Main remaining work is now narrower: continue Table 6 extended tasks if GPU
+budget allows, then consider supporting-facts overlap and score/layer ablations.
+Pair #9 and B-ReKV-S are deferred from positive claims.

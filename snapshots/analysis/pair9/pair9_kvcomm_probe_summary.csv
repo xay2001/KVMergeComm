@@ -1,0 +1,6 @@
+task,method,n,score_mean,path
+"countries","KVComm top=0.3 limit=50","50","0.12","snapshots/diagnostics/pair9_kvcomm_probe/countries/kvcomm/kvcomm_top0.3_limit50_0705_1212"
+"hotpotqa","KVComm top=0.3 limit=50","50","0.06","snapshots/diagnostics/pair9_kvcomm_probe/hotpotqa/kvcomm/kvcomm_top0.3_limit50_0705_1214"
+"musique","KVComm top=0.3 limit=50","50","0.02","snapshots/diagnostics/pair9_kvcomm_probe/musique/kvcomm/kvcomm_top0.3_limit50_0705_1215"
+"qasper","KVComm top=0.3 limit=50","50","0.0","snapshots/diagnostics/pair9_kvcomm_probe/qasper/kvcomm/kvcomm_top0.3_limit50_0705_1217"
+"tipsheets","KVComm top=0.3 limit=50","50","0.56","snapshots/diagnostics/pair9_kvcomm_probe/tipsheets/kvcomm/kvcomm_top0.3_limit50_0705_1213"
