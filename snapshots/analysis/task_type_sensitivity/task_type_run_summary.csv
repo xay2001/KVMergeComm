@@ -1,0 +1,209 @@
+pair,task_type,dataset,method,n,score_mean,run_dir
+table1_pair6_llama32_abliterated_deepseek3b,math_reasoning,tmath,ReKV-w16 r=0.5,300,0.321302,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tmath/mtc_receiver/recv_w16_r0.5_0625_2136
+table1_pair6_llama32_abliterated_deepseek3b,math_reasoning,tmath,ReKV-w8 r=0.3,300,0.317707,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tmath/mtc_receiver/recv_w8_r0.3_0625_1815
+table1_pair6_llama32_abliterated_deepseek3b,math_reasoning,tmath,ReKV-w16 r=0.3,300,0.316694,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tmath/mtc_receiver/recv_w16_r0.3_0625_2051
+table1_pair6_llama32_abliterated_deepseek3b,math_reasoning,tmath,ReKV-w8 r=0.7,300,0.32322,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tmath/mtc_receiver/recv_w8_r0.7_0625_2006
+table1_pair6_llama32_abliterated_deepseek3b,math_reasoning,tmath,ReKV-w16 r=0.7,300,0.320187,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tmath/mtc_receiver/recv_w16_r0.7_0625_2222
+table1_pair6_llama32_abliterated_deepseek3b,math_reasoning,tmath,ReKV-w8 r=0.5,300,0.320868,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tmath/mtc_receiver/recv_w8_r0.5_0625_1910
+table1_pair6_llama32_abliterated_deepseek3b,math_reasoning,tmath,B-ReKV t=0.95 s=0.90 w16,300,0.317368,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tmath/coverage/cov_t0.95_s0.90_w16_0626_0036
+table1_pair6_llama32_abliterated_deepseek3b,math_reasoning,tmath,B-ReKV t=0.95 s=0.85 w8,300,0.319325,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tmath/coverage/cov_t0.95_s0.85_w8_0625_2351
+table1_pair6_llama32_abliterated_deepseek3b,math_reasoning,tmath,B-ReKV t=0.95 s=0.75 w8,300,0.316796,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tmath/coverage/cov_t0.95_s0.75_w8_0625_2307
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,twowikimqa,ReKV-w8 r=0.7,200,0.42,snapshots/table1_pair6_llama32_abliterated_deepseek3b/twowikimqa/mtc_receiver/recv_w8_r0.7_0625_1617
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,twowikimqa,ReKV-w16 r=0.5,200,0.42,snapshots/table1_pair6_llama32_abliterated_deepseek3b/twowikimqa/mtc_receiver/recv_w16_r0.5_0625_1626
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,twowikimqa,ReKV-w16 r=0.3,200,0.41,snapshots/table1_pair6_llama32_abliterated_deepseek3b/twowikimqa/mtc_receiver/recv_w16_r0.3_0625_1621
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,twowikimqa,ReKV-w8 r=0.3,200,0.395,snapshots/table1_pair6_llama32_abliterated_deepseek3b/twowikimqa/mtc_receiver/recv_w8_r0.3_0625_1609
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,twowikimqa,ReKV-w8 r=0.5,200,0.425,snapshots/table1_pair6_llama32_abliterated_deepseek3b/twowikimqa/mtc_receiver/recv_w8_r0.5_0625_1613
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,twowikimqa,ReKV-w16 r=0.7,200,0.42,snapshots/table1_pair6_llama32_abliterated_deepseek3b/twowikimqa/mtc_receiver/recv_w16_r0.7_0625_1630
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,twowikimqa,B-ReKV t=0.95 s=0.75 w8,200,0.4,snapshots/table1_pair6_llama32_abliterated_deepseek3b/twowikimqa/coverage/cov_t0.95_s0.75_w8_0625_1634
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,twowikimqa,B-ReKV t=0.95 s=0.85 w8,200,0.395,snapshots/table1_pair6_llama32_abliterated_deepseek3b/twowikimqa/coverage/cov_t0.95_s0.85_w8_0625_1639
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,twowikimqa,B-ReKV t=0.95 s=0.90 w16,200,0.41,snapshots/table1_pair6_llama32_abliterated_deepseek3b/twowikimqa/coverage/cov_t0.95_s0.90_w16_0625_1643
+table1_pair6_llama32_abliterated_deepseek3b,long_document,multifieldqa_en,ReKV-w16 r=0.7,150,0.46,snapshots/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_receiver/recv_w16_r0.7_0625_1551
+table1_pair6_llama32_abliterated_deepseek3b,long_document,multifieldqa_en,ReKV-w8 r=0.3,150,0.466667,snapshots/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_receiver/recv_w8_r0.3_0625_1529
+table1_pair6_llama32_abliterated_deepseek3b,long_document,multifieldqa_en,ReKV-w16 r=0.5,150,0.486667,snapshots/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_receiver/recv_w16_r0.5_0625_1547
+table1_pair6_llama32_abliterated_deepseek3b,long_document,multifieldqa_en,ReKV-w8 r=0.5,150,0.48,snapshots/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_receiver/recv_w8_r0.5_0625_1533
+table1_pair6_llama32_abliterated_deepseek3b,long_document,multifieldqa_en,ReKV-w8 r=0.7,150,0.46,snapshots/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_receiver/recv_w8_r0.7_0625_1538
+table1_pair6_llama32_abliterated_deepseek3b,long_document,multifieldqa_en,ReKV-w16 r=0.3,150,0.466667,snapshots/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/mtc_receiver/recv_w16_r0.3_0625_1542
+table1_pair6_llama32_abliterated_deepseek3b,long_document,multifieldqa_en,B-ReKV t=0.95 s=0.90 w16,150,0.493333,snapshots/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/coverage/cov_t0.95_s0.90_w16_0625_1604
+table1_pair6_llama32_abliterated_deepseek3b,long_document,multifieldqa_en,B-ReKV t=0.95 s=0.85 w8,150,0.486667,snapshots/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/coverage/cov_t0.95_s0.85_w8_0625_1600
+table1_pair6_llama32_abliterated_deepseek3b,long_document,multifieldqa_en,B-ReKV t=0.95 s=0.75 w8,150,0.466667,snapshots/table1_pair6_llama32_abliterated_deepseek3b/multifieldqa_en/coverage/cov_t0.95_s0.75_w8_0625_1556
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,ReKV-w16 r=0.3,500,0.668,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_receiver/recv_w16_r0.3_0625_1432
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,ReKV-w16 r=0.5,500,0.694,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_receiver/recv_w16_r0.5_0625_1435
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,ReKV-w8 r=0.5,500,0.702,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_receiver/recv_w8_r0.5_0625_1426
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,ReKV-w8 r=0.3,500,0.646,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_receiver/recv_w8_r0.3_0625_1422
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,ReKV-w16 r=0.7,500,0.716,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_receiver/recv_w16_r0.7_0625_1439
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,ReKV-w8 r=0.7,500,0.718,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/mtc_receiver/recv_w8_r0.7_0625_1429
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.75 w16,500,0.7,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.98_s0.75_w16_0702_1649
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.75 w8,500,0.706,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.98_s0.75_w8_0702_1619
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.90 w16,500,0.674,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.90_w16_0625_1449
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.75 w16,500,0.654,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.75_w16_0702_1640
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.75 w16,500,0.542,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.90_s0.75_w16_0702_1631
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.85 w8,500,0.64,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.85_w8_0625_1446
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.85 w16,500,0.722,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.98_s0.85_w16_0702_1652
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.85 w8,500,0.518,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.90_s0.85_w8_0702_1610
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.65 w8,500,0.686,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.98_s0.65_w8_0702_1616
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.85 w8,500,0.712,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.98_s0.85_w8_0702_1623
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.85 w16,500,0.662,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.85_w16_0702_1644
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.75 w8,500,0.48,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.90_s0.75_w8_0702_1606
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.65 w16,500,0.672,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.98_s0.65_w16_0702_1646
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.65 w16,500,0.506,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.90_s0.65_w16_0702_1626
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.75 w8,500,0.642,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.75_w8_0625_1442
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.65 w16,500,0.65,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.65_w16_0702_1637
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.65 w8,500,0.624,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.95_s0.65_w8_0702_1613
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.65 w8,500,0.464,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.90_s0.65_w8_0702_1603
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.85 w16,500,0.588,snapshots/table1_pair6_llama32_abliterated_deepseek3b/hotpotqa/coverage/cov_t0.90_s0.85_w16_0702_1634
+table1_pair6_llama32_abliterated_deepseek3b,simple_synthetic,tipsheets,ReKV-w16 r=0.7,500,0.716,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tipsheets/mtc_receiver/recv_w16_r0.7_0625_1410
+table1_pair6_llama32_abliterated_deepseek3b,simple_synthetic,tipsheets,ReKV-w8 r=0.3,500,0.486,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tipsheets/mtc_receiver/recv_w8_r0.3_0625_1355
+table1_pair6_llama32_abliterated_deepseek3b,simple_synthetic,tipsheets,ReKV-w8 r=0.7,500,0.736,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tipsheets/mtc_receiver/recv_w8_r0.7_0625_1401
+table1_pair6_llama32_abliterated_deepseek3b,simple_synthetic,tipsheets,ReKV-w8 r=0.5,500,0.594,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tipsheets/mtc_receiver/recv_w8_r0.5_0625_1358
+table1_pair6_llama32_abliterated_deepseek3b,simple_synthetic,tipsheets,ReKV-w16 r=0.5,500,0.604,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tipsheets/mtc_receiver/recv_w16_r0.5_0625_1407
+table1_pair6_llama32_abliterated_deepseek3b,simple_synthetic,tipsheets,ReKV-w16 r=0.3,500,0.484,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tipsheets/mtc_receiver/recv_w16_r0.3_0625_1404
+table1_pair6_llama32_abliterated_deepseek3b,simple_synthetic,tipsheets,B-ReKV t=0.95 s=0.90 w16,500,0.47,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tipsheets/coverage/cov_t0.95_s0.90_w16_0625_1419
+table1_pair6_llama32_abliterated_deepseek3b,simple_synthetic,tipsheets,B-ReKV t=0.95 s=0.85 w8,500,0.412,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tipsheets/coverage/cov_t0.95_s0.85_w8_0625_1416
+table1_pair6_llama32_abliterated_deepseek3b,simple_synthetic,tipsheets,B-ReKV t=0.95 s=0.75 w8,500,0.41,snapshots/table1_pair6_llama32_abliterated_deepseek3b/tipsheets/coverage/cov_t0.95_s0.75_w8_0625_1413
+table1_pair6_llama32_abliterated_deepseek3b,simple_fact,countries,ReKV-w16 r=0.5,200,0.515,snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/mtc_receiver/recv_w16_r0.5_0625_1348
+table1_pair6_llama32_abliterated_deepseek3b,simple_fact,countries,ReKV-w8 r=0.7,200,0.575,snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/mtc_receiver/recv_w8_r0.7_0625_1344
+table1_pair6_llama32_abliterated_deepseek3b,simple_fact,countries,ReKV-w16 r=0.3,200,0.37,snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/mtc_receiver/recv_w16_r0.3_0625_1346
+table1_pair6_llama32_abliterated_deepseek3b,simple_fact,countries,ReKV-w8 r=0.5,200,0.52,snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/mtc_receiver/recv_w8_r0.5_0625_1343
+table1_pair6_llama32_abliterated_deepseek3b,simple_fact,countries,ReKV-w16 r=0.7,200,0.575,snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/mtc_receiver/recv_w16_r0.7_0625_1349
+table1_pair6_llama32_abliterated_deepseek3b,simple_fact,countries,ReKV-w8 r=0.3,200,0.375,snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/mtc_receiver/recv_w8_r0.3_0625_1339
+table1_pair6_llama32_abliterated_deepseek3b,simple_fact,countries,B-ReKV t=0.95 s=0.75 w8,200,0.49,snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/coverage/cov_t0.95_s0.75_w8_0625_1350
+table1_pair6_llama32_abliterated_deepseek3b,simple_fact,countries,B-ReKV t=0.95 s=0.90 w16,200,0.5,snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/coverage/cov_t0.95_s0.90_w16_0625_1353
+table1_pair6_llama32_abliterated_deepseek3b,simple_fact,countries,B-ReKV t=0.95 s=0.85 w8,200,0.505,snapshots/table1_pair6_llama32_abliterated_deepseek3b/countries/coverage/cov_t0.95_s0.85_w8_0625_1352
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,ReKV-w16 r=0.3,500,0.354,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_receiver/recv_w16_r0.3_0625_1504
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,ReKV-w8 r=0.7,500,0.384,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_receiver/recv_w8_r0.7_0625_1500
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,ReKV-w16 r=0.5,500,0.39,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_receiver/recv_w16_r0.5_0625_1508
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,ReKV-w8 r=0.5,500,0.384,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_receiver/recv_w8_r0.5_0625_1456
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,ReKV-w16 r=0.7,500,0.396,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_receiver/recv_w16_r0.7_0625_1513
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,ReKV-w8 r=0.3,500,0.362,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/mtc_receiver/recv_w8_r0.3_0625_1452
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.98 s=0.75 w8,500,0.374,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.98_s0.75_w8_0702_1711
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.98 s=0.85 w16,500,0.394,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.98_s0.85_w16_0702_1748
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.95 s=0.65 w16,500,0.36,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.65_w16_0702_1729
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.95 s=0.75 w16,500,0.358,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.75_w16_0702_1733
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.95 s=0.75 w8,500,0.384,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.75_w8_0625_1517
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.98 s=0.65 w8,500,0.378,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.98_s0.65_w8_0702_1708
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.98 s=0.85 w8,500,0.388,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.98_s0.85_w8_0702_1715
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.95 s=0.65 w8,500,0.376,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.65_w8_0702_1705
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.95 s=0.85 w16,500,0.362,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.85_w16_0702_1737
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.95 s=0.90 w16,500,0.368,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.90_w16_0625_1525
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.98 s=0.65 w16,500,0.38,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.98_s0.65_w16_0702_1740
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.95 s=0.85 w8,500,0.37,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.95_s0.85_w8_0625_1521
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.90 s=0.65 w8,500,0.324,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.90_s0.65_w8_0702_1655
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.90 s=0.75 w8,500,0.33,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.90_s0.75_w8_0702_1658
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.90 s=0.65 w16,500,0.324,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.90_s0.65_w16_0702_1718
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.98 s=0.75 w16,500,0.392,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.98_s0.75_w16_0702_1744
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.90 s=0.85 w8,500,0.344,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.90_s0.85_w8_0702_1702
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.90 s=0.75 w16,500,0.338,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.90_s0.75_w16_0702_1721
+table1_pair6_llama32_abliterated_deepseek3b,multi_hop,musique,B-ReKV t=0.90 s=0.85 w16,500,0.348,snapshots/table1_pair6_llama32_abliterated_deepseek3b/musique/coverage/cov_t0.90_s0.85_w16_0702_1725
+table1_pair6_llama32_abliterated_deepseek3b,long_document,qasper,ReKV-w8 r=0.7,500,0.31,snapshots/table1_pair6_llama32_abliterated_deepseek3b/qasper/mtc_receiver/recv_w8_r0.7_0625_1708
+table1_pair6_llama32_abliterated_deepseek3b,long_document,qasper,ReKV-w16 r=0.7,500,0.306,snapshots/table1_pair6_llama32_abliterated_deepseek3b/qasper/mtc_receiver/recv_w16_r0.7_0625_1736
+table1_pair6_llama32_abliterated_deepseek3b,long_document,qasper,ReKV-w16 r=0.3,500,0.316,snapshots/table1_pair6_llama32_abliterated_deepseek3b/qasper/mtc_receiver/recv_w16_r0.3_0625_1718
+table1_pair6_llama32_abliterated_deepseek3b,long_document,qasper,ReKV-w8 r=0.3,500,0.306,snapshots/table1_pair6_llama32_abliterated_deepseek3b/qasper/mtc_receiver/recv_w8_r0.3_0625_1647
+table1_pair6_llama32_abliterated_deepseek3b,long_document,qasper,ReKV-w8 r=0.5,500,0.302,snapshots/table1_pair6_llama32_abliterated_deepseek3b/qasper/mtc_receiver/recv_w8_r0.5_0625_1658
+table1_pair6_llama32_abliterated_deepseek3b,long_document,qasper,ReKV-w16 r=0.5,500,0.326,snapshots/table1_pair6_llama32_abliterated_deepseek3b/qasper/mtc_receiver/recv_w16_r0.5_0625_1727
+table1_pair6_llama32_abliterated_deepseek3b,long_document,qasper,B-ReKV t=0.95 s=0.75 w8,500,0.3,snapshots/table1_pair6_llama32_abliterated_deepseek3b/qasper/coverage/cov_t0.95_s0.75_w8_0625_1746
+table1_pair6_llama32_abliterated_deepseek3b,long_document,qasper,B-ReKV t=0.95 s=0.90 w16,500,0.324,snapshots/table1_pair6_llama32_abliterated_deepseek3b/qasper/coverage/cov_t0.95_s0.90_w16_0625_1805
+table1_pair6_llama32_abliterated_deepseek3b,long_document,qasper,B-ReKV t=0.95 s=0.85 w8,500,0.306,snapshots/table1_pair6_llama32_abliterated_deepseek3b/qasper/coverage/cov_t0.95_s0.85_w8_0625_1755
+table1_pair7_qwen25_uncensored_bespoke,math_reasoning,tmath,ReKV-w8 r=0.7,300,0.334226,snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/mtc_receiver/recv_w8_r0.7_0630_1756
+table1_pair7_qwen25_uncensored_bespoke,math_reasoning,tmath,ReKV-w16 r=0.7,300,0.330873,snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/mtc_receiver/recv_w16_r0.7_0630_2219
+table1_pair7_qwen25_uncensored_bespoke,math_reasoning,tmath,ReKV-w16 r=0.3,300,0.331146,snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/mtc_receiver/recv_w16_r0.3_0630_1934
+table1_pair7_qwen25_uncensored_bespoke,math_reasoning,tmath,ReKV-w8 r=0.5,300,0.330114,snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/mtc_receiver/recv_w8_r0.5_0630_1632
+table1_pair7_qwen25_uncensored_bespoke,math_reasoning,tmath,ReKV-w16 r=0.5,300,0.335572,snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/mtc_receiver/recv_w16_r0.5_0630_2058
+table1_pair7_qwen25_uncensored_bespoke,math_reasoning,tmath,ReKV-w8 r=0.3,300,0.327438,snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/mtc_receiver/recv_w8_r0.3_0630_1505
+table1_pair7_qwen25_uncensored_bespoke,math_reasoning,tmath,B-ReKV t=0.95 s=0.75 w8,300,0.330401,snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/coverage/cov_t0.95_s0.75_w8_0630_2359
+table1_pair7_qwen25_uncensored_bespoke,math_reasoning,tmath,B-ReKV t=0.95 s=0.90 w16,300,0.329506,snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/coverage/cov_t0.95_s0.90_w16_0701_0320
+table1_pair7_qwen25_uncensored_bespoke,math_reasoning,tmath,B-ReKV t=0.95 s=0.85 w8,300,0.328573,snapshots/table1_pair7_qwen25_uncensored_bespoke/tmath/coverage/cov_t0.95_s0.85_w8_0701_0136
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,twowikimqa,ReKV-w8 r=0.5,200,0.175,snapshots/table1_pair7_qwen25_uncensored_bespoke/twowikimqa/mtc_receiver/recv_w8_r0.5_0630_0752
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,twowikimqa,ReKV-w8 r=0.7,200,0.2,snapshots/table1_pair7_qwen25_uncensored_bespoke/twowikimqa/mtc_receiver/recv_w8_r0.7_0630_0802
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,twowikimqa,ReKV-w16 r=0.5,200,0.15,snapshots/table1_pair7_qwen25_uncensored_bespoke/twowikimqa/mtc_receiver/recv_w16_r0.5_0630_0822
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,twowikimqa,ReKV-w8 r=0.3,200,0.15,snapshots/table1_pair7_qwen25_uncensored_bespoke/twowikimqa/mtc_receiver/recv_w8_r0.3_0630_0742
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,twowikimqa,ReKV-w16 r=0.7,200,0.175,snapshots/table1_pair7_qwen25_uncensored_bespoke/twowikimqa/mtc_receiver/recv_w16_r0.7_0630_0832
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,twowikimqa,ReKV-w16 r=0.3,200,0.135,snapshots/table1_pair7_qwen25_uncensored_bespoke/twowikimqa/mtc_receiver/recv_w16_r0.3_0630_0812
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,twowikimqa,B-ReKV t=0.95 s=0.90 w16,200,0.115,snapshots/table1_pair7_qwen25_uncensored_bespoke/twowikimqa/coverage/cov_t0.95_s0.90_w16_0630_0902
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,twowikimqa,B-ReKV t=0.95 s=0.85 w8,200,0.145,snapshots/table1_pair7_qwen25_uncensored_bespoke/twowikimqa/coverage/cov_t0.95_s0.85_w8_0630_0852
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,twowikimqa,B-ReKV t=0.95 s=0.75 w8,200,0.135,snapshots/table1_pair7_qwen25_uncensored_bespoke/twowikimqa/coverage/cov_t0.95_s0.75_w8_0630_0842
+table1_pair7_qwen25_uncensored_bespoke,long_document,multifieldqa_en,ReKV-w16 r=0.5,150,0.393333,snapshots/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_receiver/recv_w16_r0.5_0630_0653
+table1_pair7_qwen25_uncensored_bespoke,long_document,multifieldqa_en,ReKV-w8 r=0.7,150,0.4,snapshots/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_receiver/recv_w8_r0.7_0630_0633
+table1_pair7_qwen25_uncensored_bespoke,long_document,multifieldqa_en,ReKV-w8 r=0.5,150,0.426667,snapshots/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_receiver/recv_w8_r0.5_0630_0622
+table1_pair7_qwen25_uncensored_bespoke,long_document,multifieldqa_en,ReKV-w8 r=0.3,150,0.38,snapshots/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_receiver/recv_w8_r0.3_0630_0612
+table1_pair7_qwen25_uncensored_bespoke,long_document,multifieldqa_en,ReKV-w16 r=0.3,150,0.393333,snapshots/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_receiver/recv_w16_r0.3_0630_0643
+table1_pair7_qwen25_uncensored_bespoke,long_document,multifieldqa_en,ReKV-w16 r=0.7,150,0.4,snapshots/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/mtc_receiver/recv_w16_r0.7_0630_0703
+table1_pair7_qwen25_uncensored_bespoke,long_document,multifieldqa_en,B-ReKV t=0.95 s=0.85 w8,150,0.38,snapshots/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/coverage/cov_t0.95_s0.85_w8_0630_0722
+table1_pair7_qwen25_uncensored_bespoke,long_document,multifieldqa_en,B-ReKV t=0.95 s=0.75 w8,150,0.393333,snapshots/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/coverage/cov_t0.95_s0.75_w8_0630_0713
+table1_pair7_qwen25_uncensored_bespoke,long_document,multifieldqa_en,B-ReKV t=0.95 s=0.90 w16,150,0.373333,snapshots/table1_pair7_qwen25_uncensored_bespoke/multifieldqa_en/coverage/cov_t0.95_s0.90_w16_0630_0732
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,ReKV-w8 r=0.3,500,0.396,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_receiver/recv_w8_r0.3_0629_1839
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,ReKV-w16 r=0.5,500,0.442,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_receiver/recv_w16_r0.5_0629_2124
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,ReKV-w16 r=0.3,500,0.376,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_receiver/recv_w16_r0.3_0629_2036
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,ReKV-w8 r=0.7,500,0.504,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_receiver/recv_w8_r0.7_0629_2000
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,ReKV-w16 r=0.7,500,0.498,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_receiver/recv_w16_r0.7_0629_2157
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,ReKV-w8 r=0.5,500,0.454,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/mtc_receiver/recv_w8_r0.5_0629_1922
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.65 w16,500,0.408,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.98_s0.65_w16_0702_2039
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.65 w8,500,0.41,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.65_w8_0702_1844
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.75 w16,500,0.414,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.98_s0.75_w16_0702_2050
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.65 w16,500,0.292,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.90_s0.65_w16_0702_1924
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.65 w8,500,0.444,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.98_s0.65_w8_0702_1855
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.65 w16,500,0.36,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.65_w16_0702_2004
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.65 w8,500,0.24,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.90_s0.65_w8_0702_1751
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.85 w16,500,0.382,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.85_w16_0702_2029
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.85 w16,500,0.448,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.98_s0.85_w16_0702_2105
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.85 w8,500,0.318,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.90_s0.85_w8_0702_1832
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.75 w8,500,0.414,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.75_w8_0629_2219
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.75 w16,500,0.338,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.90_s0.75_w16_0702_1937
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.75 w8,500,0.29,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.90_s0.75_w8_0702_1819
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.85 w8,500,0.456,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.98_s0.85_w8_0702_1915
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.75 w16,500,0.382,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.75_w16_0702_2015
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.98 s=0.75 w8,500,0.446,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.98_s0.75_w8_0702_1905
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.90 s=0.85 w16,500,0.36,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.90_s0.85_w16_0702_1952
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.85 w8,500,0.446,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.85_w8_0629_2248
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,hotpotqa,B-ReKV t=0.95 s=0.90 w16,500,0.402,snapshots/table1_pair7_qwen25_uncensored_bespoke/hotpotqa/coverage/cov_t0.95_s0.90_w16_0629_2329
+table1_pair7_qwen25_uncensored_bespoke,simple_synthetic,tipsheets,ReKV-w8 r=0.5,500,0.944,snapshots/table1_pair7_qwen25_uncensored_bespoke/tipsheets/mtc_receiver/recv_w8_r0.5_0629_1716
+table1_pair7_qwen25_uncensored_bespoke,simple_synthetic,tipsheets,ReKV-w16 r=0.3,500,0.822,snapshots/table1_pair7_qwen25_uncensored_bespoke/tipsheets/mtc_receiver/recv_w16_r0.3_0629_1736
+table1_pair7_qwen25_uncensored_bespoke,simple_synthetic,tipsheets,ReKV-w16 r=0.5,500,0.932,snapshots/table1_pair7_qwen25_uncensored_bespoke/tipsheets/mtc_receiver/recv_w16_r0.5_0629_1746
+table1_pair7_qwen25_uncensored_bespoke,simple_synthetic,tipsheets,ReKV-w8 r=0.7,500,0.952,snapshots/table1_pair7_qwen25_uncensored_bespoke/tipsheets/mtc_receiver/recv_w8_r0.7_0629_1726
+table1_pair7_qwen25_uncensored_bespoke,simple_synthetic,tipsheets,ReKV-w8 r=0.3,500,0.902,snapshots/table1_pair7_qwen25_uncensored_bespoke/tipsheets/mtc_receiver/recv_w8_r0.3_0629_1708
+table1_pair7_qwen25_uncensored_bespoke,simple_synthetic,tipsheets,ReKV-w16 r=0.7,500,0.956,snapshots/table1_pair7_qwen25_uncensored_bespoke/tipsheets/mtc_receiver/recv_w16_r0.7_0629_1756
+table1_pair7_qwen25_uncensored_bespoke,simple_synthetic,tipsheets,B-ReKV t=0.95 s=0.90 w16,500,0.824,snapshots/table1_pair7_qwen25_uncensored_bespoke/tipsheets/coverage/cov_t0.95_s0.90_w16_0629_1827
+table1_pair7_qwen25_uncensored_bespoke,simple_synthetic,tipsheets,B-ReKV t=0.95 s=0.85 w8,500,0.92,snapshots/table1_pair7_qwen25_uncensored_bespoke/tipsheets/coverage/cov_t0.95_s0.85_w8_0629_1816
+table1_pair7_qwen25_uncensored_bespoke,simple_synthetic,tipsheets,B-ReKV t=0.95 s=0.75 w8,500,0.9,snapshots/table1_pair7_qwen25_uncensored_bespoke/tipsheets/coverage/cov_t0.95_s0.75_w8_0629_1806
+table1_pair7_qwen25_uncensored_bespoke,simple_fact,countries,ReKV-w8 r=0.7,200,0.405,snapshots/table1_pair7_qwen25_uncensored_bespoke/countries/mtc_receiver/recv_w8_r0.7_0629_1636
+table1_pair7_qwen25_uncensored_bespoke,simple_fact,countries,ReKV-w16 r=0.7,200,0.45,snapshots/table1_pair7_qwen25_uncensored_bespoke/countries/mtc_receiver/recv_w16_r0.7_0629_1649
+table1_pair7_qwen25_uncensored_bespoke,simple_fact,countries,ReKV-w16 r=0.5,200,0.47,snapshots/table1_pair7_qwen25_uncensored_bespoke/countries/mtc_receiver/recv_w16_r0.5_0629_1645
+table1_pair7_qwen25_uncensored_bespoke,simple_fact,countries,ReKV-w8 r=0.5,200,0.43,snapshots/table1_pair7_qwen25_uncensored_bespoke/countries/mtc_receiver/recv_w8_r0.5_0629_1632
+table1_pair7_qwen25_uncensored_bespoke,simple_fact,countries,ReKV-w16 r=0.3,200,0.185,snapshots/table1_pair7_qwen25_uncensored_bespoke/countries/mtc_receiver/recv_w16_r0.3_0629_1640
+table1_pair7_qwen25_uncensored_bespoke,simple_fact,countries,ReKV-w8 r=0.3,200,0.21,snapshots/table1_pair7_qwen25_uncensored_bespoke/countries/mtc_receiver/recv_w8_r0.3_0629_1621
+table1_pair7_qwen25_uncensored_bespoke,simple_fact,countries,B-ReKV t=0.95 s=0.90 w16,200,0.41,snapshots/table1_pair7_qwen25_uncensored_bespoke/countries/coverage/cov_t0.95_s0.90_w16_0629_1703
+table1_pair7_qwen25_uncensored_bespoke,simple_fact,countries,B-ReKV t=0.95 s=0.75 w8,200,0.355,snapshots/table1_pair7_qwen25_uncensored_bespoke/countries/coverage/cov_t0.95_s0.75_w8_0629_1653
+table1_pair7_qwen25_uncensored_bespoke,simple_fact,countries,B-ReKV t=0.95 s=0.85 w8,200,0.455,snapshots/table1_pair7_qwen25_uncensored_bespoke/countries/coverage/cov_t0.95_s0.85_w8_0629_1659
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,ReKV-w16 r=0.5,500,0.318,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_receiver/recv_w16_r0.5_0630_0317
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,ReKV-w16 r=0.7,500,0.352,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_receiver/recv_w16_r0.7_0630_0403
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,ReKV-w8 r=0.7,500,0.358,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_receiver/recv_w8_r0.7_0630_0148
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,ReKV-w8 r=0.3,500,0.288,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_receiver/recv_w8_r0.3_0630_0011
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,ReKV-w16 r=0.3,500,0.298,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_receiver/recv_w16_r0.3_0630_0232
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,ReKV-w8 r=0.5,500,0.338,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/mtc_receiver/recv_w8_r0.5_0630_0101
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.98 s=0.75 w8,500,0.322,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.98_s0.75_w8_0702_2224
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.90 s=0.65 w8,500,0.248,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.90_s0.65_w8_0702_2119
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.98 s=0.65 w16,500,0.316,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.98_s0.65_w16_0703_0017
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.90 s=0.85 w16,500,0.264,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.90_s0.85_w16_0702_2318
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.98 s=0.85 w8,500,0.324,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.98_s0.85_w8_0702_2238
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.95 s=0.75 w8,500,0.3,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.75_w8_0630_0447
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.95 s=0.85 w16,500,0.286,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.85_w16_0702_2359
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.98 s=0.75 w16,500,0.326,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.98_s0.75_w16_0703_0029
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.95 s=0.75 w16,500,0.266,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.75_w16_0702_2346
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.98 s=0.85 w16,500,0.33,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.98_s0.85_w16_0703_0044
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.95 s=0.85 w8,500,0.308,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.85_w8_0630_0520
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.90 s=0.85 w8,500,0.294,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.90_s0.85_w8_0702_2144
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.95 s=0.65 w16,500,0.278,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.65_w16_0702_2331
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.90 s=0.75 w16,500,0.26,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.90_s0.75_w16_0702_2304
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.95 s=0.90 w16,500,0.3,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.90_w16_0630_0553
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.90 s=0.65 w16,500,0.254,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.90_s0.65_w16_0702_2251
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.95 s=0.65 w8,500,0.294,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.95_s0.65_w8_0702_2155
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.90 s=0.75 w8,500,0.27,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.90_s0.75_w8_0702_2131
+table1_pair7_qwen25_uncensored_bespoke,multi_hop,musique,B-ReKV t=0.98 s=0.65 w8,500,0.3,snapshots/table1_pair7_qwen25_uncensored_bespoke/musique/coverage/cov_t0.98_s0.65_w8_0702_2209
+table1_pair7_qwen25_uncensored_bespoke,long_document,qasper,ReKV-w16 r=0.5,500,0.224,snapshots/table1_pair7_qwen25_uncensored_bespoke/qasper/mtc_receiver/recv_w16_r0.5_0630_1148
+table1_pair7_qwen25_uncensored_bespoke,long_document,qasper,ReKV-w8 r=0.5,500,0.218,snapshots/table1_pair7_qwen25_uncensored_bespoke/qasper/mtc_receiver/recv_w8_r0.5_0630_0951
+table1_pair7_qwen25_uncensored_bespoke,long_document,qasper,ReKV-w8 r=0.7,500,0.222,snapshots/table1_pair7_qwen25_uncensored_bespoke/qasper/mtc_receiver/recv_w8_r0.7_0630_1031
+table1_pair7_qwen25_uncensored_bespoke,long_document,qasper,ReKV-w16 r=0.7,500,0.208,snapshots/table1_pair7_qwen25_uncensored_bespoke/qasper/mtc_receiver/recv_w16_r0.7_0630_1229
+table1_pair7_qwen25_uncensored_bespoke,long_document,qasper,ReKV-w8 r=0.3,500,0.224,snapshots/table1_pair7_qwen25_uncensored_bespoke/qasper/mtc_receiver/recv_w8_r0.3_0630_0912
+table1_pair7_qwen25_uncensored_bespoke,long_document,qasper,ReKV-w16 r=0.3,500,0.228,snapshots/table1_pair7_qwen25_uncensored_bespoke/qasper/mtc_receiver/recv_w16_r0.3_0630_1111
+table1_pair7_qwen25_uncensored_bespoke,long_document,qasper,B-ReKV t=0.95 s=0.85 w8,500,0.204,snapshots/table1_pair7_qwen25_uncensored_bespoke/qasper/coverage/cov_t0.95_s0.85_w8_0630_1350
+table1_pair7_qwen25_uncensored_bespoke,long_document,qasper,B-ReKV t=0.95 s=0.75 w8,500,0.194,snapshots/table1_pair7_qwen25_uncensored_bespoke/qasper/coverage/cov_t0.95_s0.75_w8_0630_1311
+table1_pair7_qwen25_uncensored_bespoke,long_document,qasper,B-ReKV t=0.95 s=0.90 w16,500,0.212,snapshots/table1_pair7_qwen25_uncensored_bespoke/qasper/coverage/cov_t0.95_s0.90_w16_0630_1428

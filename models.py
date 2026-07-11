@@ -38,6 +38,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         merge_mode: str = "merge",
         score_mode: str = "value_norm",
         recv_window: int = 0,
+        receiver_layer_agg: str = "identity",
         budget_mode: str = "uniform",
         budget_min: float = 0.05,
         budget_max: float = 0.5,
@@ -58,9 +59,10 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.merge_sink = merge_sink
         self.merge_recent = merge_recent
         self.merge_mode = merge_mode  # "merge" (normalized value merge) or "evict" (drop only)
-        self.score_mode = score_mode  # "value_norm", "random", or "receiver" (B's question attention)
+        self.score_mode = score_mode  # "value_norm", "random", "receiver", or receiver-aware ablation variants
         self.recv_window = recv_window  # 0 = all question tokens; >0 = only last N (SnapKV-style observation window)
-        self.token_importance = None  # filled per-sample by compute_receiver_importance when score_mode=="receiver"
+        self.receiver_layer_agg = receiver_layer_agg  # identity | last | mean | topK | lastK
+        self.token_importance = None  # filled per-sample by compute_receiver_importance for receiver-aware score modes
         # budget-aware allocation (Step 1): how the per-query / per-layer keep ratio is set.
         #   uniform      -> every layer keeps self.merge_ratio (original ReKV behaviour)
         #   query        -> per-query total budget B(Q) from importance entropy, uniform across layers
@@ -204,20 +206,29 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             return K, V
 
         # token importance score
+        value_norm = V.float().norm(dim=-1).mean(dim=1)[0]  # [L]
         if (
-            self.score_mode == "receiver"
+            self.score_mode in {"receiver", "receiver_x_value_norm", "receiver_value_norm", "receiver_recency", "receiver_recency_prior"}
             and self.token_importance is not None
             and layer_idx in self.token_importance
             and self.token_importance[layer_idx].numel() == L
         ):
             # receiver-aware: how much B's question attends to each A-context token
-            imp = self.token_importance[layer_idx].to(K.device).float().clone()  # [L]
+            recv_imp = self.token_importance[layer_idx].to(K.device).float().clamp_min(0)  # [L]
+            if self.score_mode in {"receiver_x_value_norm", "receiver_value_norm"}:
+                vn = value_norm.clamp_min(0)
+                imp = (recv_imp / (recv_imp.mean() + 1e-12)) * (vn / (vn.mean() + 1e-12))
+            elif self.score_mode in {"receiver_recency", "receiver_recency_prior"}:
+                recency = torch.linspace(0.0, 1.0, L, device=K.device, dtype=torch.float32)
+                imp = recv_imp + 0.1 * recv_imp.mean().clamp_min(1e-12) * recency
+            else:
+                imp = recv_imp.clone()
         elif self.score_mode == "random":
             # Random-token baseline for selection ablations.
             imp = torch.rand(L, device=K.device, dtype=torch.float32)
         else:
             # query-agnostic proxy: value vector L2-norm
-            imp = V.float().norm(dim=-1).mean(dim=1)[0]  # [L]
+            imp = value_norm
         big = torch.finfo(imp.dtype).max
         if self.merge_sink > 0:
             imp[: self.merge_sink] = big
@@ -357,7 +368,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         else:
             layers = self.B.model.layers
 
-        self.token_importance = {}
+        per_layer_importance = {}
         for bl, block in enumerate(layers):
             attn_inputs = block.self_attn.attn_inputs
             attn_weights = eager_attention_forward_without_value(block.self_attn, **attn_inputs)  # [B,H,q,kv]
@@ -369,10 +380,58 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             imp = aw.sum(dim=0)  # [kv], attention mass each kv token receives
             # B-layer bl reads A-layer bl's KV (identity layer_map for same-depth);
             # restrict to A-context columns (drop B's own appended question keys)
-            self.token_importance[bl] = imp[: ctx_len[bl]].contiguous()
+            per_layer_importance[bl] = imp[: ctx_len[bl]].contiguous()
+
+        self.token_importance = self._aggregate_receiver_importance(per_layer_importance)
 
         # budget-aware allocation depends on the importance distribution just computed
         self._compute_budget()
+
+    def _aggregate_receiver_importance(self, per_layer_importance: dict[int, torch.Tensor]) -> dict[int, torch.Tensor]:
+        """Aggregate receiver-attention scores across B layers for ablations.
+
+        identity: original ReKV, each A layer uses its paired B-layer attention.
+        last:     every A layer uses the final B-layer attention.
+        mean:     every A layer uses the mean attention across B layers.
+        lastK:    every A layer uses the mean of the last K B layers, e.g. last4.
+        topK:     every A layer uses the mean of K most concentrated B layers, e.g. top4.
+        """
+        mode = str(getattr(self, "receiver_layer_agg", "identity") or "identity").lower()
+        if mode in {"identity", "per_layer", "none"}:
+            return per_layer_importance
+        if not per_layer_importance:
+            return per_layer_importance
+
+        layers = sorted(per_layer_importance)
+        lengths = {int(per_layer_importance[l].numel()) for l in layers}
+        if len(lengths) != 1:
+            logging.warning(
+                "[receiver_layer_agg] mode=%s requires equal context lengths, got %s; falling back to identity",
+                mode,
+                sorted(lengths),
+            )
+            return per_layer_importance
+
+        if mode == "last":
+            selected = [layers[-1]]
+        elif mode == "mean":
+            selected = layers
+        elif mode.startswith("last"):
+            k = int(mode[4:] or "4")
+            selected = layers[-max(1, min(k, len(layers))):]
+        elif mode.startswith("top"):
+            k = int(mode[3:] or "4")
+            scored = []
+            for l in layers:
+                s = per_layer_importance[l].float().clamp_min(0)
+                kk = max(1, int(round(0.1 * s.numel())))
+                scored.append((float(torch.topk(s, min(kk, s.numel())).values.mean()), l))
+            selected = [l for _, l in sorted(scored, reverse=True)[: max(1, min(k, len(scored)))]]
+        else:
+            raise ValueError(f"unknown receiver_layer_agg={self.receiver_layer_agg}")
+
+        agg = torch.stack([per_layer_importance[l].float() for l in selected], dim=0).mean(dim=0).contiguous()
+        return {l: agg.clone() for l in layers}
 
     @torch.no_grad()
     def compute_context_attention(self, input_ids_B, compressed_past_key_values):

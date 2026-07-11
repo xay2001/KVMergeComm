@@ -1,0 +1,8 @@
+######## Table 6 pair #7 remaining START 2026-07-10 12:36:48 ########
+GPU=4
+MODEL_A=/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored
+MODEL_B=/sharedspace/models/Bespoke-Stratos-7B
+ROOT=snapshots/table6_pair7_qwen25_uncensored_bespoke
+RUN_ITEMS=qasper_full:rekv:16:0.5 qasper_full:rekv:16:0.7 qasper_full:brekv:8:0.95:0.75 qasper_full:brekv:8:0.95:0.85 qasper_full:brekv:16:0.95:0.90
+SKIP_EXISTING=1
+==== [GPU4] qasper_full ReKV w16 r=0.5 2026-07-10 12:36:48 ====

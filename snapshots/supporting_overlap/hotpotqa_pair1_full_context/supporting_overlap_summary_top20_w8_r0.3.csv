@@ -1,2 +1,2 @@
 n,top_k,rekv_support_rate,evict_support_rate,random_support_rate
-200,20,0.515,0.06425,0.0555
+200,20,0.51475,0.06375,0.0555

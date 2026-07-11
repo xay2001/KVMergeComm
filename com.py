@@ -17,6 +17,14 @@ from eval import SkylineEvaluator, CommunicationEvaluator, BaselineEvaluator, AC
 from layer_importance import get_top_layers, get_layer_ranking
 import random
 
+RECEIVER_AWARE_SCORE_MODES = {
+    "receiver",
+    "receiver_x_value_norm",
+    "receiver_value_norm",
+    "receiver_recency",
+    "receiver_recency_prior",
+}
+
 @dataclass
 class AlignConfig:
     # device configuration
@@ -47,6 +55,7 @@ class AlignConfig:
     merge_mode: str = "merge"  # "merge" (normalized value merge) or "evict" (drop only)
     score_mode: str = "value_norm"  # "value_norm" (query-agnostic) or "receiver" (B's question attention)
     recv_window: int = 0  # receiver scoring: 0 = all question tokens, >0 = only last N (observation window)
+    receiver_layer_agg: str = "identity"  # receiver scoring layer aggregation: identity | last | mean | topK | lastK
     # budget-aware allocation (Step 1): uniform | query | layer | query+layer
     budget_mode: str = "uniform"
     budget_min: float = 0.05  # query-adaptive total budget lower bound
@@ -163,7 +172,7 @@ def main(cfg: AlignConfig):
         communication_evaluator = CommunicationEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
         if cfg.merge:
             # Merge-then-Communicate: keep all layers, compress tokens within each via merging
-            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=(cfg.score_mode == "receiver"), shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode, score_mode=cfg.score_mode, recv_window=cfg.recv_window, budget_mode=cfg.budget_mode, budget_min=cfg.budget_min, budget_max=cfg.budget_max, budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor, coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale).to(cfg.device)
+            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=(cfg.score_mode in RECEIVER_AWARE_SCORE_MODES), shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode, score_mode=cfg.score_mode, recv_window=cfg.recv_window, receiver_layer_agg=cfg.receiver_layer_agg, budget_mode=cfg.budget_mode, budget_min=cfg.budget_min, budget_max=cfg.budget_max, budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor, coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale).to(cfg.device)
             if cfg.dump_pass1_features:
                 communication_evaluator.dump_pass1_features(model_A, cv, limit=cfg.limit)
                 results = None
@@ -211,7 +220,10 @@ def main(cfg: AlignConfig):
         results = ac_evaluator.test(model_A, ac, limit=cfg.limit)
     if cfg.do_test_nld:
         nld_evaluator = NLDEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length, cfg.nld_max_tokens_model_A_and_B_phase1, cfg.sender_aware)
-        results = nld_evaluator.test(model_A, model_B, limit=cfg.limit)
+        if cfg.profile_cost:
+            results = nld_evaluator.test_cost_profile(model_A, model_B, limit=cfg.profile_limit, warmup=cfg.profile_warmup)
+        else:
+            results = nld_evaluator.test(model_A, model_B, limit=cfg.limit)
     if cfg.do_test_cipher:
         model_A = CipherAgent(model_A, tokenizer)
         model_B = CipherAgent(model_B, tokenizer)

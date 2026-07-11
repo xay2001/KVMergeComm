@@ -16,10 +16,10 @@
 | B-ReKV 稳健性 | 已完成核心覆盖 | pair #1 的 MuSiQue / HotpotQA / MultiFieldQA-en Pareto 与 budget distribution 已完成；pair #6/#7 的 HotpotQA / MuSiQue 小网格已完成，并已生成 summary / Pareto 图。 |
 | Cost profiling | pair #1/#6/#7 已完成 | pair #1 有 8 个主数据集 cost 表；pair #6/#7 full cost profile 已完成，并已生成 HotpotQA / MuSiQue / MultiFieldQA-en 论文子表。 |
 | Query-aware fairness | pair #1/#6/#7 已完成 | pair #1 完成 ReKV vs Evict vs Random 和 query sketch window ablation；pair #6/#7 完成 ReKV/Evict/Random/B-ReKV 扩展。 |
-| 可解释性 | pair #1 已完成 | answer overlap、清洗后的 qualitative examples、token bar 图、deletion ablation 已完成。 |
-| 机制消融 | 主要机制已完成 | Sink/recent token ablation 已完成；Table 11 positional coherence 可跑部分已完成 8 个主任务；B-ReKV-S 因 shift-back 实现限制暂缓；score/layer aggregation 尚未做。 |
+| 可解释性 | pair #1 已完成 | answer overlap、清洗后的 qualitative examples、token bar 图、deletion ablation、HotpotQA supporting-facts overlap 已完成。 |
+| 机制消融 | 主要机制已完成 | Sink/recent token ablation 已完成；Table 11 positional coherence 可跑部分已完成 8 个主任务；B-ReKV-S 因 shift-back 实现限制暂缓；score-function ablation 与 layer aggregation ablation 已完成并生成 summary/figures。 |
 | Table 1 pair #8 Falcon | 暂缓/最后处理 | `Falcon3-7B-Instruct-abliterated` checkpoint 目前不可获得或目录不完整；不阻塞主线，放到最后可选处理。 |
-| Table 6 / 10 / 11 | Table 11 可跑部分完成 | Table 6 脚本已准备但尚未开始产出；Table 10 未做；Table 11 已完成 ReKV normal / ReKV-S / B-ReKV normal x 8 主任务，B-ReKV-S 暂缓。 |
+| Table 6 / 10 / 11 | Table 6 基本完成，Table 11 可跑部分完成 | Table 6 pair #6 已完成 5 个 extended tasks x 9 runs；pair #7 已完成 `hotpotqa_full` / `qasper_full` / `musique_full` / `samsum`，仅 `repobench` 0/9，GPU7 日志显示 receiver-attention scoring OOM；Table 10 未做；Table 11 已完成 ReKV normal / ReKV-S / B-ReKV normal x 8 主任务，B-ReKV-S 暂缓。 |
 
 ## 0.1 2026-07-05 最新审计记录
 
@@ -96,30 +96,54 @@
 
 目的：在 KVComm extended datasets 上验证鲁棒性。
 
-状态：未开始产出。
+状态：基本完成，剩余一个 OOM 缺口。
 
 说明：
 
-- 脚本已准备：`scripts/run_gpu7_mechanism_extended_full_queue.sh`。
-- 该脚本原计划在 sink/recent 和 positional coherence 后串行进入 Table 6。
-- 实际运行时 positional coherence 队列在 B-ReKV-S shift-back 处中断，因此 Table 6 尚未开始。
-- 当前脚本已默认跳过 B-ReKV-S，可用下面命令继续：
+- 原始串行脚本：`scripts/run_gpu7_mechanism_extended_full_queue.sh`。
+- 后续拆卡脚本：`scripts/run_table6_pair7_remaining_gpu{4,5,6,7}.sh`。
+- Pair #6 已完成 5 个 extended tasks x 9 paper-style runs：
+  - `hotpotqa_full`
+  - `qasper_full`
+  - `musique_full`
+  - `samsum`
+  - `repobench`
+- Pair #7 已完成 4 个 extended tasks x 9 paper-style runs：
+  - `hotpotqa_full`
+  - `qasper_full`
+  - `musique_full`
+  - `samsum`
+- Pair #7 的 `repobench` 为 0/9；GPU7 日志 `snapshots/table6_pair7_qwen25_uncensored_bespoke/logs/gpu7_table6_pair7_remaining_0710_1237.log` 显示第一项 `repobench ReKV w8 r=0.3` 在约 379/1000 样本处 CUDA OOM，发生在 receiver-attention `softmax` 打分阶段。
+- 汇总与图：
+  - `snapshots/analysis/latest_experiments/table6_extended_summary.csv`
+  - `snapshots/analysis/latest_experiments/table6_extended_status.csv`
+  - `snapshots/analysis/latest_experiments/table6_extended_best_by_pair_task_family.csv`
+  - `snapshots/analysis/latest_experiments/figures/table6_pair6_extended_best.png`
+  - `snapshots/analysis/latest_experiments/figures/table6_pair7_extended_best.png`
+- 当前命令形态：
 
 ```bash
 RUN_SINK_RECENT=0 RUN_POSITIONAL=1 RUN_BREKV_SHIFT=0 RUN_TABLE6=1 GPU=7 \
   bash scripts/run_gpu7_mechanism_extended_full_queue.sh
 ```
 
-推荐轻量版：
+Pair #6 关键结果：
 
-- 选 2-3 个 extended tasks，不跑完整 extended suite。
-- 每个任务跑：
-  - ReKV-w8 `r=0.3/0.5`
-  - ReKV-w16 `r=0.3/0.5`
-  - B-ReKV `w8 t0.95 s0.75`
-  - B-ReKV `w8 t0.95 s0.85`
+- `hotpotqa_full`：best ReKV `0.7579`，best B-ReKV `0.7153`，B-ReKV 平均预算约 `0.3685`。
+- `musique_full`：best ReKV `0.4344`，best B-ReKV `0.4096`，B-ReKV 平均预算约 `0.2501`。
+- `qasper_full`：best ReKV `0.3459`，best B-ReKV `0.3384`。
+- `samsum`：best ReKV `0.2886`，best B-ReKV `0.2609`。
+- `repobench`：best ReKV `0.3549`，best B-ReKV `0.3402`，B-ReKV 平均预算约 `0.1089`。
 
-优先级：中。属于 appendix robustness，不需要早于核心审稿风险实验。
+Pair #7 当前关键结果：
+
+- `hotpotqa_full`：best ReKV `0.5754`，best B-ReKV `0.4917`。
+- `musique_full`：best ReKV `0.3736`，best B-ReKV `0.3103`。
+- `qasper_full`：best ReKV `0.2329`，best B-ReKV `0.2109`。
+- `samsum`：best ReKV `0.3387`，best B-ReKV `0.3150`。
+- `repobench`：0/9，当前缺口来自 OOM。
+
+结论：Pair #6 extended tasks 已经完整支撑“ReKV/B-ReKV 不只在主任务有效”的附录鲁棒性结论；pair #7 也已在 4/5 个 extended tasks 上形成跨任务补充证据。`repobench` 建议后续单独用更保守的显存设置重跑，或在论文附录中标记为 OOM limitation。
 
 ### 1.4 Table 9：Random Selection Ablation
 
@@ -383,20 +407,34 @@ Deletion ablation 已完成：
 
 - 哪些 receiver-attention layers 对 token scoring 最有用？
 
-设置：
+实际设置：
 
-- all layers
-- last 8 layers
-- first half
-- second half
-- middle layers
+- `identity`：原始 ReKV，A 的每层使用对应 B 层 attention。
+- `last`：所有 A 层使用 B 最后一层 attention。
+- `mean`：所有 A 层使用 B 全层平均 attention。
+- `top4`：使用 4 个最集中 B 层的平均 attention。
+- `last4`：使用 B 最后 4 层平均 attention。
 
-任务：
+状态：已完成。
 
-- `hotpotqa`
-- `musique`
+产物：
 
-状态：未做。优先级：中低。适合机制附录，但可以后放。
+- 脚本：`scripts/run_layer_aggregation_ablation_gpu5.sh`。
+- 日志：`snapshots/layer_aggregation_ablation/logs/gpu5_layer_aggregation_ablation_0708_1912.log`。
+- 结果目录：`snapshots/layer_aggregation_ablation/`。
+- 汇总：
+  - `snapshots/analysis/latest_experiments/layer_aggregation_summary.csv`
+  - `snapshots/analysis/latest_experiments/layer_aggregation_best_by_task_method.csv`
+  - `snapshots/analysis/latest_experiments/figures/layer_aggregation_heatmap.png`
+
+关键结果：
+
+- HotpotQA：`identity 0.700` 最强，`top4 0.682`、`last4 0.668`、`mean 0.662`，`last 0.516` 明显下降。
+- MuSiQue：`identity 0.480` 最强，`top4 0.474`、`mean 0.466` 接近，`last 0.290` 明显下降。
+- Tipsheets/Countries：`identity` 或 `mean` 最稳。
+- 2WikiMQA / MultiFieldQA-en 上 `top4/last4/mean` 有小幅正向，但整体没有推翻原始 paired-layer 设计。
+
+结论：ReKV 的原始 paired-layer receiver attention 是一个稳健默认选择；只用最后层 attention 不稳定，容易在多跳任务上丢证据。
 
 ### 3.4 Score Function Ablation
 
@@ -404,20 +442,33 @@ Deletion ablation 已完成：
 
 - 纯 receiver attention 是否足够？要不要加入 value magnitude / recency？
 
-设置：
+实际设置：
 
-- receiver attention
-- value norm
-- receiver attention x value norm
-- receiver attention + recency prior
+- `value_norm`：query-agnostic ValueNorm / Evict。
+- `random`：随机 token baseline。
+- `receiver`：原始 ReKV receiver attention。
+- `receiver_x_value_norm`：receiver attention × value norm。
+- `receiver_recency`：receiver attention + recency prior。
 
-任务：
+状态：已完成。
 
-- `hotpotqa`
-- `musique`
-- `multifieldqa_en`
+产物：
 
-状态：未做。当前代码已有 receiver attention、value norm、random；`attention x value norm` 和 `attention + recency prior` 需要新增或单独实现。优先级：中。
+- 脚本：`scripts/run_score_function_ablation_gpu6.sh`。
+- 日志：`snapshots/score_function_ablation/logs/gpu6_score_function_ablation_0708_1902.log`。
+- 结果目录：`snapshots/score_function_ablation/`。
+- 汇总：
+  - `snapshots/analysis/latest_experiments/score_function_summary.csv`
+  - `snapshots/analysis/latest_experiments/score_function_best_by_pair_task_method.csv`
+  - `snapshots/analysis/latest_experiments/figures/score_function_ablation_best.png`
+
+关键结果：
+
+- Pair #1：HotpotQA 原始 `receiver 0.746` 最强；MuSiQue `receiver_x_value_norm 0.494` 略高于 `receiver 0.484`；MultiFieldQA-en `receiver_x_value_norm 0.533` 略高于 `receiver 0.527`。
+- Pair #6：HotpotQA `receiver 0.702` 最强；MuSiQue `receiver_x_value_norm 0.398` 略高于 `receiver 0.390`；MultiFieldQA-en `receiver/value_norm` 都到 `0.487`。
+- Pair #7：HotpotQA `receiver_recency 0.474` 略高；MuSiQue `receiver_x_value_norm 0.342` 略高；MultiFieldQA-en `receiver` 与 `receiver_x_value_norm` 同为 `0.427`。
+
+结论：receiver-aware attention 是主要收益来源；value norm / random 不能解释提升。`receiver_x_value_norm` 和 `receiver_recency` 可作为附录增强点，但正文方法保持原始 `receiver` 更干净。
 
 ## 4. 失败案例与边界分析
 
@@ -441,7 +492,14 @@ Deletion ablation 已完成：
   - selected tokens
   - answer score
 
-优先级：中。主要是分析，基本不需要 GPU。
+状态：已完成首版自动分析。
+
+- 产物：
+  - `snapshots/analysis/failure_cases/failure_case_summary.csv`
+  - `snapshots/analysis/failure_cases/failure_case_examples.csv`
+  - `snapshots/analysis/failure_cases/failure_case_report.md`
+  - `snapshots/analysis/figures/failure_rate_heatmap.png`
+- 说明：当前 failure examples 基于已有 `per_sample.jsonl`，不含 raw response；适合用来挑选后续人工检查样本。如果论文需要更强 case study，再对少量样本补 raw response 和 selected tokens 展示。
 
 ### 4.2 Task-Type Sensitivity
 
@@ -456,11 +514,71 @@ Deletion ablation 已完成：
 - long document：`qasper`, `multifieldqa_en`
 - math/reasoning：`tmath`
 
-状态：
+状态：已完成首版分析。
 
-- 可直接基于已有结果分析。
+- 产物：
+  - `snapshots/analysis/task_type_sensitivity/task_type_family_summary.csv`
+  - `snapshots/analysis/task_type_sensitivity/task_type_run_summary.csv`
+  - `snapshots/analysis/task_type_sensitivity/task_type_sensitivity_report.md`
+  - `snapshots/analysis/figures/task_type_sensitivity_bar.png`
+- 初步结论：ReKV/B-ReKV 的论文主卖点应集中在 evidence-heavy 的 multi-hop / long-document 任务；simple synthetic 任务容易饱和，不适合作为主叙事。
 
-优先级：高，写论文时要做，不需要新跑。
+### 4.3 Natural-Language Passing vs ReKV Cost Comparison
+
+目的：
+
+- 回答“为什么不直接让 sender 用自然语言把答案/摘要发给 receiver？”
+- 从 token 消耗、通信 payload、时间、显存、准确率四个角度对比 NLD 与 ReKV/B-ReKV。
+
+状态：已完成。
+
+已新增：
+
+- `eval.py`：`NLDEvaluator.test_cost_profile()`，支持 `--do_test_nld --profile_cost`。
+- `com.py`：NLD 分支支持 `--profile_cost`。
+- 运行脚本：`scripts/run_nld_vs_rekv_cost_gpu6.sh` / `scripts/run_nld_vs_rekv_cost_gpu7.sh`。
+- 汇总与绘图脚本：`scripts/summarize_nld_vs_rekv_cost.py`。
+- 结果目录：`snapshots/nld_cost_profile/`。
+- 汇总与图：
+  - `snapshots/analysis/nld_vs_rekv/nld_vs_rekv_report.md`
+  - `snapshots/analysis/nld_vs_rekv/nld_vs_rekv_cost_summary.csv`
+  - `snapshots/analysis/nld_vs_rekv/nld_vs_rekv_cost_focused.csv`
+  - `snapshots/analysis/nld_vs_rekv/nld_vs_rekv_cost_average_by_pair.csv`
+  - `snapshots/analysis/nld_vs_rekv/figures/nld_vs_rekv_cost_overview.png`
+  - `snapshots/analysis/nld_vs_rekv/figures/nld_vs_rekv_accuracy_by_task.png`
+
+推荐设置：
+
+- Pairs：`#1`, `#6`, `#7`。
+- Tasks：`hotpotqa`, `musique`, `multifieldqa_en`。
+- NLD phase-1 answer length：`128` tokens。
+- 指标：
+  - 准确率：`score_mean`。
+  - 通信 payload：NLD 的 `nld_text_payload_tokens/bytes` vs ReKV 的 `kv_tokens_sent/kv_bytes_sent`。
+  - 时间：`t_total`，NLD 另拆 `t_model_a_phase1`, `t_model_b_phase1`, `t_model_b_refine`。
+  - 显存：`peak_mem_gb`。
+
+已运行命令：
+
+```bash
+GPU=6 PAIRS="1 6 7" TASKS="hotpotqa musique multifieldqa_en" LIMIT=500 \
+  bash scripts/run_nld_vs_rekv_cost_gpu6.sh
+
+python scripts/summarize_nld_vs_rekv_cost.py
+```
+
+关键结果：
+
+- Pair #1 平均：NLD `0.1865`，ReKV `0.6135`，B-ReKV `0.6236`；NLD `2.64s/sample`，B-ReKV `1.26s/sample`。
+- Pair #6 平均：NLD `0.1453`，ReKV `0.4894`，B-ReKV `0.5147`；NLD `1.42s/sample`，B-ReKV `0.66s/sample`。
+- Pair #7 平均：NLD `0.0916`，ReKV `0.3524`，B-ReKV `0.3822`；NLD `3.80s/sample`，B-ReKV `1.73s/sample`。
+- 显存：NLD 略低或接近 ReKV/B-ReKV，但准确率下降很大，不足以构成优势。
+
+论文表述：
+
+- NLD 是文本级 communication，需要 A 先生成自然语言，再让 B 带着 A 的答案做二次生成；它的通信 payload 可能字节数小，但总推理 token 和 latency 往往更高，并且会引入 A 的生成错误/幻觉。
+- ReKV/B-ReKV 传的是 selected KV evidence，不要求 A 生成最终答案；更符合“context holder / memory server 只传证据，receiver 负责推理和对齐”的系统设定。
+- 因此这组实验可作为 setting 合理性的强支撑，而不是只和 KVComm 比。
 
 ## 5. 推荐执行顺序
 
@@ -488,21 +606,30 @@ Deletion ablation 已完成：
 
 ### Stage C：附录 / 机制实验
 
-6. Table 6 extended tasks。
-   - B-ReKV-S 先跳过，避免阻塞后续队列。
-7. HotpotQA supporting-facts overlap。
-8. Failure case analysis。
-9. Score / layer aggregation ablation。
+6. Table 6 extended tasks 正在跑。
+   - Pair #6 已完成 5 个 extended tasks x 9 runs。
+   - Pair #7 正在 GPU7 跑 `hotpotqa_full`，后续继续完整队列。
+7. HotpotQA supporting-facts overlap 已完成。
+   - ReKV top-20 supporting-facts rate `0.5148`，Evict `0.0638`，Random `0.0555`。
+   - 图：`snapshots/analysis/figures/supporting_overlap_bar.png`。
+8. Failure case analysis 已完成首版。
+9. Task-type sensitivity 已完成首版。
+10. Score-function ablation 已完成。
+    - 图：`snapshots/analysis/latest_experiments/figures/score_function_ablation_best.png`。
+11. Layer aggregation ablation 已完成。
+    - 图：`snapshots/analysis/latest_experiments/figures/layer_aggregation_heatmap.png`。
+12. Natural-language passing vs ReKV cost comparison。
+    - 脚本已准备；等 GPU7 Table 6 队列完成后再跑最合适。
 
 ### Stage D：大型可选实验
 
-10. Table 8 pair #4/#5/#9 完整队列已完成。
+13. Table 8 pair #4/#5/#9 完整队列已完成。
     - #4 Falcon3 same-model：`snapshots/table8_pair4_falcon3_7b_same/`。
     - #5 EvolCodeLlama -> ToolACE：`snapshots/table8_pair5_evolcodellama_toolace/`。
     - #9 SuperNova -> DeepSeek-Llama-8B：`snapshots/table8_pair9_supernova_deepseek_llama8b/`；暂缓作为正向对比，分数分布 / raw-output / KVComm probe 诊断见 `snapshots/analysis/pair9/pair9_diagnostic_report.md`。
-11. 最后再处理 Table 1/Table 8 pair #8 Falcon；若原 checkpoint 仍不可获得，则标记为 checkpoint unavailable，或改跑 Falcon-family substitute 作为额外鲁棒性实验。
-12. Table 10 multi-source ReKV。
-13. Head-wise B-ReKV。
+14. 最后再处理 Table 1/Table 8 pair #8 Falcon；若原 checkpoint 仍不可获得，则标记为 checkpoint unavailable，或改跑 Falcon-family substitute 作为额外鲁棒性实验。
+15. Table 10 multi-source ReKV。
+16. Head-wise B-ReKV。
 
 ## 6. 如果最后没法全部跑完，论文怎么说
 

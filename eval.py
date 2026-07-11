@@ -11,6 +11,14 @@ import json
 import copy
 from pathlib import Path
 
+RECEIVER_AWARE_SCORE_MODES = {
+    "receiver",
+    "receiver_x_value_norm",
+    "receiver_value_norm",
+    "receiver_recency",
+    "receiver_recency_prior",
+}
+
 
 def _current_run_dir():
     """Directory of the active log.log (set up in com.py via setup_logging).
@@ -276,7 +284,7 @@ class CommunicationEvaluator(SkylineEvaluator):
 
         # receiver-aware scoring (Pass 1): use B's question attention over A's FULL KV
         # to decide which A-tokens to keep, before compression happens inside generate.
-        if getattr(cv, "score_mode", "value_norm") == "receiver":
+        if getattr(cv, "score_mode", "value_norm") in RECEIVER_AWARE_SCORE_MODES:
             cv.compute_receiver_importance(input_ids_B, out_A_past_key_values)
 
         output = cv.generate(
@@ -315,7 +323,7 @@ class CommunicationEvaluator(SkylineEvaluator):
         out_A_past_key_values = out_A.past_key_values
 
         t_receiver_score = 0.0
-        if getattr(cv, "score_mode", "value_norm") == "receiver":
+        if getattr(cv, "score_mode", "value_norm") in RECEIVER_AWARE_SCORE_MODES:
             t0 = time.perf_counter()
             cv.compute_receiver_importance(input_ids_B, out_A_past_key_values)
             _sync_if_cuda(model)
@@ -841,6 +849,86 @@ class NLDEvaluator(CommunicationEvaluator):
         response = self.get_response(output, context_length)
         return response
 
+    def inference_with_cost(self, model_A, model_B, item):
+        """Run one NLD sample and return response plus timing/token stats.
+
+        NLD communicates natural-language text from A to B, so the main payload
+        is the number of A answer tokens and bytes inserted into B's refinement
+        prompt. We also record total prompt/generation tokens because NLD spends
+        compute on three generation calls, unlike one-shot KV communication.
+        """
+        _reset_peak_memory(model_A)
+        _sync_if_cuda(model_A)
+        t0 = time.perf_counter()
+        input_ids_A, input_ids_B, msg_B = self.prepare_input_ids(item, model_A, model_B)
+        _sync_if_cuda(model_A)
+        t_prepare_inputs = time.perf_counter() - t0
+
+        self.generate_args["max_new_tokens"] = self.max_tokens_phase_1
+
+        t0 = time.perf_counter()
+        output_A = model_A.generate(
+            input_ids_A,
+            attention_mask=torch.ones_like(input_ids_A),
+            **self.generate_args,
+        )[0]
+        _sync_if_cuda(model_A)
+        t_model_a_phase1 = time.perf_counter() - t0
+        ctx_A = input_ids_A.shape[-1]
+        initial_answer_A = self.get_response(output_A, ctx_A)
+        answer_tokens_A = int(max(output_A.shape[-1] - ctx_A, 0))
+
+        t0 = time.perf_counter()
+        output_B_initial = model_B.generate(
+            input_ids_B,
+            attention_mask=torch.ones_like(input_ids_B),
+            **self.generate_args,
+        )[0]
+        _sync_if_cuda(model_B)
+        t_model_b_phase1 = time.perf_counter() - t0
+        ctx_B = input_ids_B.shape[-1]
+        initial_answer_B = self.get_response(output_B_initial, ctx_B)
+        answer_tokens_B_initial = int(max(output_B_initial.shape[-1] - ctx_B, 0))
+
+        self.generate_args["max_new_tokens"] = self.evaluator.max_tokens
+
+        t0 = time.perf_counter()
+        refine_input_ids = self.prepare_input_ids_nld(msg_B, initial_answer_B, initial_answer_A, model_B)
+        _sync_if_cuda(model_B)
+        t_prepare_refine = time.perf_counter() - t0
+
+        t0 = time.perf_counter()
+        output = model_B.generate(
+            refine_input_ids,
+            attention_mask=torch.ones_like(refine_input_ids),
+            **self.generate_args,
+        )[0]
+        _sync_if_cuda(model_B)
+        t_model_b_refine = time.perf_counter() - t0
+        refine_ctx = refine_input_ids.shape[-1]
+        response = self.get_response(output, refine_ctx)
+        output_tokens = int(max(output.shape[-1] - refine_ctx, 0))
+
+        t_total = t_prepare_inputs + t_model_a_phase1 + t_model_b_phase1 + t_prepare_refine + t_model_b_refine
+        row = {
+            "ctx_tokens_A": int(ctx_A),
+            "query_tokens_B": int(ctx_B),
+            "nld_answer_tokens_A": answer_tokens_A,
+            "nld_answer_tokens_B_initial": answer_tokens_B_initial,
+            "nld_refine_input_tokens": int(refine_ctx),
+            "nld_text_payload_tokens": answer_tokens_A,
+            "nld_text_payload_bytes": len(initial_answer_A.encode("utf-8")),
+            "output_tokens": output_tokens,
+            "t_prepare_inputs": round(float(t_prepare_inputs), 6),
+            "t_model_a_phase1": round(float(t_model_a_phase1), 6),
+            "t_model_b_phase1": round(float(t_model_b_phase1), 6),
+            "t_prepare_refine": round(float(t_prepare_refine), 6),
+            "t_model_b_refine": round(float(t_model_b_refine), 6),
+            "t_total": round(float(t_total), 6),
+            "peak_mem_gb": round(float(_peak_memory_gb(model_A)), 6) if _peak_memory_gb(model_A) is not None else None,
+        }
+        return response, row
+
     def _test(self, model_A, model_B, limit=None):
         progress_bar = tqdm(self.evaluator, desc=f"{self.name} result: 0.0000")
 
@@ -859,6 +947,100 @@ class NLDEvaluator(CommunicationEvaluator):
             progress_bar.set_description(f"{self.name} result: {result:.4f}")
             
         result = self.evaluator.get_result()
+        return result
+
+    def _summarize_nld_cost_profile(self, rows, meta):
+        def mean(key):
+            vals = [float(r[key]) for r in rows if r.get(key) is not None]
+            return round(sum(vals) / len(vals), 6) if vals else None
+
+        keys = [
+            "score",
+            "ctx_tokens_A",
+            "query_tokens_B",
+            "nld_answer_tokens_A",
+            "nld_answer_tokens_B_initial",
+            "nld_refine_input_tokens",
+            "nld_text_payload_tokens",
+            "nld_text_payload_bytes",
+            "output_tokens",
+            "t_prepare_inputs",
+            "t_model_a_phase1",
+            "t_model_b_phase1",
+            "t_prepare_refine",
+            "t_model_b_refine",
+            "t_total",
+            "peak_mem_gb",
+        ]
+        summary = {"_meta": meta}
+        for key in keys:
+            summary[f"{key}_mean"] = mean(key)
+        return summary
+
+    def _dump_nld_cost_profile(self, rows, warmup):
+        run_dir = _current_run_dir()
+        if run_dir is None:
+            return
+        meta = {
+            "dataset": getattr(self.evaluator, "name", None),
+            "method": self.name,
+            "sender_aware": self.sender_aware,
+            "max_tokens_phase_1": self.max_tokens_phase_1,
+            "warmup": warmup,
+            "n": len(rows),
+        }
+        profile_path = os.path.join(run_dir, "cost_profile.jsonl")
+        summary_path = os.path.join(run_dir, "cost_summary.json")
+        try:
+            with open(profile_path, "w") as f:
+                f.write(json.dumps({"_meta": meta}) + "\n")
+                for row in rows:
+                    f.write(json.dumps(row) + "\n")
+            summary = self._summarize_nld_cost_profile(rows, meta)
+            with open(summary_path, "w") as f:
+                json.dump(summary, f, indent=2)
+                f.write("\n")
+            logging.info(f"nld cost profile written to {profile_path}")
+            logging.info(f"nld cost summary written to {summary_path}")
+        except OSError as e:
+            logging.warning(f"failed to write nld cost profile: {e}")
+
+    @torch.no_grad()
+    def test_cost_profile(self, model_A, model_B, limit=50, warmup=5):
+        measured = []
+        warmup = int(max(warmup or 0, 0))
+        limit = int(max(limit or 0, 0))
+        total_needed = None if limit <= 0 else warmup + limit
+        pbar = tqdm(self.evaluator, desc=f"{self.name} cost-profile")
+        for i, item in enumerate(pbar):
+            if total_needed is not None and i >= total_needed:
+                break
+            try:
+                response, row = self.inference_with_cost(model_A, model_B, item)
+            except Exception as e:
+                logging.error(f"Error during NLD cost inference: {e}")
+                continue
+            if i < warmup:
+                pbar.set_description(f"{self.name} cost-profile warmup {i + 1}/{warmup}")
+                continue
+
+            prev_total = self.evaluator.f1_total
+            self.evaluator.evaluate_item(item, response)
+            score = self.evaluator.f1_total - prev_total
+            sid = item.get("_id", item.get("id", None)) if hasattr(item, "get") else None
+            row.update({
+                "idx": i - warmup,
+                "source_idx": i,
+                "id": sid,
+                "score": round(float(score), 6),
+            })
+            measured.append(row)
+            target = "all" if limit <= 0 else str(limit)
+            pbar.set_description(f"{self.name} cost-profile [{len(measured)}/{target}]")
+
+        self._dump_nld_cost_profile(measured, warmup)
+        result = self.evaluator.get_result()
+        logging.info(f"{self.name} cost profile result: {result:.4f}, measured={len(measured)}, warmup={warmup}")
         return result
     
     @torch.no_grad()

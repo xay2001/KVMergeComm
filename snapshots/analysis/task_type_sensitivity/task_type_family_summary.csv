@@ -1,0 +1,11 @@
+task_type,method_family,runs,score_mean,score_min,score_max
+long_document,B-ReKV,12,0.344444,0.194,0.493333
+long_document,ReKV,24,0.350139,0.208,0.486667
+math_reasoning,B-ReKV,6,0.323661,0.316796,0.330401
+math_reasoning,ReKV,12,0.325779,0.316694,0.335572
+multi_hop,B-ReKV,82,0.403951,0.115,0.722
+multi_hop,ReKV,36,0.403083,0.135,0.718
+simple_fact,B-ReKV,6,0.4525,0.355,0.505
+simple_fact,ReKV,12,0.423333,0.185,0.575
+simple_synthetic,B-ReKV,6,0.656,0.41,0.92
+simple_synthetic,ReKV,12,0.760667,0.484,0.956
