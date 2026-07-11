@@ -33,6 +33,7 @@ Generated from `snapshots/**/log.log`.
 | Table 8 | #4 | `snapshots/table8_pair4_falcon3_7b_same/` | 72 | Complete for 8 datasets x 9 paper-table runs |
 | Table 8 | #5 | `snapshots/table8_pair5_evolcodellama_toolace/` | 72 | Complete for 8 datasets x 9 paper-table runs |
 | Table 8 | #9 | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | 72 | Complete but deferred from positive comparison; KVComm probe is also poor on QA/multi-hop tasks |
+| Table 10 | multi-source | `snapshots/table10_multi_source_rekv/` | 18 | Complete for hotpotqa / musique / twowikimqa x ReKV-w8/w16 x r=0.3/0.5/0.7 |
 
 ## Paper-Table Run Definition
 
@@ -100,6 +101,7 @@ These experiments were added to support the paper framing beyond raw accuracy.
 | Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md`, `cleaned/*_clean_top_tokens.png`, `snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv` | Done |
 | Sink/recent token ablation | `snapshots/mechanism/pair1_llama31_same/sink_recent/` | Done for 8 main tasks |
 | Positional coherence / ReKV-S | `snapshots/mechanism/pair1_llama31_same/positional_coherence/`, `snapshots/analysis/mechanism/positional_coherence_summary.md`, `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md` | Done for 8 main tasks for ReKV normal / ReKV-S / B-ReKV normal; B-ReKV-S omitted due to shift-back implementation limit |
+| Table 10 Multi-Source ReKV | `snapshots/table10_multi_source_rekv/`, `snapshots/analysis/table10_multi_source_rekv_summary.md` | Done for hotpotqa / musique / twowikimqa; 18 runs complete on GPU3 |
 | Table 6 extended tasks | `scripts/run_gpu7_mechanism_extended_full_queue.sh` | Script prepared; can continue with `RUN_BREKV_SHIFT=0`; no Table 6 result root yet |
 
 Main remaining work is now narrower: continue Table 6 extended tasks if GPU
