@@ -19,6 +19,7 @@ import random
 
 RECEIVER_AWARE_SCORE_MODES = {
     "receiver",
+    "receiver_oracle",
     "receiver_x_value_norm",
     "receiver_value_norm",
     "receiver_recency",
@@ -53,8 +54,8 @@ class AlignConfig:
     merge_sink: int = 4
     merge_recent: int = 8
     merge_mode: str = "merge"  # "merge" (normalized value merge) or "evict" (drop only)
-    score_mode: str = "value_norm"  # "value_norm" (query-agnostic) or "receiver" (B's question attention)
-    recv_window: int = 0  # receiver scoring: 0 = all question tokens, >0 = only last N (observation window)
+    score_mode: str = "value_norm"  # "receiver" = deployable Q sketch; "receiver_oracle" = full-A-KV upper bound
+    recv_window: int = 0  # Q-sketch tokens per layer: 0 = all query tokens, >0 = last N
     receiver_layer_agg: str = "identity"  # receiver scoring layer aggregation: identity | last | mean | topK | lastK
     # budget-aware allocation (Step 1): uniform | query | layer | query+layer
     budget_mode: str = "uniform"
@@ -64,6 +65,9 @@ class AlignConfig:
     budget_floor: float = 0.02  # per-layer minimum keep ratio
     coverage_tau: float = 0.90   # coverage budget: receiver-attention mass target
     coverage_scale: float = 1.0  # coverage budget: multiplier applied to rcap before clamp
+    coverage_tau_mode: str = "fixed"  # strict_coverage: fixed | adaptive
+    coverage_tau_min: float = 0.80  # adaptive strict-coverage lower target
+    coverage_tau_max: float = 0.95  # adaptive strict-coverage upper target
     # Step 2b: online progressive communication
     progressive: bool = False
     prog_ladder: str = "0.1,0.2,0.3,0.5"  # ascending budget rungs for the progressive sweep
@@ -172,7 +176,7 @@ def main(cfg: AlignConfig):
         communication_evaluator = CommunicationEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
         if cfg.merge:
             # Merge-then-Communicate: keep all layers, compress tokens within each via merging
-            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=(cfg.score_mode in RECEIVER_AWARE_SCORE_MODES), shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode, score_mode=cfg.score_mode, recv_window=cfg.recv_window, receiver_layer_agg=cfg.receiver_layer_agg, budget_mode=cfg.budget_mode, budget_min=cfg.budget_min, budget_max=cfg.budget_max, budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor, coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale).to(cfg.device)
+            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=(cfg.score_mode in RECEIVER_AWARE_SCORE_MODES), shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode, score_mode=cfg.score_mode, recv_window=cfg.recv_window, receiver_layer_agg=cfg.receiver_layer_agg, budget_mode=cfg.budget_mode, budget_min=cfg.budget_min, budget_max=cfg.budget_max, budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor, coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale, coverage_tau_mode=cfg.coverage_tau_mode, coverage_tau_min=cfg.coverage_tau_min, coverage_tau_max=cfg.coverage_tau_max).to(cfg.device)
             if cfg.dump_pass1_features:
                 communication_evaluator.dump_pass1_features(model_A, cv, limit=cfg.limit)
                 results = None

@@ -13,11 +13,19 @@ from pathlib import Path
 
 RECEIVER_AWARE_SCORE_MODES = {
     "receiver",
+    "receiver_oracle",
     "receiver_x_value_norm",
     "receiver_value_norm",
     "receiver_recency",
     "receiver_recency_prior",
 }
+
+
+def _compute_receiver_token_importance(cv, input_ids_B, out_A_past_key_values):
+    if getattr(cv, "score_mode", "") == "receiver_oracle":
+        cv.compute_oracle_receiver_importance(input_ids_B, out_A_past_key_values)
+    else:
+        cv.compute_receiver_importance(input_ids_B, out_A_past_key_values)
 
 
 def _current_run_dir():
@@ -282,10 +290,10 @@ class CommunicationEvaluator(SkylineEvaluator):
         )
         out_A_past_key_values = out_A.past_key_values
 
-        # receiver-aware scoring (Pass 1): use B's question attention over A's FULL KV
-        # to decide which A-tokens to keep, before compression happens inside generate.
+        # Receiver-aware scoring (Pass 1). The default path sends a query-only
+        # Q sketch from B to A; receiver_oracle retains the old full-A-KV upper bound.
         if getattr(cv, "score_mode", "value_norm") in RECEIVER_AWARE_SCORE_MODES:
-            cv.compute_receiver_importance(input_ids_B, out_A_past_key_values)
+            _compute_receiver_token_importance(cv, input_ids_B, out_A_past_key_values)
 
         output = cv.generate(
             input_ids_B, 
@@ -325,7 +333,7 @@ class CommunicationEvaluator(SkylineEvaluator):
         t_receiver_score = 0.0
         if getattr(cv, "score_mode", "value_norm") in RECEIVER_AWARE_SCORE_MODES:
             t0 = time.perf_counter()
-            cv.compute_receiver_importance(input_ids_B, out_A_past_key_values)
+            _compute_receiver_token_importance(cv, input_ids_B, out_A_past_key_values)
             _sync_if_cuda(model)
             t_receiver_score = time.perf_counter() - t0
 
@@ -398,6 +406,15 @@ class CommunicationEvaluator(SkylineEvaluator):
                 qb = getattr(cv, "last_query_budget", None)
                 if qb is not None:
                     row["query_budget"] = round(float(qb), 6)
+                coverage_target = getattr(cv, "last_coverage_target", None)
+                if coverage_target is not None:
+                    row["coverage_target"] = round(float(coverage_target), 6)
+                coverage_achieved = getattr(cv, "last_coverage_achieved", None)
+                if coverage_achieved is not None:
+                    row["coverage_achieved"] = round(float(coverage_achieved), 6)
+                coverage_satisfied = getattr(cv, "last_coverage_satisfied_ratio", None)
+                if coverage_satisfied is not None:
+                    row["coverage_satisfied_layer_ratio"] = round(float(coverage_satisfied), 6)
                 per_sample.append(row)
 
             result = self.evaluator.get_result()
@@ -422,6 +439,11 @@ class CommunicationEvaluator(SkylineEvaluator):
             "budget_mode": getattr(cv, "budget_mode", None),
             "budget_min": getattr(cv, "budget_min", None),
             "budget_max": getattr(cv, "budget_max", None),
+            "coverage_tau": getattr(cv, "coverage_tau", None),
+            "coverage_scale": getattr(cv, "coverage_scale", None),
+            "coverage_tau_mode": getattr(cv, "coverage_tau_mode", None),
+            "coverage_tau_min": getattr(cv, "coverage_tau_min", None),
+            "coverage_tau_max": getattr(cv, "coverage_tau_max", None),
             "n": len(per_sample),
         }
         path = os.path.join(run_dir, "per_sample.jsonl")
@@ -495,6 +517,9 @@ class CommunicationEvaluator(SkylineEvaluator):
             "budget_max": getattr(cv, "budget_max", None),
             "coverage_tau": getattr(cv, "coverage_tau", None),
             "coverage_scale": getattr(cv, "coverage_scale", None),
+            "coverage_tau_mode": getattr(cv, "coverage_tau_mode", None),
+            "coverage_tau_min": getattr(cv, "coverage_tau_min", None),
+            "coverage_tau_max": getattr(cv, "coverage_tau_max", None),
             "warmup": warmup,
             "n": len(rows),
         }
@@ -527,6 +552,15 @@ class CommunicationEvaluator(SkylineEvaluator):
             "kv_byte_ratio",
             "kv_tokens_sent",
             "kv_bytes_sent",
+            "query_sketch_tokens",
+            "query_sketch_layers",
+            "query_sketch_elements",
+            "query_sketch_bytes",
+            "oracle_full_kv_bytes",
+            "total_communication_bytes",
+            "coverage_target",
+            "coverage_achieved",
+            "coverage_satisfied_layer_ratio",
             "ctx_tokens_A",
             "query_tokens_B",
             "output_tokens",
@@ -601,7 +635,7 @@ class CommunicationEvaluator(SkylineEvaluator):
             input_ids_A, input_ids_B = self.prepare_input_ids(item, cv.A, cv.B)
             out_A = model_A(input_ids=input_ids_A, use_cache=True, return_dict=True)
             base_pkv = out_A.past_key_values
-            cv.compute_receiver_importance(input_ids_B, base_pkv)  # once, r-independent
+            _compute_receiver_token_importance(cv, input_ids_B, base_pkv)  # once, r-independent
 
             rungs = []
             for r in ladder:
@@ -673,7 +707,7 @@ class CommunicationEvaluator(SkylineEvaluator):
                 break
             input_ids_A, input_ids_B = self.prepare_input_ids(item, cv.A, cv.B)
             out_A = model_A(input_ids=input_ids_A, use_cache=True, return_dict=True)
-            cv.compute_receiver_importance(input_ids_B, out_A.past_key_values)
+            _compute_receiver_token_importance(cv, input_ids_B, out_A.past_key_values)
             feat = cv.compute_pass1_features()
             sid = item.get("_id", item.get("id", None)) if hasattr(item, "get") else None
             per_sample.append({"idx": i, "id": sid, **feat})

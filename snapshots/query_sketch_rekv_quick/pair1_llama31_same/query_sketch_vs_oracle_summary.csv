@@ -1,0 +1,7 @@
+task,method,score,query_sketch_bytes,selected_kv_bytes,oracle_full_kv_bytes,total_communication_bytes,scoring_time_s,total_time_s,peak_mem_gb,source
+hotpotqa,full_kv_oracle_rekv,0.8,0.0,5981798.4,18567659.52,18567659.52,0.050784,0.361224,30.044617,snapshots/query_sketch_rekv_quick/pair1_llama31_same/hotpotqa/full_kv_oracle_rekv/full_kv_oracle_rekv_w8_r0.3_0712_1616/cost_summary.json
+hotpotqa,query_sketch_rekv,0.68,2097152.0,5981798.4,,8078950.4,0.043214,0.350305,30.027012,snapshots/query_sketch_rekv_quick/pair1_llama31_same/hotpotqa/query_sketch_rekv/query_sketch_rekv_w8_r0.3_0712_1613/cost_summary.json
+multifieldqa_en,full_kv_oracle_rekv,0.48,0.0,303835299.84,943954329.6,943954329.6,0.11391,2.098669,33.859174,snapshots/query_sketch_rekv_quick/pair1_llama31_same/multifieldqa_en/full_kv_oracle_rekv/full_kv_oracle_rekv_w8_r0.3_0712_1622/cost_summary.json
+multifieldqa_en,query_sketch_rekv,0.48,2097152.0,303835299.84,,305932451.84,0.056873,1.986881,33.242706,snapshots/query_sketch_rekv_quick/pair1_llama31_same/multifieldqa_en/query_sketch_rekv/query_sketch_rekv_w8_r0.3_0712_1619/cost_summary.json
+musique,full_kv_oracle_rekv,0.58,0.0,14085734.4,43770183.68,43770183.68,0.053059,0.4651,30.146269,snapshots/query_sketch_rekv_quick/pair1_llama31_same/musique/full_kv_oracle_rekv/full_kv_oracle_rekv_w8_r0.3_0712_1618/cost_summary.json
+musique,query_sketch_rekv,0.44,2097152.0,14085734.4,,16182886.4,0.043766,0.460895,30.115438,snapshots/query_sketch_rekv_quick/pair1_llama31_same/musique/query_sketch_rekv/query_sketch_rekv_w8_r0.3_0712_1617/cost_summary.json

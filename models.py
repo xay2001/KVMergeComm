@@ -46,6 +46,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         budget_floor: float = 0.02,
         coverage_tau: float = 0.90,
         coverage_scale: float = 1.0,
+        coverage_tau_mode: str = "fixed",
+        coverage_tau_min: float = 0.80,
+        coverage_tau_max: float = 0.95,
     ) -> None:
         super().__init__(model_B.config)
         self.A = model_A
@@ -76,10 +79,19 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.budget_floor = budget_floor
         self.coverage_tau = coverage_tau
         self.coverage_scale = coverage_scale
+        self.coverage_tau_mode = coverage_tau_mode
+        self.coverage_tau_min = coverage_tau_min
+        self.coverage_tau_max = coverage_tau_max
         self.layer_budget = {}        # {layer_idx: r_l}, recomputed per query
+        self.layer_coverage_target = {}
+        self.layer_coverage_achieved = {}
         self.last_query_budget = None # B(Q) for the most recent query
+        self.last_coverage_target = None
+        self.last_coverage_achieved = None
+        self.last_coverage_satisfied_ratio = None
         self.last_kept_ratio = None   # actual transmitted KV fraction for the most recent query
         self.last_kv_cost = None      # payload stats from the most recent cache preparation
+        self.last_query_sketch_cost = {}  # B->A query-sketch payload for the most recent query
         self._merge_logged = False
         for p in self.A.parameters(): p.requires_grad = False
         for p in self.B.parameters(): p.requires_grad = False
@@ -143,6 +155,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         value_cache = past_key_values.value_cache
         assert len(key_cache) == len(self.layer_map), "key_cache and layer_map must have the same length"
         past_key_values_new = DynamicCache()
+        self.layer_coverage_achieved = {}
+        self.last_coverage_achieved = None
+        self.last_coverage_satisfied_ratio = None
         kept_tokens, total_tokens = 0, 0
         kept_kv_elements, total_kv_elements = 0, 0
         kept_kv_bytes, total_kv_bytes = 0, 0
@@ -187,7 +202,28 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             "kv_bytes_sent": int(kept_kv_bytes),
             "kv_bytes_total": int(total_kv_bytes),
             "kv_byte_ratio": float(kept_kv_bytes / total_kv_bytes) if total_kv_bytes else None,
+            **self.last_query_sketch_cost,
         }
+        query_sketch_bytes = int(self.last_query_sketch_cost.get("query_sketch_bytes", 0))
+        oracle_full_kv_bytes = int(self.last_query_sketch_cost.get("oracle_full_kv_bytes", 0))
+        self.last_kv_cost["total_communication_bytes"] = (
+            oracle_full_kv_bytes if oracle_full_kv_bytes > 0 else int(kept_kv_bytes + query_sketch_bytes)
+        )
+        if self.layer_coverage_achieved:
+            achieved = list(self.layer_coverage_achieved.values())
+            satisfied = [
+                float(self.layer_coverage_achieved[l] + 1e-6 >= self.layer_coverage_target.get(l, 0.0))
+                for l in self.layer_coverage_achieved
+            ]
+            self.last_coverage_achieved = sum(achieved) / len(achieved)
+            self.last_coverage_satisfied_ratio = sum(satisfied) / len(satisfied)
+            self.last_kv_cost.update(
+                {
+                    "coverage_target": self.last_coverage_target,
+                    "coverage_achieved": self.last_coverage_achieved,
+                    "coverage_satisfied_layer_ratio": self.last_coverage_satisfied_ratio,
+                }
+            )
         return past_key_values_new
 
     @torch.no_grad()
@@ -203,12 +239,14 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         r_eff = self._effective_ratio(layer_idx)
         k = max(int(round(r_eff * L)), self.merge_sink + self.merge_recent)
         if k >= L:
+            if self.budget_mode in {"coverage", "strict_coverage"}:
+                self.layer_coverage_achieved[layer_idx] = 1.0
             return K, V
 
         # token importance score
         value_norm = V.float().norm(dim=-1).mean(dim=1)[0]  # [L]
         if (
-            self.score_mode in {"receiver", "receiver_x_value_norm", "receiver_value_norm", "receiver_recency", "receiver_recency_prior"}
+            self.score_mode in {"receiver", "receiver_oracle", "receiver_x_value_norm", "receiver_value_norm", "receiver_recency", "receiver_recency_prior"}
             and self.token_importance is not None
             and layer_idx in self.token_importance
             and self.token_importance[layer_idx].numel() == L
@@ -237,6 +275,17 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
 
         keep = torch.topk(imp, k).indices
         keep, _ = torch.sort(keep)
+        if (
+            self.budget_mode in {"coverage", "strict_coverage"}
+            and self.token_importance is not None
+            and layer_idx in self.token_importance
+        ):
+            coverage_scores = self.token_importance[layer_idx].to(K.device).float().clamp_min(0)
+            coverage_total = coverage_scores.sum()
+            if coverage_total > 0:
+                self.layer_coverage_achieved[layer_idx] = float(
+                    coverage_scores[keep].sum() / coverage_total
+                )
         evict_mask = torch.ones(L, dtype=torch.bool, device=K.device)
         evict_mask[keep] = False
         evict = torch.nonzero(evict_mask, as_tuple=False).squeeze(-1)
@@ -312,6 +361,53 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             hi = lo
         return float(min(max(raw, lo), hi))
 
+    def _adaptive_strict_coverage_tau(self, layers: list[int]) -> float:
+        """Per-query target from mean normalized attention entropy.
+
+        Concentrated evidence uses ``coverage_tau_min``; diffuse evidence moves
+        smoothly toward ``coverage_tau_max``.
+        """
+        entropies = []
+        for layer_idx in layers:
+            s = self.token_importance[layer_idx].float().clamp_min(0)
+            if s.numel() < 2 or float(s.sum()) <= 0:
+                continue
+            p = s / s.sum().clamp_min(1e-9)
+            entropy = -(p * (p + 1e-12).log()).sum() / math.log(p.numel())
+            entropies.append(float(entropy.clamp(0.0, 1.0)))
+        diffuseness = sum(entropies) / len(entropies) if entropies else 0.5
+        lo = min(max(float(self.coverage_tau_min), 0.0), 1.0)
+        hi = min(max(float(self.coverage_tau_max), lo), 1.0)
+        return lo + (hi - lo) * diffuseness
+
+    def _strict_coverage_ratio(self, s: torch.Tensor, target: float) -> float:
+        """Minimum keep ratio that truly covers ``target`` attention mass.
+
+        Mandatory sink/recent tokens are included before selecting the smallest
+        additional top-mass set. No scale or budget clamp is applied.
+        """
+        s = s.float().clamp_min(0)
+        length = s.numel()
+        if length == 0 or float(s.sum()) <= 0:
+            return 1.0
+        p = s / s.sum().clamp_min(1e-9)
+        forced = torch.zeros(length, dtype=torch.bool, device=s.device)
+        if self.merge_sink > 0:
+            forced[: min(self.merge_sink, length)] = True
+        if self.merge_recent > 0:
+            forced[max(length - self.merge_recent, 0) :] = True
+
+        forced_count = int(forced.sum())
+        forced_mass = float(p[forced].sum())
+        needed = max(min(float(target), 1.0) - forced_mass, 0.0)
+        extra_count = 0
+        if needed > 0 and forced_count < length:
+            remaining = torch.sort(p[~forced], descending=True).values
+            csum = torch.cumsum(remaining, dim=0)
+            idx = int(torch.searchsorted(csum, torch.tensor(needed, device=csum.device)))
+            extra_count = min(idx + 1, remaining.numel())
+        return float((forced_count + extra_count) / length)
+
     def _compute_budget(self):
         """Recompute the per-layer keep ratios for the current query. Called right
         after receiver importance is available. Requires score_mode=='receiver'."""
@@ -322,7 +418,24 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         comp = [l for l in sorted(self.token_importance.keys()) if l != 0]
         if not comp:
             return
+        self.layer_coverage_target = {}
+        self.last_coverage_target = None
+        if self.budget_mode == "strict_coverage":
+            if str(self.coverage_tau_mode).lower() == "adaptive":
+                target = self._adaptive_strict_coverage_tau(comp)
+            else:
+                target = min(max(float(self.coverage_tau), 0.0), 1.0)
+            self.last_coverage_target = float(target)
+            self.layer_coverage_target = {l: float(target) for l in comp}
+            self.layer_budget = {
+                l: self._strict_coverage_ratio(self.token_importance[l], target)
+                for l in comp
+            }
+            self.last_query_budget = sum(self.layer_budget.values()) / len(self.layer_budget)
+            return
         if self.budget_mode == "coverage":
+            self.last_coverage_target = min(max(float(self.coverage_tau), 0.0), 1.0)
+            self.layer_coverage_target = {l: self.last_coverage_target for l in comp}
             self.layer_budget = {l: self._coverage_ratio(self.token_importance[l]) for l in comp}
             self.last_query_budget = sum(self.layer_budget.values()) / len(self.layer_budget)
             return
@@ -342,9 +455,100 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         else:  # query-only: same B on every compressible layer
             self.layer_budget = {l: float(B) for l in comp}
 
+    def _receiver_layers(self):
+        if hasattr(self.B.model, "language_model"):
+            return self.B.model.language_model.layers
+        return self.B.model.layers
+
     @torch.no_grad()
     def compute_receiver_importance(self, input_ids_B, out_A_past_key_values):
-        """Receiver-aware token scoring (Pass 1).
+        """Deployable receiver-query-aware scoring from a B->A Q sketch.
+
+        B runs a query-only prefill and sends the last ``recv_window`` query
+        vectors from every layer to A. A scores those vectors against its local
+        context keys; B never receives the full A cache during token selection.
+        The query positions are offset by A's context length so RoPE matches the
+        positions used when the selected cache is later injected into B.
+        """
+        assert self.apply_attn_tracer, "receiver scoring needs apply_attn_tracer=True"
+        assert len(out_A_past_key_values.key_cache) == self.A_num_layers
+
+        ctx_len = [out_A_past_key_values.key_cache[i].shape[-2] for i in range(self.A_num_layers)]
+        if len(set(ctx_len)) != 1:
+            raise ValueError(f"query-sketch scoring requires equal uncompressed A context lengths, got {sorted(set(ctx_len))}")
+        context_length = int(ctx_len[0])
+        query_length = int(input_ids_B.shape[-1])
+        position_ids = torch.arange(
+            context_length,
+            context_length + query_length,
+            device=input_ids_B.device,
+            dtype=torch.long,
+        ).unsqueeze(0)
+
+        # Query-only receiver prefill: no A KV is passed to B.
+        _ = self.B(
+            input_ids=input_ids_B,
+            position_ids=position_ids,
+            use_cache=False,
+            return_dict=True,
+        )
+
+        layers = self._receiver_layers()
+        per_layer_importance = {}
+        sketch_elements = 0
+        sketch_bytes = 0
+        sketch_tokens = None
+
+        for al in range(self.A_num_layers):
+            bl = self.layer_map[al]
+            block = layers[bl]
+            attn_inputs = block.self_attn.attn_inputs
+            if attn_inputs is None:
+                raise RuntimeError(f"receiver query tracer did not capture layer {bl}")
+            query = attn_inputs["query"]
+            if self.recv_window > 0 and query.shape[-2] > self.recv_window:
+                query = query[:, :, -self.recv_window :, :]
+            query = query.contiguous()
+            key = out_A_past_key_values.key_cache[al]
+
+            if query.shape[-1] != key.shape[-1]:
+                raise ValueError(
+                    f"query-sketch head_dim mismatch at A layer {al}/B layer {bl}: "
+                    f"Q={query.shape[-1]}, K={key.shape[-1]}"
+                )
+            expected_q_heads = key.shape[1] * block.self_attn.num_key_value_groups
+            if query.shape[1] != expected_q_heads:
+                raise ValueError(
+                    f"query-sketch head mismatch at A layer {al}/B layer {bl}: "
+                    f"Q heads={query.shape[1]}, expected={expected_q_heads} "
+                    f"from A KV heads={key.shape[1]}"
+                )
+
+            # This computation is sender-local: Q sketch x local K_A.
+            attn_weights = eager_attention_forward_without_value(
+                block.self_attn,
+                query=query,
+                key=key,
+                attention_mask=None,
+                scaling=block.self_attn.scaling,
+            )
+            per_layer_importance[al] = attn_weights.float().mean(dim=1)[0].sum(dim=0).contiguous()
+            sketch_elements += query.numel()
+            sketch_bytes += query.numel() * query.element_size()
+            sketch_tokens = int(query.shape[-2])
+
+        self.last_query_sketch_cost = {
+            "query_sketch_tokens": int(sketch_tokens or 0),
+            "query_sketch_layers": int(self.A_num_layers),
+            "query_sketch_elements": int(sketch_elements),
+            "query_sketch_bytes": int(sketch_bytes),
+        }
+        self.token_importance = self._aggregate_receiver_importance(per_layer_importance)
+        self._compute_budget()
+
+    @torch.no_grad()
+    def compute_oracle_receiver_importance(self, input_ids_B, out_A_past_key_values):
+        """Full-KV oracle receiver-aware token scoring (upper bound).
 
         Run B's prefill over its question with A's FULL (uncompressed) KV and measure
         how much B's query attends to each A-context token. The result drives which
@@ -363,10 +567,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         # one extra parallel prefill of the (short) question -> tracer captures per-layer Q/K
         _ = self.B(input_ids=input_ids_B, past_key_values=kv_copy, use_cache=True)
 
-        if hasattr(self.B.model, "language_model"):
-            layers = self.B.model.language_model.layers
-        else:
-            layers = self.B.model.layers
+        layers = self._receiver_layers()
 
         per_layer_importance = {}
         for bl, block in enumerate(layers):
@@ -383,6 +584,21 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             per_layer_importance[bl] = imp[: ctx_len[bl]].contiguous()
 
         self.token_importance = self._aggregate_receiver_importance(per_layer_importance)
+        self.last_query_sketch_cost = {
+            "query_sketch_tokens": 0,
+            "query_sketch_layers": 0,
+            "query_sketch_elements": 0,
+            "query_sketch_bytes": 0,
+            "oracle_full_kv_bytes": int(
+                sum(
+                    k.numel() * k.element_size() + v.numel() * v.element_size()
+                    for k, v in zip(
+                        out_A_past_key_values.key_cache,
+                        out_A_past_key_values.value_cache,
+                    )
+                )
+            ),
+        }
 
         # budget-aware allocation depends on the importance distribution just computed
         self._compute_budget()
