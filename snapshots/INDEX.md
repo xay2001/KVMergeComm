@@ -33,6 +33,7 @@ Generated from `snapshots/**/log.log`.
 | Table 8 | #4 | `snapshots/table8_pair4_falcon3_7b_same/` | 72 | Complete for 8 datasets x 9 paper-table runs |
 | Table 8 | #5 | `snapshots/table8_pair5_evolcodellama_toolace/` | 72 | Complete for 8 datasets x 9 paper-table runs |
 | Table 8 | #9 | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | 72 | Complete but deferred from positive comparison; KVComm probe is also poor on QA/multi-hop tasks |
+| Table 10 | multi-source | `snapshots/table10_multi_source_rekv/` | 18 | Complete for hotpotqa / musique / twowikimqa x ReKV-w8/w16 x r=0.3/0.5/0.7 |
 
 ## Paper-Table Run Definition
 
@@ -101,6 +102,7 @@ These experiments were added to support the paper framing beyond raw accuracy.
 | Failure / task sensitivity analysis | `snapshots/analysis/failure_cases/`, `snapshots/analysis/task_type_sensitivity/`, `snapshots/analysis/figures/failure_rate_heatmap.png`, `snapshots/analysis/figures/task_type_sensitivity_bar.png` | Done from existing per-sample outputs |
 | Sink/recent token ablation | `snapshots/mechanism/pair1_llama31_same/sink_recent/` | Done for 8 main tasks |
 | Positional coherence / ReKV-S | `snapshots/mechanism/pair1_llama31_same/positional_coherence/`, `snapshots/analysis/mechanism/positional_coherence_summary.md`, `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md` | Done for 8 main tasks for ReKV normal / ReKV-S / B-ReKV normal; B-ReKV-S omitted due to shift-back implementation limit |
+| Table 10 Multi-Source ReKV | `snapshots/table10_multi_source_rekv/`, `snapshots/analysis/table10_multi_source_rekv_summary.md` | Done for hotpotqa / musique / twowikimqa; 18 runs complete on GPU3 |
 | Table 6 extended tasks | `snapshots/table6_pair6_llama32_abliterated_deepseek3b/`, `snapshots/table6_pair7_qwen25_uncensored_bespoke/`, `snapshots/analysis/latest_experiments/table6_extended_status.csv`, `snapshots/analysis/latest_experiments/figures/table6_pair6_extended_best.png`, `snapshots/analysis/latest_experiments/figures/table6_pair7_extended_best.png` | Pair #6 complete for 5 extended tasks x 9 runs; pair #7 complete for `hotpotqa_full` / `qasper_full` / `musique_full` / `samsum`, with `repobench` 0/9 due to GPU7 OOM |
 | Score-function ablation | `snapshots/score_function_ablation/`, `snapshots/analysis/latest_experiments/score_function_summary.csv`, `snapshots/analysis/latest_experiments/figures/score_function_ablation_best.png` | Done for pair #1/#6/#7 on HotpotQA / MuSiQue / MultiFieldQA-en; receiver-aware scoring remains strongest overall |
 | Receiver-layer aggregation ablation | `snapshots/layer_aggregation_ablation/`, `snapshots/analysis/latest_experiments/layer_aggregation_summary.csv`, `snapshots/analysis/latest_experiments/figures/layer_aggregation_heatmap.png` | Done for pair #1 on 8 main tasks; original paired-layer identity is strongest or near-strongest on most evidence-heavy tasks |

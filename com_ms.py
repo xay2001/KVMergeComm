@@ -37,6 +37,21 @@ class AlignConfig:
     mu: float = 0.5
     sigma: float = 10.0
     random_selection: bool = False
+    # Multi-source Merge-then-Communicate / ReKV configuration
+    merge: bool = False
+    merge_ratio: float = 0.2
+    merge_sink: int = 4
+    merge_recent: int = 8
+    merge_mode: str = "merge"  # "merge" (normalized value merge) or "evict" (drop only)
+    score_mode: str = "value_norm"  # "value_norm", "random", or "receiver"
+    recv_window: int = 0
+    budget_mode: str = "uniform"
+    budget_min: float = 0.05
+    budget_max: float = 0.5
+    budget_tau: float = 1.0
+    budget_floor: float = 0.02
+    coverage_tau: float = 0.90
+    coverage_scale: float = 1.0
     # Test dataset configuration
     test_task: str = "tipsheets"
     task_name: str = ""
@@ -127,15 +142,36 @@ def main(cfg: AlignConfig):
     if cfg.do_test:
         communication_evaluator = CommunicationEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
         if cfg.top_layers > 0:
-            cv = CVCommunicator(model_A1, model_A2, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=True).to(cfg.device)
+            cv = CVCommunicator(
+                model_A1, model_A2, model_B, cfg.layer_from, cfg.layer_to,
+                layers_list=cfg.layers_list, top_layers=cfg.top_layers,
+                apply_attn_tracer=True, merge=cfg.merge, merge_ratio=cfg.merge_ratio,
+                merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent,
+                merge_mode=cfg.merge_mode, score_mode=cfg.score_mode,
+                recv_window=cfg.recv_window, budget_mode=cfg.budget_mode,
+                budget_min=cfg.budget_min, budget_max=cfg.budget_max,
+                budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor,
+                coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale,
+            ).to(cfg.device)
             if cfg.random_selection:
-                cfg.layers_list = random.sample(list(range(0, cv.A_num_layers)), int(cfg.top_layers * cv.A_num_layers))
+                cfg.layers_list = random.sample(list(range(0, cv.A1_num_layers)), int(cfg.top_layers * cv.A1_num_layers))
                 logging.info(f"Randomly selected layers list: {cfg.layers_list}")
             else:
                 communication_evaluator.test(model_A1, model_A2, cv, limit=cfg.calib_size, no_wandb=True, do_calc_layer_importance=True)
                 cfg = get_top_layers(communication_evaluator.layer_importance_total, cfg)
         
-        cv = CVCommunicator(model_A1, model_A2, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=False).to(cfg.device)
+        cv = CVCommunicator(
+            model_A1, model_A2, model_B, cfg.layer_from, cfg.layer_to,
+            layers_list=cfg.layers_list, top_layers=cfg.top_layers,
+            apply_attn_tracer=(cfg.score_mode == "receiver"),
+            merge=cfg.merge, merge_ratio=cfg.merge_ratio,
+            merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent,
+            merge_mode=cfg.merge_mode, score_mode=cfg.score_mode,
+            recv_window=cfg.recv_window, budget_mode=cfg.budget_mode,
+            budget_min=cfg.budget_min, budget_max=cfg.budget_max,
+            budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor,
+            coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale,
+        ).to(cfg.device)
         results = communication_evaluator.test(model_A1, model_A2, cv, limit=cfg.limit)
     if cfg.do_test_nld:
         nld_evaluator = NLDEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length, cfg.nld_max_tokens_model_A_and_B_phase1, cfg.sender_aware)

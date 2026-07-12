@@ -1,0 +1,10 @@
+######## Table10 Multi-Source ReKV GPU3 START 2026-07-09 17:25:44 ########
+MODEL_A1=/sharedspace/models/Llama-3.1-8B-Instruct
+MODEL_A2=/sharedspace/models/Llama-3.1-8B-Instruct
+MODEL_B=/sharedspace/models/Llama-3.1-8B-Instruct
+ROOT=snapshots/table10_multi_source_rekv
+TASKS=hotpotqa musique twowikimqa
+WINDOWS=8 16
+RATIOS=0.3 0.5 0.7
+SKIP_EXISTING=1
+MODEL_A1 model path does not exist: /sharedspace/models/Llama-3.1-8B-Instruct

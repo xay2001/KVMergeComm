@@ -6,6 +6,16 @@ import wandb
 from layer_importance import calc_layer_importance
 from collections import defaultdict
 import time
+import os
+import json
+
+
+def _current_run_dir():
+    for h in logging.getLogger().handlers:
+        base = getattr(h, "baseFilename", None)
+        if base:
+            return os.path.dirname(base)
+    return None
 
 QA_INSTRUCTION = "Directly answer the question based on the context passage, no explanation is needed."
 MATH_INSTRUCTION = "Answer the math problem step by step."
@@ -138,6 +148,9 @@ class CommunicationEvaluator:
         )
         out_A2_past_key_values = out_A2.past_key_values
 
+        if getattr(cv, "score_mode", "value_norm") == "receiver":
+            cv.compute_receiver_importance(input_ids_B, out_A1_past_key_values, out_A2_past_key_values)
+
         output = cv.generate(
             input_ids_B, 
             attention_mask=torch.ones_like(input_ids_B),
@@ -152,6 +165,7 @@ class CommunicationEvaluator:
 
     def _test(self, model_A1, model_A2, cv, limit=None, do_calc_layer_importance=False):
         progress_bar = tqdm(self.evaluator, desc=f"{self.name} result: 0.0000", disable=do_calc_layer_importance)
+        per_sample = None if do_calc_layer_importance else []
 
         for i, item in enumerate(progress_bar):
             if limit is not None and i >= limit:
@@ -162,13 +176,56 @@ class CommunicationEvaluator:
                 cv.calc_attn_weights_from_qk()
                 self.layer_importance_total = calc_layer_importance(cv.B_attn_weights, None, self.layer_importance_total)
             
+            prev_total = self.evaluator.f1_total
             self.evaluator.evaluate_item(item, response)
+
+            if per_sample is not None:
+                score = self.evaluator.f1_total - prev_total
+                sid = item.get("_id", item.get("id", None)) if hasattr(item, "get") else None
+                row = {"idx": i, "id": sid, "score": round(float(score), 6)}
+                kept = getattr(cv, "last_kept_ratio", None)
+                if kept is not None:
+                    row["budget"] = round(float(kept), 6)
+                qb = getattr(cv, "last_query_budget", None)
+                if qb is not None:
+                    row["query_budget"] = round(float(qb), 6)
+                per_sample.append(row)
             
             result = self.evaluator.get_result()
             progress_bar.set_description(f"{self.name} result: {result:.4f}")
             
         result = self.evaluator.get_result()
+        if per_sample is not None:
+            self._dump_per_sample(per_sample, cv)
         return result
+
+    def _dump_per_sample(self, per_sample, cv):
+        run_dir = _current_run_dir()
+        if run_dir is None:
+            return
+        meta = {
+            "dataset": getattr(self.evaluator, "name", None),
+            "multi_source": True,
+            "num_senders": 2,
+            "score_mode": getattr(cv, "score_mode", None),
+            "recv_window": getattr(cv, "recv_window", None),
+            "merge": getattr(cv, "merge", None),
+            "merge_mode": getattr(cv, "merge_mode", None),
+            "merge_ratio": getattr(cv, "merge_ratio", None),
+            "budget_mode": getattr(cv, "budget_mode", None),
+            "budget_min": getattr(cv, "budget_min", None),
+            "budget_max": getattr(cv, "budget_max", None),
+            "n": len(per_sample),
+        }
+        path = os.path.join(run_dir, "per_sample.jsonl")
+        try:
+            with open(path, "w") as f:
+                f.write(json.dumps({"_meta": meta}) + "\n")
+                for row in per_sample:
+                    f.write(json.dumps(row) + "\n")
+            logging.info(f"per-sample scores written to {path}")
+        except OSError as e:
+            logging.warning(f"failed to write per-sample scores: {e}")
     
     @torch.no_grad()
     def test(self, model_A1, model_A2, cv, limit=None, do_calc_layer_importance=False, no_wandb=False):
