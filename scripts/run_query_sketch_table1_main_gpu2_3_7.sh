@@ -12,21 +12,36 @@ TASKS=${TASKS:-"countries tipsheets hotpotqa qasper musique multifieldqa_en twow
 RATIOS=${RATIOS:-"0.3 0.5 0.7"}
 LIMIT=${LIMIT:-0}
 SKIP_EXISTING=${SKIP_EXISTING:-1}
+SELECTION_WAIT_SECONDS=${SELECTION_WAIT_SECONDS:-86400}
 
-if [[ -z "${TAU:-}" || -z "${SCALE:-}" || -z "${BREKV_WINDOW:-}" ]]; then
-  read -r ACCEPTED TAU SCALE BREKV_WINDOW < <(
-    "${PYTHON}" - "${SELECTION}" <<'PY'
+load_frozen_config() {
+  if [[ ! -f "${SELECTION}" ]]; then
+    echo "ReKV matrix finished; waiting for phase-1 configuration freeze: ${SELECTION}"
+    local waited=0
+    while [[ ! -f "${SELECTION}" && "${waited}" -lt "${SELECTION_WAIT_SECONDS}" ]]; do
+      sleep 60
+      waited=$((waited + 60))
+    done
+    if [[ ! -f "${SELECTION}" ]]; then
+      echo "Timed out waiting for frozen B-ReKV configuration." >&2
+      return 2
+    fi
+  fi
+  if [[ -z "${TAU:-}" || -z "${SCALE:-}" || -z "${BREKV_WINDOW:-}" ]]; then
+    read -r ACCEPTED TAU SCALE BREKV_WINDOW < <(
+      "${PYTHON}" - "${SELECTION}" <<'PY'
 import json, sys
 data = json.load(open(sys.argv[1]))
 row = data.get("selection") or {}
 print(int(bool(data.get("accepted"))), row.get("tau", ""), row.get("scale", ""), row.get("window", ""))
 PY
-  )
-  if [[ "${ACCEPTED}" != "1" ]]; then
-    echo "No frozen B-ReKV configuration is available: ${SELECTION}" >&2
-    exit 2
+    )
+    if [[ "${ACCEPTED}" != "1" ]]; then
+      echo "No frozen B-ReKV configuration is available: ${SELECTION}" >&2
+      return 2
+    fi
   fi
-fi
+}
 
 export PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}
 
@@ -74,7 +89,7 @@ run_brekv() {
     --snapshot_path "${out}" --run_name "${run_name}"
 }
 
-run_pair() {
+run_pair_rekv() {
   local gpu=$1 root=$2 model_a=$3 model_b=$4
   for task in ${TASKS}; do
     for window in 8 16; do
@@ -82,6 +97,12 @@ run_pair() {
         run_rekv "${gpu}" "${root}" "${model_a}" "${model_b}" "${task}" "${window}" "${ratio}"
       done
     done
+  done
+}
+
+run_pair_brekv() {
+  local gpu=$1 root=$2 model_a=$3 model_b=$4
+  for task in ${TASKS}; do
     run_brekv "${gpu}" "${root}" "${model_a}" "${model_b}" "${task}"
   done
 }
@@ -93,27 +114,55 @@ mkdir -p "${ROOT1}/logs" "${ROOT6}/logs" "${ROOT7}/logs"
 TAG=$(date '+%m%d_%H%M')
 
 (
-  run_pair "${GPU_PAIR1}" "${ROOT1}" \
+  run_pair_rekv "${GPU_PAIR1}" "${ROOT1}" \
     /sharedspace/models/Llama-3.1-8B-Instruct \
     /sharedspace/models/Llama-3.1-8B-Instruct
-) > "${ROOT1}/logs/gpu${GPU_PAIR1}_table1_main_${TAG}.log" 2>&1 &
+) > "${ROOT1}/logs/gpu${GPU_PAIR1}_table1_rekv_${TAG}.log" 2>&1 &
 PID1=$!
 
 (
-  run_pair "${GPU_PAIR6}" "${ROOT6}" \
+  run_pair_rekv "${GPU_PAIR6}" "${ROOT6}" \
     /sharedspace/models/Llama-3.2-3B-Instruct-abliterated \
     /sharedspace/models/DeepSeek-R1-Distill-Llama-3B
-) > "${ROOT6}/logs/gpu${GPU_PAIR6}_table1_main_${TAG}.log" 2>&1 &
+) > "${ROOT6}/logs/gpu${GPU_PAIR6}_table1_rekv_${TAG}.log" 2>&1 &
 PID6=$!
 
 (
-  run_pair "${GPU_PAIR7}" "${ROOT7}" \
+  run_pair_rekv "${GPU_PAIR7}" "${ROOT7}" \
     /sharedspace/models/Qwen2.5-7B-Instruct-Uncensored \
     /sharedspace/models/Bespoke-Stratos-7B
-) > "${ROOT7}/logs/gpu${GPU_PAIR7}_table1_main_${TAG}.log" 2>&1 &
+) > "${ROOT7}/logs/gpu${GPU_PAIR7}_table1_rekv_${TAG}.log" 2>&1 &
 PID7=$!
 
-echo "pair1 GPU${GPU_PAIR1} pid=${PID1}"
-echo "pair6 GPU${GPU_PAIR6} pid=${PID6}"
-echo "pair7 GPU${GPU_PAIR7} pid=${PID7}"
+echo "ReKV pair1 GPU${GPU_PAIR1} pid=${PID1}"
+echo "ReKV pair6 GPU${GPU_PAIR6} pid=${PID6}"
+echo "ReKV pair7 GPU${GPU_PAIR7} pid=${PID7}"
+wait "${PID1}" "${PID6}" "${PID7}"
+
+load_frozen_config
+
+(
+  run_pair_brekv "${GPU_PAIR1}" "${ROOT1}" \
+    /sharedspace/models/Llama-3.1-8B-Instruct \
+    /sharedspace/models/Llama-3.1-8B-Instruct
+) > "${ROOT1}/logs/gpu${GPU_PAIR1}_table1_brekv_${TAG}.log" 2>&1 &
+PID1=$!
+
+(
+  run_pair_brekv "${GPU_PAIR6}" "${ROOT6}" \
+    /sharedspace/models/Llama-3.2-3B-Instruct-abliterated \
+    /sharedspace/models/DeepSeek-R1-Distill-Llama-3B
+) > "${ROOT6}/logs/gpu${GPU_PAIR6}_table1_brekv_${TAG}.log" 2>&1 &
+PID6=$!
+
+(
+  run_pair_brekv "${GPU_PAIR7}" "${ROOT7}" \
+    /sharedspace/models/Qwen2.5-7B-Instruct-Uncensored \
+    /sharedspace/models/Bespoke-Stratos-7B
+) > "${ROOT7}/logs/gpu${GPU_PAIR7}_table1_brekv_${TAG}.log" 2>&1 &
+PID7=$!
+
+echo "B-ReKV pair1 GPU${GPU_PAIR1} pid=${PID1}"
+echo "B-ReKV pair6 GPU${GPU_PAIR6} pid=${PID6}"
+echo "B-ReKV pair7 GPU${GPU_PAIR7} pid=${PID7}"
 wait "${PID1}" "${PID6}" "${PID7}"

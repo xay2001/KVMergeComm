@@ -8,3 +8,5 @@
 2026-07-12 21:16:18,234 - root - INFO - CUDA_VISIBLE_DEVICES: 1
 2026-07-12 21:16:33,173 - root - INFO - CVCommunicator initialized
 2026-07-12 21:16:33,966 - root - INFO - [merge] mode=evict score=receiver budget=uniform layer compress: L=157 -> k=55 (r_eff=0.350, base_ratio=0.35, sink=4, recent=8)
+2026-07-12 21:16:58,955 - root - INFO - per-sample scores written to /home/xay/KVComm/snapshots/query_sketch_config_freeze/pair6_llama32_abliterated_deepseek3b/hotpotqa/fixed/rekv_w8_r0.35_0712_2116/per_sample.jsonl
+2026-07-12 21:16:58,955 - root - INFO - communication result: 0.6600, communication time: 25.77s
