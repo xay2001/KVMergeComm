@@ -20,6 +20,14 @@ RECEIVER_AWARE_SCORE_MODES = {
     "receiver_recency_prior",
 }
 
+PROTOCOL_ACCOUNTING = {
+    "index_dtype": "uint32",
+    "query_sketch_header": "2xuint32",
+    "query_sketch_layer_descriptor": "4xuint32",
+    "kv_header": "2xuint32",
+    "kv_layer_descriptor": "5xuint32",
+}
+
 
 def _compute_receiver_token_importance(cv, input_ids_B, out_A_past_key_values):
     if getattr(cv, "score_mode", "") == "receiver_oracle":
@@ -351,14 +359,23 @@ class CommunicationEvaluator(SkylineEvaluator):
         response = self.get_response(output, context_length)
         output_tokens = int(max(output.shape[-1] - context_length, 0))
         kv_cost = getattr(cv, "last_kv_cost", None) or {}
+        protocol_timing = getattr(cv, "last_protocol_timing", None) or {}
+        t_sender_compress = float(protocol_timing.get("t_sender_compress", 0.0))
         row = {
+            "protocol_version": getattr(cv, "protocol_version", None),
             "ctx_tokens_A": int(input_ids_A.shape[-1]),
             "query_tokens_B": int(input_ids_B.shape[-1]),
             "output_tokens": output_tokens,
             "t_prepare_inputs": round(float(t_prepare), 6),
             "t_a_prefill": round(float(t_a_prefill), 6),
             "t_receiver_score": round(float(t_receiver_score), 6),
+            "t_b_query_prefill": round(float(protocol_timing.get("t_b_query_prefill", 0.0)), 6),
+            "t_sender_score": round(float(protocol_timing.get("t_sender_score", 0.0)), 6),
+            "t_budget_compute": round(float(protocol_timing.get("t_budget_compute", 0.0)), 6),
+            "t_oracle_kv_copy": round(float(protocol_timing.get("t_oracle_kv_copy", 0.0)), 6),
+            "t_sender_compress": round(t_sender_compress, 6),
             "t_generate_total": round(float(t_generate_total), 6),
+            "t_b_generate": round(float(max(t_generate_total - t_sender_compress, 0.0)), 6),
             "t_total": round(float(t_prepare + t_a_prefill + t_receiver_score + t_generate_total), 6),
             "peak_mem_gb": round(float(_peak_memory_gb(model)), 6) if _peak_memory_gb(model) is not None else None,
             "budget": round(float(getattr(cv, "last_kept_ratio")), 6) if getattr(cv, "last_kept_ratio", None) is not None else None,
@@ -415,6 +432,22 @@ class CommunicationEvaluator(SkylineEvaluator):
                 coverage_satisfied = getattr(cv, "last_coverage_satisfied_ratio", None)
                 if coverage_satisfied is not None:
                     row["coverage_satisfied_layer_ratio"] = round(float(coverage_satisfied), 6)
+                kv_cost = getattr(cv, "last_kv_cost", None) or {}
+                for key in (
+                    "protocol_version",
+                    "kv_tokens_sent",
+                    "kv_bytes_sent",
+                    "query_sketch_bytes",
+                    "query_sketch_metadata_bytes",
+                    "selection_index_bytes",
+                    "kv_metadata_bytes",
+                    "a_to_b_communication_bytes",
+                    "b_to_a_communication_bytes",
+                    "communication_metadata_bytes",
+                    "total_communication_bytes",
+                ):
+                    if key in kv_cost:
+                        row[key] = kv_cost[key]
                 per_sample.append(row)
 
             result = self.evaluator.get_result()
@@ -430,6 +463,8 @@ class CommunicationEvaluator(SkylineEvaluator):
         if run_dir is None:
             return
         meta = {
+            "protocol_version": getattr(cv, "protocol_version", None),
+            "protocol_accounting": PROTOCOL_ACCOUNTING,
             "dataset": getattr(self.evaluator, "name", None),
             "score_mode": getattr(cv, "score_mode", None),
             "recv_window": getattr(cv, "recv_window", None),
@@ -506,6 +541,8 @@ class CommunicationEvaluator(SkylineEvaluator):
         if run_dir is None:
             return
         meta = {
+            "protocol_version": getattr(cv, "protocol_version", None),
+            "protocol_accounting": PROTOCOL_ACCOUNTING,
             "dataset": getattr(self.evaluator, "name", None),
             "score_mode": getattr(cv, "score_mode", None),
             "recv_window": getattr(cv, "recv_window", None),
@@ -556,7 +593,13 @@ class CommunicationEvaluator(SkylineEvaluator):
             "query_sketch_layers",
             "query_sketch_elements",
             "query_sketch_bytes",
+            "query_sketch_metadata_bytes",
             "oracle_full_kv_bytes",
+            "selection_index_bytes",
+            "kv_metadata_bytes",
+            "a_to_b_communication_bytes",
+            "b_to_a_communication_bytes",
+            "communication_metadata_bytes",
             "total_communication_bytes",
             "coverage_target",
             "coverage_achieved",
@@ -567,7 +610,13 @@ class CommunicationEvaluator(SkylineEvaluator):
             "t_prepare_inputs",
             "t_a_prefill",
             "t_receiver_score",
+            "t_b_query_prefill",
+            "t_sender_score",
+            "t_budget_compute",
+            "t_oracle_kv_copy",
+            "t_sender_compress",
             "t_generate_total",
+            "t_b_generate",
             "t_total",
             "peak_mem_gb",
         ]

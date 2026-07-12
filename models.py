@@ -1,6 +1,7 @@
 from typing import Literal, Optional
 import copy
 import math
+import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -92,6 +93,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.last_kept_ratio = None   # actual transmitted KV fraction for the most recent query
         self.last_kv_cost = None      # payload stats from the most recent cache preparation
         self.last_query_sketch_cost = {}  # B->A query-sketch payload for the most recent query
+        self.last_protocol_timing = {}
+        self.protocol_version = self._protocol_version()
         self._merge_logged = False
         for p in self.A.parameters(): p.requires_grad = False
         for p in self.B.parameters(): p.requires_grad = False
@@ -124,6 +127,24 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
 
         logging.info(f"CVCommunicator initialized")
 
+    def _protocol_version(self) -> str:
+        if self.score_mode == "receiver_oracle":
+            return "full_kv_oracle_v1"
+        if self.score_mode in {
+            "receiver",
+            "receiver_x_value_norm",
+            "receiver_value_norm",
+            "receiver_recency",
+            "receiver_recency_prior",
+        }:
+            return "query_sketch_v1"
+        return "query_agnostic_kv_v1"
+
+    @staticmethod
+    def _sync_tensor_device(tensor: torch.Tensor):
+        if tensor.is_cuda:
+            torch.cuda.synchronize(tensor.device)
+
     def apply_B_attn_tracer(self):
         if hasattr(self.B.model, "language_model"):
             layers = self.B.model.language_model.layers
@@ -154,6 +175,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         key_cache = past_key_values.key_cache
         value_cache = past_key_values.value_cache
         assert len(key_cache) == len(self.layer_map), "key_cache and layer_map must have the same length"
+        self._sync_tensor_device(key_cache[0])
+        cache_prepare_start = time.perf_counter()
         past_key_values_new = DynamicCache()
         self.layer_coverage_achieved = {}
         self.last_coverage_achieved = None
@@ -193,6 +216,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             )
         self.last_kept_ratio = kept_tokens / total_tokens if total_tokens else None
         self.last_kv_cost = {
+            "protocol_version": self.protocol_version,
             "kv_tokens_sent": int(kept_tokens),
             "kv_tokens_total": int(total_tokens),
             "kv_token_ratio": float(kept_tokens / total_tokens) if total_tokens else None,
@@ -205,9 +229,33 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             **self.last_query_sketch_cost,
         }
         query_sketch_bytes = int(self.last_query_sketch_cost.get("query_sketch_bytes", 0))
+        query_sketch_metadata_bytes = int(
+            self.last_query_sketch_cost.get("query_sketch_metadata_bytes", 0)
+        )
         oracle_full_kv_bytes = int(self.last_query_sketch_cost.get("oracle_full_kv_bytes", 0))
-        self.last_kv_cost["total_communication_bytes"] = (
-            oracle_full_kv_bytes if oracle_full_kv_bytes > 0 else int(kept_kv_bytes + query_sketch_bytes)
+        # Conservative wire-format accounting. Each transmitted KV token carries
+        # one uint32 source-position index. Each layer descriptor carries five
+        # uint32 values: source layer, receiver layer, token count, KV heads, and
+        # head dimension; the message header is two uint32 values.
+        index_bytes = int(kept_tokens * 4)
+        kv_metadata_bytes = int(8 + len(key_cache) * 20)
+        a_to_b_bytes = int(kept_kv_bytes + index_bytes + kv_metadata_bytes)
+        b_to_a_bytes = int(query_sketch_bytes + query_sketch_metadata_bytes)
+        self.last_kv_cost.update(
+            {
+                "selection_index_bytes": index_bytes,
+                "kv_metadata_bytes": kv_metadata_bytes,
+                "a_to_b_communication_bytes": a_to_b_bytes,
+                "b_to_a_communication_bytes": b_to_a_bytes,
+                "communication_metadata_bytes": int(
+                    index_bytes + kv_metadata_bytes + query_sketch_metadata_bytes
+                ),
+                "total_communication_bytes": (
+                    int(oracle_full_kv_bytes + kv_metadata_bytes)
+                    if oracle_full_kv_bytes > 0
+                    else int(a_to_b_bytes + b_to_a_bytes)
+                ),
+            }
         )
         if self.layer_coverage_achieved:
             achieved = list(self.layer_coverage_achieved.values())
@@ -224,6 +272,10 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                     "coverage_satisfied_layer_ratio": self.last_coverage_satisfied_ratio,
                 }
             )
+        self._sync_tensor_device(key_cache[0])
+        t_sender_compress = time.perf_counter() - cache_prepare_start
+        self.last_protocol_timing["t_sender_compress"] = float(t_sender_compress)
+        self.last_kv_cost["t_sender_compress"] = float(t_sender_compress)
         return past_key_values_new
 
     @torch.no_grad()
@@ -481,6 +533,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         """
         assert self.apply_attn_tracer, "receiver scoring needs apply_attn_tracer=True"
         assert len(out_A_past_key_values.key_cache) == self.A_num_layers
+        self.last_protocol_timing = {}
 
         ctx_len = [out_A_past_key_values.key_cache[i].shape[-2] for i in range(self.A_num_layers)]
         if len(set(ctx_len)) != 1:
@@ -495,11 +548,17 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         ).unsqueeze(0)
 
         # Query-only receiver prefill: no A KV is passed to B.
+        self._sync_tensor_device(input_ids_B)
+        query_prefill_start = time.perf_counter()
         _ = self.B(
             input_ids=input_ids_B,
             position_ids=position_ids,
             use_cache=False,
             return_dict=True,
+        )
+        self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_b_query_prefill"] = float(
+            time.perf_counter() - query_prefill_start
         )
 
         layers = self._receiver_layers()
@@ -508,6 +567,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         sketch_bytes = 0
         sketch_tokens = None
 
+        self._sync_tensor_device(input_ids_B)
+        sender_score_start = time.perf_counter()
         for al in range(self.A_num_layers):
             bl = self.layer_map[al]
             block = layers[bl]
@@ -546,14 +607,29 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             sketch_bytes += query.numel() * query.element_size()
             sketch_tokens = int(query.shape[-2])
 
+        self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_sender_score"] = float(
+            time.perf_counter() - sender_score_start
+        )
+        # Two uint32 values in the message header and four uint32 values per
+        # layer: layer id, query tokens, query heads, and head dimension.
+        sketch_metadata_bytes = int(8 + self.A_num_layers * 16)
         self.last_query_sketch_cost = {
+            "protocol_version": self.protocol_version,
             "query_sketch_tokens": int(sketch_tokens or 0),
             "query_sketch_layers": int(self.A_num_layers),
             "query_sketch_elements": int(sketch_elements),
             "query_sketch_bytes": int(sketch_bytes),
+            "query_sketch_metadata_bytes": sketch_metadata_bytes,
         }
+        self._sync_tensor_device(input_ids_B)
+        budget_start = time.perf_counter()
         self.token_importance = self._aggregate_receiver_importance(per_layer_importance)
         self._compute_budget()
+        self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_budget_compute"] = float(
+            time.perf_counter() - budget_start
+        )
 
     @torch.no_grad()
     def compute_oracle_receiver_importance(self, input_ids_B, out_A_past_key_values):
@@ -569,16 +645,31 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         """
         assert self.apply_attn_tracer, "receiver scoring needs apply_attn_tracer=True"
         assert self.A_num_layers == self.B_num_layers, "receiver scoring currently supports same-depth A/B"
+        self.last_protocol_timing = {}
 
+        self._sync_tensor_device(input_ids_B)
+        oracle_copy_start = time.perf_counter()
         kv_copy = copy.deepcopy(out_A_past_key_values)  # B's prefill mutates the cache -> use a copy
         ctx_len = [kv_copy.key_cache[i].shape[-2] for i in range(len(kv_copy.key_cache))]
+        self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_oracle_kv_copy"] = float(
+            time.perf_counter() - oracle_copy_start
+        )
 
         # one extra parallel prefill of the (short) question -> tracer captures per-layer Q/K
+        self._sync_tensor_device(input_ids_B)
+        query_prefill_start = time.perf_counter()
         _ = self.B(input_ids=input_ids_B, past_key_values=kv_copy, use_cache=True)
+        self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_b_query_prefill"] = float(
+            time.perf_counter() - query_prefill_start
+        )
 
         layers = self._receiver_layers()
 
         per_layer_importance = {}
+        self._sync_tensor_device(input_ids_B)
+        sender_score_start = time.perf_counter()
         for bl, block in enumerate(layers):
             attn_inputs = block.self_attn.attn_inputs
             attn_weights = eager_attention_forward_without_value(block.self_attn, **attn_inputs)  # [B,H,q,kv]
@@ -592,12 +683,20 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             # restrict to A-context columns (drop B's own appended question keys)
             per_layer_importance[bl] = imp[: ctx_len[bl]].contiguous()
 
+        self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_sender_score"] = float(
+            time.perf_counter() - sender_score_start
+        )
+        self._sync_tensor_device(input_ids_B)
+        budget_start = time.perf_counter()
         self.token_importance = self._aggregate_receiver_importance(per_layer_importance)
         self.last_query_sketch_cost = {
+            "protocol_version": self.protocol_version,
             "query_sketch_tokens": 0,
             "query_sketch_layers": 0,
             "query_sketch_elements": 0,
             "query_sketch_bytes": 0,
+            "query_sketch_metadata_bytes": 0,
             "oracle_full_kv_bytes": int(
                 sum(
                     k.numel() * k.element_size() + v.numel() * v.element_size()
@@ -611,6 +710,10 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
 
         # budget-aware allocation depends on the importance distribution just computed
         self._compute_budget()
+        self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_budget_compute"] = float(
+            time.perf_counter() - budget_start
+        )
 
     def _aggregate_receiver_importance(self, per_layer_importance: dict[int, torch.Tensor]) -> dict[int, torch.Tensor]:
         """Aggregate receiver-attention scores across B layers for ablations.

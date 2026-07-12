@@ -35,6 +35,12 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text())
 
 
+def communication_bytes(summary: dict, legacy_field: str) -> float | None:
+    """Prefer complete protocol accounting, with legacy-run fallback."""
+    total = summary.get("total_communication_bytes_mean")
+    return total if total is not None else summary.get(legacy_field)
+
+
 def infer_pair(path: Path) -> str:
     for part in path.parts:
         if part.startswith("pair") or part.startswith("table1_pair"):
@@ -85,6 +91,8 @@ def collect_kv_rows(root: Path) -> list[dict]:
         )
         if not keep:
             continue
+        total_bytes = communication_bytes(summary, "kv_bytes_sent_mean")
+        selected_kv_bytes = summary.get("kv_bytes_sent_mean")
         rows.append(
             {
                 "pair": infer_pair(path),
@@ -94,10 +102,11 @@ def collect_kv_rows(root: Path) -> list[dict]:
                 "method": method,
                 "score": summary.get("score_mean"),
                 "payload_tokens": summary.get("kv_tokens_sent_mean"),
-                "payload_bytes": summary.get("kv_bytes_sent_mean"),
-                "payload_mb": round(summary["kv_bytes_sent_mean"] / (1024 ** 2), 4)
-                if summary.get("kv_bytes_sent_mean") is not None
-                else None,
+                "total_communication_bytes": total_bytes,
+                "total_communication_mb": round(total_bytes / (1024 ** 2), 4) if total_bytes is not None else None,
+                "selected_kv_bytes": selected_kv_bytes,
+                "selected_kv_mb": round(selected_kv_bytes / (1024 ** 2), 4)
+                if selected_kv_bytes is not None else None,
                 "t_total": summary.get("t_total_mean"),
                 "peak_mem_gb": summary.get("peak_mem_gb_mean"),
                 "compute_tokens_proxy": _sum_present(
@@ -119,6 +128,7 @@ def collect_nld_rows(root: Path) -> list[dict]:
             continue
         summary = load_json(path)
         pair = infer_pair(path)
+        total_bytes = communication_bytes(summary, "nld_text_payload_bytes_mean")
         rows.append(
             {
                 "pair": pair,
@@ -128,10 +138,10 @@ def collect_nld_rows(root: Path) -> list[dict]:
                 "method": "NLD",
                 "score": summary.get("score_mean"),
                 "payload_tokens": summary.get("nld_text_payload_tokens_mean"),
-                "payload_bytes": summary.get("nld_text_payload_bytes_mean"),
-                "payload_mb": round(summary["nld_text_payload_bytes_mean"] / (1024 ** 2), 6)
-                if summary.get("nld_text_payload_bytes_mean") is not None
-                else None,
+                "total_communication_bytes": total_bytes,
+                "total_communication_mb": round(total_bytes / (1024 ** 2), 6) if total_bytes is not None else None,
+                "selected_kv_bytes": None,
+                "selected_kv_mb": None,
                 "t_total": summary.get("t_total_mean"),
                 "peak_mem_gb": summary.get("peak_mem_gb_mean"),
                 "compute_tokens_proxy": _sum_present(
@@ -198,7 +208,15 @@ def average_rows(rows: list[dict]) -> list[dict]:
             "method_group": method,
             "n_tasks": len(items),
         }
-        for key in ["score", "payload_tokens", "payload_mb", "t_total", "peak_mem_gb", "compute_tokens_proxy"]:
+        for key in [
+            "score",
+            "payload_tokens",
+            "total_communication_mb",
+            "selected_kv_mb",
+            "t_total",
+            "peak_mem_gb",
+            "compute_tokens_proxy",
+        ]:
             vals = [float(r[key]) for r in items if r.get(key) not in (None, "")]
             avg[key] = round(sum(vals) / len(vals), 6) if vals else None
         out.append(avg)

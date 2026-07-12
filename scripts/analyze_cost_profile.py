@@ -15,6 +15,12 @@ COV_RE = re.compile(r"cov_t([0-9.]+)_s([0-9.]+)_w(\d+)")
 KVCOMM_RE = re.compile(r"kvcomm_top([0-9.]+)")
 
 
+def communication_bytes(summary: dict) -> float | None:
+    """Prefer complete bidirectional accounting, with legacy fallback."""
+    total = summary.get("total_communication_bytes_mean")
+    return total if total is not None else summary.get("kv_bytes_sent_mean")
+
+
 def method_label(run_dir: Path, summary: dict) -> str:
     name = run_dir.name
     parent = run_dir.parent.name
@@ -46,6 +52,8 @@ def load_rows(root: Path) -> list[dict]:
     for path in sorted(root.glob("**/cost_summary.json")):
         summary = json.loads(path.read_text())
         run_dir = path.parent
+        total_bytes = communication_bytes(summary)
+        selected_kv_bytes = summary.get("kv_bytes_sent_mean")
         rows.append({
             "dataset": dataset_from_path(run_dir),
             "method": method_label(run_dir, summary),
@@ -53,7 +61,10 @@ def load_rows(root: Path) -> list[dict]:
             "score": summary.get("score_mean"),
             "budget": summary.get("budget_mean"),
             "kv_byte_ratio": summary.get("kv_byte_ratio_mean"),
-            "kv_mb_sent": round(summary["kv_bytes_sent_mean"] / (1024 ** 2), 3) if summary.get("kv_bytes_sent_mean") is not None else None,
+            "total_communication_bytes": total_bytes,
+            "total_communication_mb": round(total_bytes / (1024 ** 2), 3) if total_bytes is not None else None,
+            "selected_kv_bytes": selected_kv_bytes,
+            "selected_kv_mb": round(selected_kv_bytes / (1024 ** 2), 3) if selected_kv_bytes is not None else None,
             "ctx_tokens_A": summary.get("ctx_tokens_A_mean"),
             "query_tokens_B": summary.get("query_tokens_B_mean"),
             "output_tokens": summary.get("output_tokens_mean"),
@@ -83,7 +94,8 @@ def print_markdown(rows: list[dict]) -> None:
         "n",
         "score",
         "budget",
-        "kv_mb_sent",
+        "total_communication_mb",
+        "selected_kv_mb",
         "output_tokens",
         "t_a_prefill",
         "t_receiver_score",

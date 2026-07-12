@@ -76,6 +76,7 @@ CONFIG_RE = re.compile(r"Configuration: AlignConfig\((.*)\)")
 RESULT_RE = re.compile(r"communication result:\s*([-+0-9.eE]+)")
 RUN_NAME_TS_RE = re.compile(r"_(\d{4}_\d{4})$")
 TABLE_PAIR_RE = re.compile(r"table(\d+)_pair(\d+)_")
+QUERY_SKETCH_ROOT_RE = re.compile(r"^table(\d+)_pair(\d+)_query_sketch_(.+)$")
 RECV_RE = re.compile(r"(?:probe_)?(?:mtc_evict_)?recv_w(\d+)_r([0-9.]+)")
 COV_RE = re.compile(r"cov_t([0-9.]+)_s([0-9.]+)_w(\d+)")
 KVCOMM_RE = re.compile(r"kvcomm_top([0-9.]+)")
@@ -135,16 +136,22 @@ def read_log(path: Path) -> tuple[dict[str, Any], float | None, str]:
     return cfg, score, status
 
 
-def read_per_sample(path: Path) -> tuple[int | None, float | None]:
+def read_per_sample(path: Path) -> tuple[int | None, float | None, str | None]:
     if not path.exists():
-        return None, None
+        return None, None, None
     n = 0
     budgets: list[float] = []
+    protocol = None
     try:
         with path.open() as f:
             for line in f:
                 row = json.loads(line)
                 if "_meta" in row:
+                    protocol = (
+                        protocol
+                        or row["_meta"].get("protocol_version")
+                        or row["_meta"].get("protocol")
+                    )
                     continue
                 n += 1
                 if "budget" in row:
@@ -152,9 +159,57 @@ def read_per_sample(path: Path) -> tuple[int | None, float | None]:
                 elif "query_budget" in row:
                     budgets.append(float(row["query_budget"]))
     except Exception:
-        return None, None
+        return None, None, None
     avg_budget = sum(budgets) / len(budgets) if budgets else None
-    return n, avg_budget
+    return n, avg_budget, protocol
+
+
+def read_cost_protocol(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    try:
+        meta = json.loads(path.read_text()).get("_meta", {})
+        return meta.get("protocol_version") or meta.get("protocol")
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return None
+
+
+def infer_protocol_version(
+    run_dir: Path,
+    cfg: dict[str, Any],
+    recorded: str | None,
+) -> str:
+    """Classify legacy runs without retroactively changing their semantics."""
+    if recorded:
+        return recorded
+    score_mode = str(cfg.get("score_mode") or "value_norm")
+    if score_mode == "receiver_oracle":
+        return "full_kv_oracle_v1"
+    if any("query_sketch" in part for part in run_dir.parts):
+        return "query_sketch_v1"
+    if score_mode.startswith("receiver"):
+        return "legacy_full_kv_oracle_v0"
+    return "query_agnostic_kv_v1"
+
+
+def query_sketch_pair_info(root_name: str) -> dict[str, Any]:
+    """Map protocol-specific roots back to their canonical paper pair."""
+    if "query_sketch" not in root_name:
+        return {}
+    table_pair = TABLE_PAIR_RE.search(root_name)
+    if not table_pair:
+        return {}
+    table, pair_id = table_pair.groups()
+    for pair in PAIR_REGISTRY.values():
+        if pair["paper_table"] == f"table{table}" and pair["pair_id"] == int(pair_id):
+            return dict(pair)
+    match = QUERY_SKETCH_ROOT_RE.match(root_name)
+    slug = match.group(3) if match else root_name
+    return {
+        "paper_table": f"table{table}",
+        "pair_id": int(pair_id),
+        "pair_slug": slug,
+    }
 
 
 def infer_pair_and_dataset(run_dir: Path, snapshots_dir: Path) -> dict[str, Any]:
@@ -167,7 +222,7 @@ def infer_pair_and_dataset(run_dir: Path, snapshots_dir: Path) -> dict[str, Any]
         info["root"] = str(snapshots_dir / first)
         return info
 
-    registry = PAIR_REGISTRY.get(first, {})
+    registry = PAIR_REGISTRY.get(first, {}) or query_sketch_pair_info(first)
     info.update(registry)
     if not registry:
         m = TABLE_PAIR_RE.search(first)
@@ -243,7 +298,9 @@ def build_manifest(snapshots_dir: Path) -> list[dict[str, Any]]:
     for log_path in sorted(snapshots_dir.glob("**/log.log")):
         run_dir = log_path.parent
         cfg, score, status = read_log(log_path)
-        n_samples, avg_budget = read_per_sample(run_dir / "per_sample.jsonl")
+        n_samples, avg_budget, per_sample_protocol = read_per_sample(run_dir / "per_sample.jsonl")
+        recorded_protocol = per_sample_protocol or read_cost_protocol(run_dir / "cost_summary.json")
+        protocol = infer_protocol_version(run_dir, cfg, recorded_protocol)
         pair_info = infer_pair_and_dataset(run_dir, snapshots_dir)
         method_info = infer_method(run_dir, cfg)
         ts_match = RUN_NAME_TS_RE.search(run_dir.name)
@@ -254,6 +311,7 @@ def build_manifest(snapshots_dir: Path) -> list[dict[str, Any]]:
             "model_a": cfg.get("model_A") or pair_info.get("model_a"),
             "model_b": cfg.get("model_B") or pair_info.get("model_b"),
             "score": score,
+            "protocol_version": protocol,
             "avg_budget": avg_budget,
             "n_samples": n_samples,
             "status": status,
@@ -285,6 +343,7 @@ def write_csv(rows: list[dict[str, Any]], path: Path) -> None:
         "coverage_tau",
         "coverage_scale",
         "score",
+        "protocol_version",
         "avg_budget",
         "n_samples",
         "status",

@@ -37,6 +37,29 @@ Each canonical run directory should keep:
 
 - `log.log`: Python logging output with `AlignConfig` and final result.
 - `per_sample.jsonl`: per-sample scores and budget fields when generated.
+- `cost_summary.json`: aggregate cost fields when cost profiling is enabled.
+
+## Query-Sketch Protocol Roots
+
+Receiver-initiated query-sketch runs use a protocol-specific root rather than
+sharing the canonical query-blind root:
+
+```text
+snapshots/table{paper_table}_pair{pair_id}_query_sketch_{slug}/<dataset>/<method>/<run>/
+```
+
+The existing Table 1 pair #6 root is:
+
+```text
+snapshots/table1_pair6_query_sketch_llama32_abliterated_deepseek3b/
+```
+
+Use the same naming rule for future pair #1, pair #7, and Table 8 query-sketch
+runs. The manifest maps these roots back to the canonical paper pair while
+preserving the protocol-specific root path. Runs should record
+`protocol_version` in the `_meta` object of `per_sample.jsonl` and/or
+`cost_summary.json`; the manifest copies that value into its
+`protocol_version` field.
 
 Queue-level shell logs under `logs/`, `snapshots/*.out`, or
 `snapshots/table*_pair*/logs/` are operational records, not metric sources.
