@@ -39,6 +39,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         merge_mode: str = "merge",
         score_mode: str = "value_norm",
         recv_window: int = 0,
+        query_sketch_mode: str = "bf16",
         receiver_layer_agg: str = "identity",
         budget_mode: str = "uniform",
         budget_min: float = 0.05,
@@ -65,6 +66,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.merge_mode = merge_mode  # "merge" (normalized value merge) or "evict" (drop only)
         self.score_mode = score_mode  # "value_norm", "random", "receiver", or receiver-aware ablation variants
         self.recv_window = recv_window  # 0 = all question tokens; >0 = only last N (SnapKV-style observation window)
+        self.query_sketch_mode = str(query_sketch_mode).lower()
+        if self.query_sketch_mode not in {"bf16", "int8", "token_ids"}:
+            raise ValueError(f"unknown query_sketch_mode={query_sketch_mode}")
         self.receiver_layer_agg = receiver_layer_agg  # identity | last | mean | topK | lastK
         self.token_importance = None  # filled per-sample by compute_receiver_importance for receiver-aware score modes
         # budget-aware allocation (Step 1): how the per-query / per-layer keep ratio is set.
@@ -124,6 +128,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         if apply_attn_tracer:
             self.B_attn_weights = {}
             self.apply_B_attn_tracer()
+            if self.query_sketch_mode == "token_ids" and self.score_mode != "receiver_oracle":
+                self.apply_A_attn_tracer()
 
         logging.info(f"CVCommunicator initialized")
 
@@ -137,7 +143,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             "receiver_recency",
             "receiver_recency_prior",
         }:
-            return "query_sketch_v1"
+            return f"query_sketch_{self.query_sketch_mode}_v1"
         return "query_agnostic_kv_v1"
 
     @staticmethod
@@ -145,11 +151,11 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         if tensor.is_cuda:
             torch.cuda.synchronize(tensor.device)
 
-    def apply_B_attn_tracer(self):
-        if hasattr(self.B.model, "language_model"):
-            layers = self.B.model.language_model.layers
+    def _apply_attn_tracer(self, model):
+        if hasattr(model.model, "language_model"):
+            layers = model.model.language_model.layers
         else:
-            layers = self.B.model.layers
+            layers = model.model.layers
         for i, block in enumerate(layers):
             old = block.self_attn
             device = next(old.parameters()).device
@@ -170,6 +176,12 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                 block.self_attn = new
             else:
                 raise ValueError(f"Unsupported attention module: {type(old)}")
+
+    def apply_B_attn_tracer(self):
+        self._apply_attn_tracer(self.B)
+
+    def apply_A_attn_tracer(self):
+        self._apply_attn_tracer(self.A)
 
     def prepare_key_cache(self, past_key_values):
         key_cache = past_key_values.key_cache
@@ -521,15 +533,19 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             return self.B.model.language_model.layers
         return self.B.model.layers
 
+    def _sender_layers(self):
+        if hasattr(self.A.model, "language_model"):
+            return self.A.model.language_model.layers
+        return self.A.model.layers
+
     @torch.no_grad()
     def compute_receiver_importance(self, input_ids_B, out_A_past_key_values):
         """Deployable receiver-query-aware scoring from a B->A Q sketch.
 
-        B runs a query-only prefill and sends the last ``recv_window`` query
-        vectors from every layer to A. A scores those vectors against its local
-        context keys; B never receives the full A cache during token selection.
-        The query positions are offset by A's context length so RoPE matches the
-        positions used when the selected cache is later injected into B.
+        ``bf16`` and ``int8`` encode B's layer-wise query vectors; ``token_ids``
+        sends the observation-window token IDs once and lets A encode them
+        locally. A always scores against its local context keys, so B never
+        receives the full A cache during token selection.
         """
         assert self.apply_attn_tracer, "receiver scoring needs apply_attn_tracer=True"
         assert len(out_A_past_key_values.key_cache) == self.A_num_layers
@@ -540,56 +556,82 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             raise ValueError(f"query-sketch scoring requires equal uncompressed A context lengths, got {sorted(set(ctx_len))}")
         context_length = int(ctx_len[0])
         query_length = int(input_ids_B.shape[-1])
+        query_input_ids = input_ids_B
+        query_start = 0
+        if self.query_sketch_mode == "token_ids" and self.recv_window > 0:
+            query_start = max(query_length - self.recv_window, 0)
+            query_input_ids = input_ids_B[:, query_start:]
         position_ids = torch.arange(
-            context_length,
+            context_length + query_start,
             context_length + query_length,
             device=input_ids_B.device,
             dtype=torch.long,
         ).unsqueeze(0)
 
-        # Query-only receiver prefill: no A KV is passed to B.
+        # Query-only prefill: Q-vector modes run B, while token-ID mode sends
+        # the IDs first and has A encode them locally.
+        query_encoder = self.A if self.query_sketch_mode == "token_ids" else self.B
         self._sync_tensor_device(input_ids_B)
         query_prefill_start = time.perf_counter()
-        _ = self.B(
-            input_ids=input_ids_B,
+        _ = query_encoder(
+            input_ids=query_input_ids,
             position_ids=position_ids,
             use_cache=False,
             return_dict=True,
         )
         self._sync_tensor_device(input_ids_B)
-        self.last_protocol_timing["t_b_query_prefill"] = float(
-            time.perf_counter() - query_prefill_start
-        )
+        query_prefill_time = float(time.perf_counter() - query_prefill_start)
+        if self.query_sketch_mode == "token_ids":
+            self.last_protocol_timing["t_a_query_encode"] = query_prefill_time
+            self.last_protocol_timing["t_b_query_prefill"] = 0.0
+        else:
+            self.last_protocol_timing["t_b_query_prefill"] = query_prefill_time
+            self.last_protocol_timing["t_a_query_encode"] = 0.0
 
-        layers = self._receiver_layers()
+        layers = self._sender_layers() if self.query_sketch_mode == "token_ids" else self._receiver_layers()
         per_layer_importance = {}
         sketch_elements = 0
         sketch_bytes = 0
+        sketch_scale_bytes = 0
         sketch_tokens = None
 
         self._sync_tensor_device(input_ids_B)
         sender_score_start = time.perf_counter()
         for al in range(self.A_num_layers):
-            bl = self.layer_map[al]
-            block = layers[bl]
+            query_layer = al if self.query_sketch_mode == "token_ids" else self.layer_map[al]
+            block = layers[query_layer]
             attn_inputs = block.self_attn.attn_inputs
             if attn_inputs is None:
-                raise RuntimeError(f"receiver query tracer did not capture layer {bl}")
+                raise RuntimeError(f"query tracer did not capture layer {query_layer}")
             query = attn_inputs["query"]
-            if self.recv_window > 0 and query.shape[-2] > self.recv_window:
+            if self.query_sketch_mode != "token_ids" and self.recv_window > 0 and query.shape[-2] > self.recv_window:
                 query = query[:, :, -self.recv_window :, :]
-            query = query.contiguous()
             key = out_A_past_key_values.key_cache[al]
+            if self.query_sketch_mode == "bf16":
+                wire_query = query.to(torch.bfloat16).contiguous()
+                sketch_elements += wire_query.numel()
+                sketch_bytes += wire_query.numel() * wire_query.element_size()
+                query = wire_query.to(key.dtype)
+            elif self.query_sketch_mode == "int8":
+                max_abs = query.float().abs().amax().clamp_min(1e-12)
+                scale = max_abs / 127.0
+                query_int8 = torch.clamp(torch.round(query.float() / scale), -127, 127).to(torch.int8)
+                query = (query_int8.float() * scale).to(key.dtype).contiguous()
+                sketch_elements += query_int8.numel()
+                sketch_bytes += query_int8.numel()
+                sketch_scale_bytes += 4
+            else:
+                query = query.to(key.dtype).contiguous()
 
             if query.shape[-1] != key.shape[-1]:
                 raise ValueError(
-                    f"query-sketch head_dim mismatch at A layer {al}/B layer {bl}: "
+                    f"query-sketch head_dim mismatch at A layer {al}/query layer {query_layer}: "
                     f"Q={query.shape[-1]}, K={key.shape[-1]}"
                 )
             expected_q_heads = key.shape[1] * block.self_attn.num_key_value_groups
             if query.shape[1] != expected_q_heads:
                 raise ValueError(
-                    f"query-sketch head mismatch at A layer {al}/B layer {bl}: "
+                    f"query-sketch head mismatch at A layer {al}/query layer {query_layer}: "
                     f"Q heads={query.shape[1]}, expected={expected_q_heads} "
                     f"from A KV heads={key.shape[1]}"
                 )
@@ -603,23 +645,31 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                 scaling=block.self_attn.scaling,
             )
             per_layer_importance[al] = attn_weights.float().mean(dim=1)[0].sum(dim=0).contiguous()
-            sketch_elements += query.numel()
-            sketch_bytes += query.numel() * query.element_size()
             sketch_tokens = int(query.shape[-2])
 
         self._sync_tensor_device(input_ids_B)
         self.last_protocol_timing["t_sender_score"] = float(
             time.perf_counter() - sender_score_start
         )
-        # Two uint32 values in the message header and four uint32 values per
-        # layer: layer id, query tokens, query heads, and head dimension.
-        sketch_metadata_bytes = int(8 + self.A_num_layers * 16)
+        if self.query_sketch_mode == "token_ids":
+            # Token IDs are transmitted once as uint32, not once per layer.
+            sketch_elements = int(query_input_ids.numel())
+            sketch_bytes = int(query_input_ids.numel() * 4)
+            sketch_layers = 1
+            sketch_metadata_bytes = 8
+        else:
+            # Two uint32 values in the message header and four uint32 values per
+            # layer: layer id, query tokens, query heads, and head dimension.
+            sketch_layers = self.A_num_layers
+            sketch_metadata_bytes = int(8 + self.A_num_layers * 16 + sketch_scale_bytes)
         self.last_query_sketch_cost = {
             "protocol_version": self.protocol_version,
+            "query_sketch_mode": self.query_sketch_mode,
             "query_sketch_tokens": int(sketch_tokens or 0),
-            "query_sketch_layers": int(self.A_num_layers),
+            "query_sketch_layers": int(sketch_layers),
             "query_sketch_elements": int(sketch_elements),
             "query_sketch_bytes": int(sketch_bytes),
+            "query_sketch_scale_bytes": int(sketch_scale_bytes),
             "query_sketch_metadata_bytes": sketch_metadata_bytes,
         }
         self._sync_tensor_device(input_ids_B)

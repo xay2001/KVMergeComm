@@ -46,7 +46,7 @@ run_one() {
     CUDA_VISIBLE_DEVICES="${gpu}" "${PYTHON}" com.py \
       --test_task "${task}" --do_test --limit "${LIMIT}" \
       --model_A "${model_a}" --model_B "${model_b}" \
-      --merge --merge_mode evict --score_mode receiver \
+      --merge --merge_mode evict --score_mode receiver --query_sketch_mode bf16 \
       --recv_window "${WINDOW}" --merge_ratio "${value1}" \
       --merge_sink 4 --merge_recent 8 \
       --snapshot_path "${out}" --run_name "${run_name}"
@@ -54,7 +54,7 @@ run_one() {
     CUDA_VISIBLE_DEVICES="${gpu}" "${PYTHON}" com.py \
       --test_task "${task}" --do_test --limit "${LIMIT}" \
       --model_A "${model_a}" --model_B "${model_b}" \
-      --merge --merge_mode evict --score_mode receiver \
+      --merge --merge_mode evict --score_mode receiver --query_sketch_mode bf16 \
       --recv_window "${WINDOW}" --merge_sink 4 --merge_recent 8 \
       --budget_mode coverage --budget_min 0.05 --budget_max 0.7 \
       --coverage_tau "${value1}" --coverage_scale "${value2}" \

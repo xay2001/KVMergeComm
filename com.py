@@ -56,6 +56,7 @@ class AlignConfig:
     merge_mode: str = "merge"  # "merge" (normalized value merge) or "evict" (drop only)
     score_mode: str = "value_norm"  # "receiver" = deployable Q sketch; "receiver_oracle" = full-A-KV upper bound
     recv_window: int = 0  # Q-sketch tokens per layer: 0 = all query tokens, >0 = last N
+    query_sketch_mode: str = "bf16"  # bf16 | int8 | token_ids
     receiver_layer_agg: str = "identity"  # receiver scoring layer aggregation: identity | last | mean | topK | lastK
     # budget-aware allocation (Step 1): uniform | query | layer | query+layer
     budget_mode: str = "uniform"
@@ -176,7 +177,7 @@ def main(cfg: AlignConfig):
         communication_evaluator = CommunicationEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
         if cfg.merge:
             # Merge-then-Communicate: keep all layers, compress tokens within each via merging
-            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=(cfg.score_mode in RECEIVER_AWARE_SCORE_MODES), shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode, score_mode=cfg.score_mode, recv_window=cfg.recv_window, receiver_layer_agg=cfg.receiver_layer_agg, budget_mode=cfg.budget_mode, budget_min=cfg.budget_min, budget_max=cfg.budget_max, budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor, coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale, coverage_tau_mode=cfg.coverage_tau_mode, coverage_tau_min=cfg.coverage_tau_min, coverage_tau_max=cfg.coverage_tau_max).to(cfg.device)
+            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=(cfg.score_mode in RECEIVER_AWARE_SCORE_MODES), shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode, score_mode=cfg.score_mode, recv_window=cfg.recv_window, query_sketch_mode=cfg.query_sketch_mode, receiver_layer_agg=cfg.receiver_layer_agg, budget_mode=cfg.budget_mode, budget_min=cfg.budget_min, budget_max=cfg.budget_max, budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor, coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale, coverage_tau_mode=cfg.coverage_tau_mode, coverage_tau_min=cfg.coverage_tau_min, coverage_tau_max=cfg.coverage_tau_max).to(cfg.device)
             if cfg.dump_pass1_features:
                 communication_evaluator.dump_pass1_features(model_A, cv, limit=cfg.limit)
                 results = None

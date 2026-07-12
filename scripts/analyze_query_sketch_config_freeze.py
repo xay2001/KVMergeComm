@@ -225,6 +225,24 @@ def main() -> None:
     write_csv(out_dir / "matched_budget.csv", details)
     write_csv(out_dir / "candidate_summary.csv", summaries)
     write_report(out_dir / "REPORT.md", summaries, details)
+    accepted = [row for row in summaries if row["accepted"]]
+    ranked = sorted(
+        accepted or summaries,
+        key=lambda row: (row["mean_delta"], -row["mean_budget"]),
+        reverse=True,
+    )
+    selection = ranked[0] if ranked else None
+    (out_dir / "selection.json").write_text(
+        json.dumps(
+            {
+                "accepted": bool(selection and selection["accepted"]),
+                "selection": selection,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n"
+    )
     print(f"runs={len(runs)} matched_cells={len(details)} report={out_dir / 'REPORT.md'}")
 
 
