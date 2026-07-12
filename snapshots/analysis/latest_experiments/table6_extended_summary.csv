@@ -71,6 +71,15 @@ table6_pair7_qwen25_uncensored_bespoke,qasper_full,ReKV,ReKV,16,0.7,1726,0.22827
 table6_pair7_qwen25_uncensored_bespoke,qasper_full,ReKV,ReKV,8,0.3,1726,0.223059,0.325003,,snapshots/table6_pair7_qwen25_uncensored_bespoke/qasper_full/mtc_receiver/recv_w8_r0.3_0710_0247
 table6_pair7_qwen25_uncensored_bespoke,qasper_full,ReKV,ReKV,8,0.5,1726,0.227115,0.517863,,snapshots/table6_pair7_qwen25_uncensored_bespoke/qasper_full/mtc_receiver/recv_w8_r0.5_0710_0436
 table6_pair7_qwen25_uncensored_bespoke,qasper_full,ReKV,ReKV,8,0.7,1726,0.232908,0.710707,,snapshots/table6_pair7_qwen25_uncensored_bespoke/qasper_full/mtc_receiver/recv_w8_r0.7_0710_0630
+table6_pair7_qwen25_uncensored_bespoke,repobench,B-ReKV t=0.95 s=0.75 w8,B-ReKV,8,0.75,1000,0.34001,0.159448,0.128231,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/coverage/cov_t0.95_s0.75_w8_0712_1801
+table6_pair7_qwen25_uncensored_bespoke,repobench,B-ReKV t=0.95 s=0.85 w8,B-ReKV,8,0.85,1000,0.33572,0.173439,0.142756,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/coverage/cov_t0.95_s0.85_w8_0712_1642
+table6_pair7_qwen25_uncensored_bespoke,repobench,B-ReKV t=0.95 s=0.90 w16,B-ReKV,16,0.90,1000,0.32132,0.182462,0.152154,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/coverage/cov_t0.95_s0.90_w16_0712_1641
+table6_pair7_qwen25_uncensored_bespoke,repobench,ReKV,ReKV,16,0.3,1000,0.34872,0.325019,,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/mtc_receiver/recv_w16_r0.3_0712_1521
+table6_pair7_qwen25_uncensored_bespoke,repobench,ReKV,ReKV,16,0.5,1000,0.3474,0.517835,,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/mtc_receiver/recv_w16_r0.5_0712_1641
+table6_pair7_qwen25_uncensored_bespoke,repobench,ReKV,ReKV,16,0.7,1000,0.35073,0.710703,,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/mtc_receiver/recv_w16_r0.7_0712_1641
+table6_pair7_qwen25_uncensored_bespoke,repobench,ReKV,ReKV,8,0.3,1000,0.34851,0.325019,,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/mtc_receiver/recv_w8_r0.3_0712_1521
+table6_pair7_qwen25_uncensored_bespoke,repobench,ReKV,ReKV,8,0.5,1000,0.35113,0.517835,,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/mtc_receiver/recv_w8_r0.5_0712_1521
+table6_pair7_qwen25_uncensored_bespoke,repobench,ReKV,ReKV,8,0.7,1000,0.35302,0.710703,,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/mtc_receiver/recv_w8_r0.7_0712_1521
 table6_pair7_qwen25_uncensored_bespoke,samsum,B-ReKV t=0.95 s=0.75 w8,B-ReKV,8,0.75,819,0.292726,0.323212,0.297549,snapshots/table6_pair7_qwen25_uncensored_bespoke/samsum/coverage/cov_t0.95_s0.75_w8_0710_1546
 table6_pair7_qwen25_uncensored_bespoke,samsum,B-ReKV t=0.95 s=0.85 w8,B-ReKV,8,0.85,819,0.298208,0.359642,0.335595,snapshots/table6_pair7_qwen25_uncensored_bespoke/samsum/coverage/cov_t0.95_s0.85_w8_0710_1614
 table6_pair7_qwen25_uncensored_bespoke,samsum,B-ReKV t=0.95 s=0.90 w16,B-ReKV,16,0.90,819,0.315022,0.382453,0.359266,snapshots/table6_pair7_qwen25_uncensored_bespoke/samsum/coverage/cov_t0.95_s0.90_w16_0710_1641

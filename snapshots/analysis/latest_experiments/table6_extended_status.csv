@@ -7,5 +7,5 @@ table6_pair6_llama32_abliterated_deepseek3b,samsum,9,9,complete
 table6_pair7_qwen25_uncensored_bespoke,hotpotqa_full,9,9,complete
 table6_pair7_qwen25_uncensored_bespoke,musique_full,9,9,complete
 table6_pair7_qwen25_uncensored_bespoke,qasper_full,9,9,complete
-table6_pair7_qwen25_uncensored_bespoke,repobench,0,9,missing
+table6_pair7_qwen25_uncensored_bespoke,repobench,9,9,complete
 table6_pair7_qwen25_uncensored_bespoke,samsum,9,9,complete

@@ -19,10 +19,13 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-import matplotlib
+try:
+    import matplotlib
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+except ModuleNotFoundError:
+    plt = None
 
 
 MAIN_TASKS = {
@@ -138,7 +141,11 @@ def write_csv(rows: list[dict], path: Path) -> None:
         path.write_text("")
         return
     with path.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(
+            f,
+            fieldnames=list(rows[0].keys()),
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(rows)
 
@@ -280,14 +287,14 @@ def main() -> None:
     write_csv(score_rows, out_dir / "score_function_summary.csv")
     score_best = best_rows(score_rows, ["pair", "task", "method_family"])
     write_csv(score_best, out_dir / "score_function_best_by_pair_task_method.csv")
-    if score_best:
+    if score_best and plt is not None:
         plot_score_function(score_best, fig_dir / "score_function_ablation_best.png")
 
     layer_rows = summarize_per_sample(args.snapshot_root / "layer_aggregation_ablation")
     write_csv(layer_rows, out_dir / "layer_aggregation_summary.csv")
     layer_best = best_rows(layer_rows, ["task", "method"])
     write_csv(layer_best, out_dir / "layer_aggregation_best_by_task_method.csv")
-    if layer_best:
+    if layer_best and plt is not None:
         plot_layer_aggregation(layer_best, fig_dir / "layer_aggregation_heatmap.png")
 
     table6_rows = []
@@ -297,7 +304,7 @@ def main() -> None:
     write_csv(table6_status(table6_rows), out_dir / "table6_extended_status.csv")
     table6_best = best_rows(table6_rows, ["pair", "task", "method_family"])
     write_csv(table6_best, out_dir / "table6_extended_best_by_pair_task_family.csv")
-    if table6_best:
+    if table6_best and plt is not None:
         plot_table6_pair(
             table6_best,
             "table6_pair6",

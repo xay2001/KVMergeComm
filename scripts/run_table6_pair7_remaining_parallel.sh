@@ -4,14 +4,14 @@ set -euo pipefail
 # Run remaining Table 6 pair #7 jobs on a selected GPU.
 # Each wrapper script sets GPU and RUN_ITEMS.
 
-cd /home/xay/KVComm || exit 1
+cd /home/xay/KVMergeComm || exit 1
 
 GPU=${GPU:?GPU must be set}
 RUN_ITEMS=${RUN_ITEMS:?RUN_ITEMS must be set}
 SKIP_EXISTING=${SKIP_EXISTING:-1}
 
-MODEL_A=${MODEL_A:-/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored}
-MODEL_B=${MODEL_B:-/sharedspace/models/Bespoke-Stratos-7B}
+MODEL_A=${MODEL_A:-/NAS/models/Qwen2.5-7B-Instruct-Uncensored}
+MODEL_B=${MODEL_B:-/NAS/models/Bespoke-Stratos-7B}
 ROOT=${ROOT:-snapshots/table6_pair7_qwen25_uncensored_bespoke}
 LOG_ROOT=${LOG_ROOT:-snapshots/table6_pair7_qwen25_uncensored_bespoke/logs}
 

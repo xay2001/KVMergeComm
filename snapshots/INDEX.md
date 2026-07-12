@@ -103,12 +103,12 @@ These experiments were added to support the paper framing beyond raw accuracy.
 | Sink/recent token ablation | `snapshots/mechanism/pair1_llama31_same/sink_recent/` | Done for 8 main tasks |
 | Positional coherence / ReKV-S | `snapshots/mechanism/pair1_llama31_same/positional_coherence/`, `snapshots/analysis/mechanism/positional_coherence_summary.md`, `snapshots/analysis/mechanism/brekv_shiftback_diagnosis.md` | Done for 8 main tasks for ReKV normal / ReKV-S / B-ReKV normal; B-ReKV-S omitted due to shift-back implementation limit |
 | Table 10 Multi-Source ReKV | `snapshots/table10_multi_source_rekv/`, `snapshots/analysis/table10_multi_source_rekv_summary.md` | Done for hotpotqa / musique / twowikimqa; 18 runs complete on GPU3 |
-| Table 6 extended tasks | `snapshots/table6_pair6_llama32_abliterated_deepseek3b/`, `snapshots/table6_pair7_qwen25_uncensored_bespoke/`, `snapshots/analysis/latest_experiments/table6_extended_status.csv`, `snapshots/analysis/latest_experiments/figures/table6_pair6_extended_best.png`, `snapshots/analysis/latest_experiments/figures/table6_pair7_extended_best.png` | Pair #6 complete for 5 extended tasks x 9 runs; pair #7 complete for `hotpotqa_full` / `qasper_full` / `musique_full` / `samsum`, with `repobench` 0/9 due to GPU7 OOM |
+| Table 6 extended tasks | `snapshots/table6_pair6_llama32_abliterated_deepseek3b/`, `snapshots/table6_pair7_qwen25_uncensored_bespoke/`, `snapshots/analysis/latest_experiments/table6_extended_status.csv`, `snapshots/analysis/latest_experiments/table6_pair7_repobench_summary.md` | Pair #6 and pair #7 are complete for all 5 extended tasks x 9 runs; pair #7 RepoBench was recovered on GPUs 0–3 after the earlier GPU7 OOM |
 | Score-function ablation | `snapshots/score_function_ablation/`, `snapshots/analysis/latest_experiments/score_function_summary.csv`, `snapshots/analysis/latest_experiments/figures/score_function_ablation_best.png` | Done for pair #1/#6/#7 on HotpotQA / MuSiQue / MultiFieldQA-en; receiver-aware scoring remains strongest overall |
 | Receiver-layer aggregation ablation | `snapshots/layer_aggregation_ablation/`, `snapshots/analysis/latest_experiments/layer_aggregation_summary.csv`, `snapshots/analysis/latest_experiments/figures/layer_aggregation_heatmap.png` | Done for pair #1 on 8 main tasks; original paired-layer identity is strongest or near-strongest on most evidence-heavy tasks |
 | NLD vs ReKV cost comparison | `snapshots/nld_cost_profile/`, `snapshots/analysis/nld_vs_rekv/nld_vs_rekv_report.md`, `snapshots/analysis/nld_vs_rekv/nld_vs_rekv_cost_focused.csv`, `snapshots/analysis/nld_vs_rekv/figures/nld_vs_rekv_cost_overview.png`, `snapshots/analysis/nld_vs_rekv/figures/nld_vs_rekv_accuracy_by_task.png` | Done for pair #1/#6/#7 on HotpotQA / MuSiQue / MultiFieldQA-en; NLD has much lower accuracy and roughly 2x latency, with similar peak memory |
 
-Main remaining work is now narrower: decide whether to rerun Table 6 pair #7
-`repobench` with a memory-safe setting or mark it as an OOM limitation, then
-fold the completed NLD comparison into the paper cost/efficiency section.
+Main remaining work is now narrower: fold the completed Table 6 and NLD
+comparisons into the paper, then implement memory-safe pre-softmax receiver
+windowing before any further long-code receiver-scoring runs.
 Pair #9 and B-ReKV-S are deferred from positive claims.

@@ -1,4 +1,5 @@
 from .base_evaluator import BaseEvaluator
+from .local_loader import local_or_hub
 from datasets import load_dataset
 from typing import Dict, Any
 import re
@@ -104,7 +105,10 @@ class RepoBenchEvaluator(BaseEvaluator):
         self.name = "repobench"
         
     def load_data(self):
-        dataset = load_dataset("tianyang/repobench_python_v1.1", split="cross_file_first")
+        dataset = load_dataset(
+            local_or_hub("RepoBench", "tianyang/repobench_python_v1.1"),
+            split="cross_file_first",
+        )
         dataset = dataset.map(lambda x: {"prompt_A": construct_prompt(x)[0], "prompt_B": construct_prompt(x)[1] + "\nHere's the next line of code based on the context:", "answer": x["next_line"]}, remove_columns=dataset.column_names)
         dataset = dataset.filter(lambda x: len(x["prompt_A"]) < 5000)
         dataset = self.random_sample(dataset)

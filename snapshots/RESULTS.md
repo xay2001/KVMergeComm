@@ -2422,3 +2422,43 @@ Table 6 extended tasks 最新结果：
 | #7 | repobench | missing | missing | OOM |
 
 结论：Table 6 现在已经有 pair #6 的完整 extended-task 证据，以及 pair #7 的 4/5 extended-task 补充证据。整体上 ReKV 在所有完成的 extended tasks 上都是最强或明显强于 B-ReKV；B-ReKV 虽略低于 best fixed-budget ReKV，但使用显著更低的 adaptive budget，仍可作为“budget-aware compression”附录证据。Pair #7 RepoBench 不建议继续占用主线队列，后续若要补齐可单独用更保守的显存设置重跑，或作为 OOM limitation 记录。
+
+### 10.6 2026-07-12 更新：Table 6 Pair #7 RepoBench 补跑完成
+
+7 月 11 日记录的 RepoBench OOM 缺口已经补齐。数据集下载到
+`datasets/RepoBench` 后，使用 98 GB RTX PRO 6000（GPU 0–3）拆分运行，
+9/9 配置全部完成，每个配置包含 1000 条样本。
+
+完整产物：
+
+```text
+snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/
+snapshots/analysis/latest_experiments/table6_pair7_repobench_summary.md
+snapshots/analysis/latest_experiments/table6_extended_summary.csv
+snapshots/analysis/latest_experiments/table6_extended_status.csv
+snapshots/analysis/latest_experiments/table6_extended_best_by_pair_task_family.csv
+```
+
+Pair #7 RepoBench 结果：
+
+| Method | Window | Ratio / scale | Score | Actual KV budget |
+|---|---:|---:|---:|---:|
+| ReKV | 8 | r=0.3 | 0.3485 | 0.3250 |
+| ReKV | 8 | r=0.5 | 0.3511 | 0.5178 |
+| **ReKV** | **8** | **r=0.7** | **0.3530** | 0.7107 |
+| ReKV | 16 | r=0.3 | 0.3487 | 0.3250 |
+| ReKV | 16 | r=0.5 | 0.3474 | 0.5178 |
+| ReKV | 16 | r=0.7 | 0.3507 | 0.7107 |
+| **B-ReKV** | **8** | **t=0.95, s=0.75** | **0.3400** | **0.1594** |
+| B-ReKV | 8 | t=0.95, s=0.85 | 0.3357 | 0.1734 |
+| B-ReKV | 16 | t=0.95, s=0.90 | 0.3213 | 0.1825 |
+
+更新后的 Table 6 状态：pair #6 与 pair #7 均完成 5 个 extended tasks ×
+9 个配置，各 45 runs。Pair #7 RepoBench 的固定 ReKV 对预算不敏感：
+w8 从 r=0.3 增至 r=0.7，实际 KV 预算增加 2.19×，分数仅增加 0.0045。
+最佳 B-ReKV 以 0.1594 实际预算取得 0.3400；相对 ReKV-w8 r=0.3，
+约使用 49% KV，绝对分数仅下降 0.0085。
+
+显存限制仍需记录：当前 receiver scoring 在应用 `recv_window` 前构造完整
+QK/softmax 矩阵，长代码样本的单进程显存约 81 GB。后续应把 query window
+裁剪前移到 QK 矩阵乘法之前。

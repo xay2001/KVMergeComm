@@ -15,5 +15,7 @@ table6_pair7_qwen25_uncensored_bespoke,musique_full,B-ReKV t=0.95 s=0.85 w8,B-Re
 table6_pair7_qwen25_uncensored_bespoke,musique_full,ReKV,ReKV,8,0.7,2417,0.373604,0.710717,,snapshots/table6_pair7_qwen25_uncensored_bespoke/musique_full/mtc_receiver/recv_w8_r0.7_0710_1412
 table6_pair7_qwen25_uncensored_bespoke,qasper_full,B-ReKV t=0.95 s=0.90 w16,B-ReKV,16,0.90,1726,0.210892,0.345093,0.320835,snapshots/table6_pair7_qwen25_uncensored_bespoke/qasper_full/coverage/cov_t0.95_s0.90_w16_0710_1959
 table6_pair7_qwen25_uncensored_bespoke,qasper_full,ReKV,ReKV,8,0.7,1726,0.232908,0.710707,,snapshots/table6_pair7_qwen25_uncensored_bespoke/qasper_full/mtc_receiver/recv_w8_r0.7_0710_0630
+table6_pair7_qwen25_uncensored_bespoke,repobench,B-ReKV t=0.95 s=0.75 w8,B-ReKV,8,0.75,1000,0.34001,0.159448,0.128231,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/coverage/cov_t0.95_s0.75_w8_0712_1801
+table6_pair7_qwen25_uncensored_bespoke,repobench,ReKV,ReKV,8,0.7,1000,0.35302,0.710703,,snapshots/table6_pair7_qwen25_uncensored_bespoke/repobench/mtc_receiver/recv_w8_r0.7_0712_1521
 table6_pair7_qwen25_uncensored_bespoke,samsum,B-ReKV t=0.95 s=0.90 w16,B-ReKV,16,0.90,819,0.315022,0.382453,0.359266,snapshots/table6_pair7_qwen25_uncensored_bespoke/samsum/coverage/cov_t0.95_s0.90_w16_0710_1641
 table6_pair7_qwen25_uncensored_bespoke,samsum,ReKV,ReKV,16,0.7,819,0.338654,0.710504,,snapshots/table6_pair7_qwen25_uncensored_bespoke/samsum/mtc_receiver/recv_w16_r0.7_0710_1514
