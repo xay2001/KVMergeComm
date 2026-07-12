@@ -335,7 +335,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         Hmean = sum(Hns) / len(Hns)
         return self.budget_min + (self.budget_max - self.budget_min) * Hmean
 
-    def _coverage_ratio(self, s: torch.Tensor) -> float:
+    def _coverage_ratio(self, s: torch.Tensor, target: float | None = None) -> float:
         """Budget from receiver-evidence coverage.
 
         Let p_i be normalized receiver attention mass over A-context tokens. We
@@ -351,7 +351,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         p = s / s.sum().clamp_min(1e-9)
         sp = torch.sort(p, descending=True).values
         csum = torch.cumsum(sp, dim=0)
-        thr = min(max(float(self.coverage_tau), 0.0), 1.0)
+        if target is None:
+            target = self.coverage_tau
+        thr = min(max(float(target), 0.0), 1.0)
         idx = int(torch.searchsorted(csum, torch.tensor(thr, device=csum.device)))
         idx = min(idx, L - 1)
         raw = ((idx + 1) / L) * float(self.coverage_scale)
@@ -361,7 +363,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             hi = lo
         return float(min(max(raw, lo), hi))
 
-    def _adaptive_strict_coverage_tau(self, layers: list[int]) -> float:
+    def _adaptive_coverage_tau(self, layers: list[int]) -> float:
         """Per-query target from mean normalized attention entropy.
 
         Concentrated evidence uses ``coverage_tau_min``; diffuse evidence moves
@@ -422,7 +424,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.last_coverage_target = None
         if self.budget_mode == "strict_coverage":
             if str(self.coverage_tau_mode).lower() == "adaptive":
-                target = self._adaptive_strict_coverage_tau(comp)
+                target = self._adaptive_coverage_tau(comp)
             else:
                 target = min(max(float(self.coverage_tau), 0.0), 1.0)
             self.last_coverage_target = float(target)
@@ -434,9 +436,16 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             self.last_query_budget = sum(self.layer_budget.values()) / len(self.layer_budget)
             return
         if self.budget_mode == "coverage":
-            self.last_coverage_target = min(max(float(self.coverage_tau), 0.0), 1.0)
+            if str(self.coverage_tau_mode).lower() == "adaptive":
+                target = self._adaptive_coverage_tau(comp)
+            else:
+                target = min(max(float(self.coverage_tau), 0.0), 1.0)
+            self.last_coverage_target = float(target)
             self.layer_coverage_target = {l: self.last_coverage_target for l in comp}
-            self.layer_budget = {l: self._coverage_ratio(self.token_importance[l]) for l in comp}
+            self.layer_budget = {
+                l: self._coverage_ratio(self.token_importance[l], target)
+                for l in comp
+            }
             self.last_query_budget = sum(self.layer_budget.values()) / len(self.layer_budget)
             return
         B = self._query_total_budget() if self.budget_mode in ("query", "query+layer") else self.merge_ratio
