@@ -10,7 +10,10 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ModuleNotFoundError:
+    plt = None
 
 
 TASKS = [
@@ -378,6 +381,8 @@ def write_report(
     rekv_v1_cells = sum(row["rekv_v1_complete"] for row in status)
     rekv_v1_runs = sum(row["rekv_v1_configs_done"] for row in status)
     frozen_cells = sum(row["frozen_brekv_done"] for row in status)
+    selection_path = Path("snapshots/query_sketch_config_freeze/analysis/selection.json")
+    frozen_selection = json.loads(selection_path.read_text()).get("selection", {})
     oracle_avg = average(oracle, ("method",), "score_gap_query_minus_oracle")
     mech_avg = average(mechanism, ("family", "setting"), "score")
     oracle_efficiency = []
@@ -412,14 +417,19 @@ def write_report(
         "",
         f"- Table 1 文件覆盖：ReKV 六配置完成 {rekv_cells}/24 个 pair-task 单元。",
         f"- Table 1 显式 v1 metadata：ReKV 完成 {rekv_v1_runs}/144 runs、{rekv_v1_cells}/24 个完整单元；Pair #6 的 v0 结果需单列。",
-        f"- 冻结 B-ReKV 完成 {frozen_cells}/24；完整主块 {complete_cells}/24。",
+        f"- Table 1 冻结 B-ReKV 主矩阵完成 {frozen_cells}/24；完整主块 {complete_cells}/24。",
         f"- Oracle gap：{len(oracle)}/18 个 matched method-pair-task 单元。",
         f"- 表示消融：{len(representation)} 个聚合点（2 pairs × 3 tasks × 3 modes × 4 windows 原始共 72 runs）。",
         f"- 新协议独立 cost：{len(cost_rows)} runs；若为 0，说明第二阶段 cost 尚未启动。",
         "",
         "## 冻结配置",
         "",
-        "- `B-ReKV-t0.98-s0.95-w8`：平均预算 0.5698，matched-budget 平均分差 +0.0267，6/6 持平或获胜，最差分差 0。",
+        f"- 已接受 `{frozen_selection.get('config')}`：平均预算 "
+        f"{frozen_selection.get('mean_budget', float('nan')):.4f}，matched-budget 平均分差 "
+        f"{frozen_selection.get('mean_delta', float('nan')):+.4f}，"
+        f"{frozen_selection.get('wins_or_ties', 0)}/{frozen_selection.get('cells', 0)} "
+        f"持平或获胜，最差分差 {frozen_selection.get('worst_delta', float('nan')):+.4f}。",
+        "- 注意：配置冻结校准已完成；上面的 0/24 指该冻结配置尚未进入 Table 1 三个 pair × 八任务主矩阵。",
         "",
         "## Oracle gap（Query-Sketch − Full-KV Oracle）",
         "",
@@ -491,11 +501,11 @@ def main() -> None:
     write_csv(out / "representation_summary.csv", representation)
     write_csv(out / "mechanism_runs.csv", mechanism)
     write_csv(out / "official_cost_runs.csv", official_cost)
-    if oracle:
+    if oracle and plt is not None:
         plot_oracle(oracle, figures / "oracle_gap_overview.png")
-    if representation:
+    if representation and plt is not None:
         plot_representation(representation, figures / "representation_tradeoff.png")
-    if mechanism:
+    if mechanism and plt is not None:
         plot_mechanism(mechanism, figures / "mechanism_ablation.png")
     write_report(out / "REPORT.md", status, oracle, representation, mechanism, official_cost)
     print(f"wrote Query-Sketch audit to {out}")

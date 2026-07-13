@@ -1,5 +1,11 @@
 # KVComm / ReKV 实验方案、结果与后续计划总文档
 
+> **2026-07-13 协议区分说明：** 本文件包含大量历史实验记录，其中早期
+> `score_mode=receiver` 结果属于 `legacy_implicit_receiver_v0`，不能自动
+> 解释为当前可部署 Query-Sketch。最新完成度、冻结配置、Stage 3 结果及
+> Table 6/8/10 新旧协议边界统一以
+> `snapshots/analysis/experiment_inventory_20260713.md` 为准。
+
 > 当前维护入口（2026-06-30 新增）：
 > - `snapshots/INDEX.md`：按论文 Table / model pair / dataset / method 检查当前结果与缺口。
 > - `snapshots/PAIR_REGISTRY.md`：KVComm 论文 pair 与本地 snapshot root 的映射。

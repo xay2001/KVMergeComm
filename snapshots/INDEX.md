@@ -6,6 +6,8 @@ manifest.
 
 ## Primary Files
 
+- `snapshots/analysis/experiment_inventory_20260713.md`: protocol-aware current status, results, and data-quality audit.
+- `snapshots/analysis/experiment_inventory_20260713.csv`: machine-readable protocol/status inventory.
 - `snapshots/RESULTS.md`: narrative experiment record and historical notes.
 - `snapshots/EXPERIMENT_TODO.md`: full paper/appendix/reviewer-risk experiment checklist.
 - `snapshots/PAIR_REGISTRY.md`: paper table / model pair / local path mapping.
@@ -25,7 +27,7 @@ Generated from `snapshots/**/log.log`.
 | Paper table | Pair | Snapshot root | Runs indexed | Status |
 |---|---:|---|---:|---|
 | Table 1 | #6 | `snapshots/table1_pair6_llama32_abliterated_deepseek3b/` | 72 | Complete for 8 datasets x 9 paper-table runs |
-| Table 1 | #7 | `snapshots/table1_pair7_qwen25_uncensored_bespoke/` | 64 | Missing most `tmath` paper-table runs |
+| Table 1 | #7 | `snapshots/table1_pair7_qwen25_uncensored_bespoke/` | 72 | Legacy paper-table queue complete; Query-Sketch v1 root still misses `tmath` w16 x3 |
 | Table 1 | #8 | `snapshots/table1_pair8_falcon3_ultraset_abliterated/` | 2 | Started only; current runs are not completed |
 | Table 8 | #1 | `snapshots/<dataset>/` | 511 | Main full sweep; paper-table ReKV/B-ReKV block is complete |
 | Table 8 | #2 | `snapshots/table8_pair2_llama32_same/` | 74 | 72 completed paper-table runs plus 2 incomplete duplicate coverage dirs |
@@ -83,7 +85,7 @@ For paper-aligned Table 1 / Table 8 queues, one complete dataset block contains
 
 - Archive root `logs/cov_*.log`, `logs/feat_*.log`, and `snapshots/**/*.out` after preserving manifest references.
 - Keep all run-level `log.log` and `per_sample.jsonl` files.
-- Pair #7 needs `tmath` completion.
+- Pair #7 legacy `tmath` is complete; its Query-Sketch v1 root still needs `tmath` w16 x3.
 - Pair #8 needs model path/startup issue resolution before continuing the queue.
 - Pair #1 `qasper` remains sparse relative to other datasets.
 - Pair #9 is now deferred from positive comparison. Score-distribution, raw-output, and KVComm probe diagnostics indicate a hard heterogeneous-pair issue rather than a ReKV-specific failure; see `snapshots/analysis/pair9/pair9_diagnostic_report.md`.
@@ -140,7 +142,9 @@ Protocol separation is mandatory:
   protocol tables without an explicit protocol column.
 
 At this audit point, Oracle gap (18/18), representation ablation (72 runs),
-score-function ablation (15 runs), and layer aggregation ablation (15 runs) are
-complete. Table-1 fixed ReKV has 23/24 blocks by file coverage, but only
-94/144 runs and 15/24 blocks carry explicit v1 metadata. Frozen B-ReKV and the
-independent new-protocol cost table are still pending.
+score-function ablation (15 runs), layer aggregation ablation (15 runs), and
+Stage 3 reviewer evidence (360/360 runs) are complete. The accepted frozen
+configuration is `B-ReKV-t0.98-s1-w8`; configuration selection is complete,
+but its Table-1 main matrix is still 0/24. Table-1 fixed ReKV has 23/24 blocks
+by file coverage, while pair #6 remains mostly pre-instrumentation. The
+independent new-protocol cost table and Stage 5 Query-Sketch reruns are pending.

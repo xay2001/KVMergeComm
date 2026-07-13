@@ -327,9 +327,12 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     if not rows:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = list(
+        dict.fromkeys(key for row in rows for key in row)
+    )
     with path.open("w", newline="") as handle:
         writer = csv.DictWriter(
-            handle, fieldnames=list(rows[0]), lineterminator="\n"
+            handle, fieldnames=fieldnames, lineterminator="\n"
         )
         writer.writeheader()
         writer.writerows(rows)
