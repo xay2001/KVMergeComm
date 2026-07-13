@@ -10,5 +10,5 @@ cd /home/xay/KVComm || exit 1
 # The Oracle stage refuses to run if no candidate passes matched-budget checks.
 
 bash scripts/run_query_sketch_config_freeze_gpu0_1.sh
-bash scripts/run_query_sketch_oracle_gap_gpu0_1.sh
 bash scripts/run_query_sketch_representation_ablation_gpu0_1.sh
+bash scripts/run_query_sketch_oracle_gap_gpu0_1.sh

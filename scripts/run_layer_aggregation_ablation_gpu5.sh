@@ -29,6 +29,7 @@ TASKS=${TASKS:-"countries tipsheets hotpotqa qasper musique multifieldqa_en twow
 RATIOS=${RATIOS:-"0.3"}
 WINDOWS=${WINDOWS:-"8 16"}
 AGGS=${AGGS:-"identity last mean top4 last4"}
+FOREGROUND=${FOREGROUND:-0}
 
 ROOT=${ROOT:-snapshots/layer_aggregation_ablation}
 LOG_ROOT="${ROOT}/logs"
@@ -107,7 +108,8 @@ run_layer_agg() {
     --test_task "${task}" --do_test \
     --model_A "${model_a}" --model_B "${model_b}" \
     --limit "${LIMIT}" \
-    --merge --merge_mode evict --score_mode receiver --recv_window "${win}" \
+    --merge --merge_mode evict --score_mode receiver \
+    --query_sketch_mode bf16 --recv_window "${win}" \
     --receiver_layer_agg "${agg}" \
     --merge_ratio "${ratio}" --merge_sink 4 --merge_recent 8 \
     --snapshot_path "${out}" \
@@ -135,7 +137,7 @@ run_pair() {
 
 LOG_PATH="${LOG_ROOT}/gpu${GPU}_layer_aggregation_ablation_${TAG}.log"
 
-(
+run_all() {
   echo "######## Layer aggregation ablation START $(date '+%F %T') ########"
   echo "GPU=${GPU}"
   echo "PAIRS=${PAIRS}"
@@ -149,8 +151,14 @@ LOG_PATH="${LOG_ROOT}/gpu${GPU}_layer_aggregation_ablation_${TAG}.log"
     run_pair "${pair}"
   done
   echo "######## Layer aggregation ablation DONE $(date '+%F %T') ########"
-) > "${LOG_PATH}" 2>&1 &
+}
 
-pid=$!
-echo "layer aggregation ablation GPU${GPU} pid=${pid} -> ${LOG_PATH}"
+if [[ "${FOREGROUND}" == "1" ]]; then
+  run_all > "${LOG_PATH}" 2>&1
+  echo "layer aggregation ablation GPU${GPU} done -> ${LOG_PATH}"
+else
+  run_all > "${LOG_PATH}" 2>&1 &
+  pid=$!
+  echo "layer aggregation ablation GPU${GPU} pid=${pid} -> ${LOG_PATH}"
+fi
 echo "root -> ${ROOT}"

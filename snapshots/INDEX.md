@@ -112,3 +112,35 @@ Main remaining work is now narrower: fold the completed Table 6 and NLD
 comparisons into the paper, then implement memory-safe pre-softmax receiver
 windowing before any further long-code receiver-scoring runs.
 Pair #9 and B-ReKV-S are deferred from positive claims.
+
+## Query-Sketch Rerun Audit (2026-07-13)
+
+Current deployable-protocol audit:
+
+- Report: `snapshots/analysis/query_sketch_rerun_20260713/REPORT.md`
+- Raw run index: `snapshots/analysis/query_sketch_rerun_20260713/table1_all_runs.csv`
+- Table-1 status: `snapshots/analysis/query_sketch_rerun_20260713/table1_status.csv`
+- Explicit Oracle gap: `snapshots/analysis/query_sketch_rerun_20260713/oracle_gap.csv`
+- Sketch representation ablation:
+  `snapshots/analysis/query_sketch_rerun_20260713/representation_summary.csv`
+- Query-Sketch mechanism ablations:
+  `snapshots/analysis/query_sketch_rerun_20260713/mechanism_runs.csv`
+- Figures: `snapshots/analysis/query_sketch_rerun_20260713/figures/`
+- Rebuild command: `python scripts/summarize_query_sketch_rerun.py`
+
+Protocol separation is mandatory:
+
+- `query_sketch_*_v1`: deployable protocol and current paper evidence.
+- `full_kv_oracle_v1`: explicit upper bound only.
+- `query_agnostic_kv_v1`: ValueNorm / Random controls only.
+- Pair #6 `v0_pre_instrumentation`: 47 fixed ReKV + 21 provisional B-ReKV
+  results lack explicit protocol metadata; accuracy is reference-only and cost
+  cannot be used.
+- Legacy snapshots are historical evidence and must not be mixed into the new
+  protocol tables without an explicit protocol column.
+
+At this audit point, Oracle gap (18/18), representation ablation (72 runs),
+score-function ablation (15 runs), and layer aggregation ablation (15 runs) are
+complete. Table-1 fixed ReKV has 23/24 blocks by file coverage, but only
+94/144 runs and 15/24 blocks carry explicit v1 metadata. Frozen B-ReKV and the
+independent new-protocol cost table are still pending.

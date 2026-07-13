@@ -6,3 +6,7 @@
 2026-07-12 21:18:48,280 - root - INFO - Number of GPU: 1
 2026-07-12 21:18:48,285 - root - INFO - Using GPU: NVIDIA RTX A6000
 2026-07-12 21:18:48,285 - root - INFO - CUDA_VISIBLE_DEVICES: 0
+2026-07-12 21:19:16,572 - root - INFO - CVCommunicator initialized
+2026-07-12 21:19:17,652 - root - INFO - [merge] mode=evict score=receiver budget=uniform layer compress: L=182 -> k=73 (r_eff=0.400, base_ratio=0.4, sink=4, recent=8)
+2026-07-12 21:19:53,617 - root - INFO - per-sample scores written to /home/xay/KVComm/snapshots/query_sketch_config_freeze/pair1_llama31_same/hotpotqa/fixed/rekv_w8_r0.40_0712_2118/per_sample.jsonl
+2026-07-12 21:19:53,618 - root - INFO - communication result: 0.7200, communication time: 37.04s

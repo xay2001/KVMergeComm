@@ -19,9 +19,43 @@
 | 可解释性 | pair #1 已完成 | answer overlap、清洗后的 qualitative examples、token bar 图、deletion ablation、HotpotQA supporting-facts overlap 已完成。 |
 | 机制消融 | 主要机制已完成 | Sink/recent token ablation 已完成；Table 11 positional coherence 可跑部分已完成 8 个主任务；B-ReKV-S 因 shift-back 实现限制暂缓；score-function ablation 与 layer aggregation ablation 已完成并生成 summary/figures。 |
 | Table 1 pair #8 Falcon | 暂缓/最后处理 | `Falcon3-7B-Instruct-abliterated` checkpoint 目前不可获得或目录不完整；不阻塞主线，放到最后可选处理。 |
-| Table 6 / 10 / 11 | Table 6 基本完成，Table 11 可跑部分完成 | Table 6 pair #6 已完成 5 个 extended tasks x 9 runs；pair #7 已完成 `hotpotqa_full` / `qasper_full` / `musique_full` / `samsum`，仅 `repobench` 0/9，GPU7 日志显示 receiver-attention scoring OOM；Table 10 未做；Table 11 已完成 ReKV normal / ReKV-S / B-ReKV normal x 8 主任务，B-ReKV-S 暂缓。 |
+| Table 6 / 10 / 11 | Table 6/10 完成，Table 11 可跑部分完成 | Table 6 pair #6/#7 均完成 5 个 extended tasks x 9 runs；pair #7 RepoBench 已在 98 GB GPU 上补齐。Table 10 三任务共 18 runs 已完成。Table 11 已完成 ReKV normal / ReKV-S / B-ReKV normal x 8 主任务，B-ReKV-S 暂缓。 |
 
-## 0.1 2026-07-05 最新审计记录
+## 0.1 2026-07-13 新 Query-Sketch 协议重跑状态
+
+上面的“已完成”大多指历史实验资产，其中 receiver-aware 部分多数属于旧隐式
+Full-KV Oracle 口径。论文最终表必须以本节的新协议状态为准，不能直接混用。
+
+| 新协议模块 | 当前状态 | 口径 |
+|---|---|---|
+| 全局 B-ReKV 配置冻结 | 已完成 | `t=0.98, s=0.95, w=8`；matched-budget 平均分差 `+0.0267`，6/6 持平或胜 |
+| Query-Sketch vs 显式 Oracle | 已完成 | 18/18 matched 单元；ReKV 通信降 `61.0%`、score gap `-0.0378`；B-ReKV 通信降 `35.1%`、gap `+0.0067` |
+| Sketch 表示与窗口 | 已完成 | 72 runs；BF16/INT8/Token IDs × w4/8/16/32；INT8-w8 最优轻量折中 |
+| Table 1 fixed ReKV | 进行中 | 文件覆盖 23/24 blocks；显式 v1 为 94/144 runs、15/24 blocks；Pair #7 tmath 仅 3/6，Pair #6 其余为 v0 pre-instrumentation |
+| Table 1 frozen B-ReKV | 待产出 | 0/24 pair-task blocks；不能提前生成最终主表 |
+| 新协议正式 Cost / Efficiency | 待产出 | `snapshots/query_sketch_cost_v1/` 当前无结果 |
+| 新协议 Score Function | 已完成 | Pair #6 三任务 × 5 score modes，共 15 runs |
+| 新协议 Layer Aggregation | 已完成 | Pair #6 三任务 × 5 aggregations，共 15 runs |
+
+严格区分：
+
+- `query_sketch_bf16_v1` / `int8_v1` / `token_ids_v1`：当前可部署协议。
+- `full_kv_oracle_v1`：显式性能上界，只进入 oracle-gap。
+- `query_agnostic_kv_v1`：ValueNorm / Random 公平性对照。
+- Pair #6 缺少 protocol metadata 的早期 Query-Sketch 结果标记为
+  `query_sketch_bf16_v0_pre_instrumentation`：47 个 fixed ReKV + 21 个
+  provisional B-ReKV。仅用于准确率参考，不用于新计费，也不冒充显式 v1。
+- 历史隐式 Oracle 表不删除，但不进入新协议主表。
+
+统一汇总：
+
+```text
+snapshots/analysis/query_sketch_rerun_20260713/REPORT.md
+snapshots/analysis/query_sketch_rerun_20260713/
+scripts/summarize_query_sketch_rerun.py
+```
+
+## 0.2 2026-07-05 历史审计记录
 
 这次审计基于 git 状态、`snapshots/` 产物数量和队列日志：
 
@@ -96,7 +130,7 @@
 
 目的：在 KVComm extended datasets 上验证鲁棒性。
 
-状态：基本完成，剩余一个 OOM 缺口。
+状态：已完成。早期 GPU7 OOM 缺口已在 98 GB GPU 上补齐。
 
 说明：
 
@@ -108,12 +142,14 @@
   - `musique_full`
   - `samsum`
   - `repobench`
-- Pair #7 已完成 4 个 extended tasks x 9 paper-style runs：
+- Pair #7 已完成 5 个 extended tasks x 9 paper-style runs：
   - `hotpotqa_full`
   - `qasper_full`
   - `musique_full`
   - `samsum`
-- Pair #7 的 `repobench` 为 0/9；GPU7 日志 `snapshots/table6_pair7_qwen25_uncensored_bespoke/logs/gpu7_table6_pair7_remaining_0710_1237.log` 显示第一项 `repobench ReKV w8 r=0.3` 在约 379/1000 样本处 CUDA OOM，发生在 receiver-attention `softmax` 打分阶段。
+  - `repobench`
+- Pair #7 RepoBench 早期在 48 GB GPU7 上因 receiver-attention `softmax` OOM；
+  后续已在 98 GB GPU 0–3 上拆分补齐 9/9，每个配置 1000 样本。
 - 汇总与图：
   - `snapshots/analysis/latest_experiments/table6_extended_summary.csv`
   - `snapshots/analysis/latest_experiments/table6_extended_status.csv`
@@ -141,9 +177,10 @@ Pair #7 当前关键结果：
 - `musique_full`：best ReKV `0.3736`，best B-ReKV `0.3103`。
 - `qasper_full`：best ReKV `0.2329`，best B-ReKV `0.2109`。
 - `samsum`：best ReKV `0.3387`，best B-ReKV `0.3150`。
-- `repobench`：0/9，当前缺口来自 OOM。
+- `repobench`：best ReKV `0.3530`，best B-ReKV `0.3400`；后者实际预算
+  `0.1594`，约为 ReKV-w8 r=0.3 的 49%，绝对分数仅低 `0.0085`。
 
-结论：Pair #6 extended tasks 已经完整支撑“ReKV/B-ReKV 不只在主任务有效”的附录鲁棒性结论；pair #7 也已在 4/5 个 extended tasks 上形成跨任务补充证据。`repobench` 建议后续单独用更保守的显存设置重跑，或在论文附录中标记为 OOM limitation。
+结论：Pair #6/#7 extended tasks 已完整支撑“ReKV/B-ReKV 不只在主任务有效”的附录鲁棒性结论。RepoBench 的 48 GB OOM 仍应作为实现层显存限制记录，但不再是实验缺口。
 
 ### 1.4 Table 9：Random Selection Ablation
 

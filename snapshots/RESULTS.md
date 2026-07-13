@@ -2462,3 +2462,75 @@ w8 从 r=0.3 增至 r=0.7，实际 KV 预算增加 2.19×，分数仅增加 0.00
 显存限制仍需记录：当前 receiver scoring 在应用 `recv_window` 前构造完整
 QK/softmax 矩阵，长代码样本的单进程显存约 81 GB。后续应把 query window
 裁剪前移到 QK 矩阵乘法之前。
+
+### 10.7 2026-07-13 Query-Sketch 论文重跑审计（严格区分协议）
+
+本节只统计新协议 roots，不把历史隐式 Full-KV Oracle 结果混入正文结论。
+完整动态报告与机器可读数据：
+
+```text
+snapshots/analysis/query_sketch_rerun_20260713/REPORT.md
+snapshots/analysis/query_sketch_rerun_20260713/table1_all_runs.csv
+snapshots/analysis/query_sketch_rerun_20260713/table1_status.csv
+snapshots/analysis/query_sketch_rerun_20260713/oracle_gap.csv
+snapshots/analysis/query_sketch_rerun_20260713/representation_summary.csv
+snapshots/analysis/query_sketch_rerun_20260713/mechanism_runs.csv
+snapshots/analysis/query_sketch_rerun_20260713/figures/
+```
+
+协议口径：
+
+- `query_sketch_bf16_v1` / `query_sketch_int8_v1` /
+  `query_sketch_token_ids_v1`：本轮可部署协议。
+- `full_kv_oracle_v1`：显式 Full-KV 上界，只进入 oracle-gap。
+- `query_agnostic_kv_v1`：ValueNorm / Random 对照。
+- Pair #6 root 中 68 个缺少 metadata 的结果包括 47 个 fixed ReKV 和 21 个
+  provisional B-ReKV；统一标记为 `query_sketch_bf16_v0_pre_instrumentation`。
+  它们位于明确的 Query-Sketch root，但没有可审计的 `protocol_version`，
+  因此仅用于准确率参考，不能用于新 bytes / timing 结论，也不冒充显式 v1。
+- 其他历史 snapshots 不进入本轮主结论。
+
+冻结配置：
+
+- 全局主配置冻结为 `B-ReKV t=0.98, s=0.95, w=8`。
+- 两个模型对、三个任务的 matched-budget 验收中，平均实际预算 `0.5698`，
+  平均分差 `+0.0267`，6/6 单元持平或获胜，最差分差为 `0`。
+
+Query-Sketch vs 显式 Full-KV Oracle（3 pairs × 3 tasks，profile n=50）：
+
+- ReKV：平均 score gap `-0.0378`，端到端通信降低 `61.0%`，平均 latency
+  降低约 `4.1%`。
+- 冻结 B-ReKV：平均 score gap `+0.0067`，端到端通信降低 `35.1%`，
+  平均 latency 降低约 `1.6%`。
+- 两种方法峰值显存均与 Oracle 基本持平并略低。该结果支持“部署协议闭环后，
+  性能没有系统性崩塌，通信收益也没有被 scoring latency 抵消”。
+
+Query-sketch 表示消融（2 pairs × 3 tasks × 4 windows，共 72 runs）：
+
+- BF16 w8：平均 score `0.5467`，B→A sketch `1696 KiB`。
+- INT8 w8：平均 score `0.5500`，B→A sketch `849 KiB`；通信减半且没有精度损失，
+  是当前最有价值的轻量化结果。
+- Token IDs：B→A 仅 `0.023–0.133 KiB`，但最佳 w16 平均 score 仅 `0.4467`；
+  适合作为超轻量下界，不应替代 receiver Q sketch 主协议。
+- w8 对 BF16 / INT8 都是最稳窗口；w16/w32 没有继续提升。
+
+新协议机制消融（Pair #6，HotpotQA / MuSiQue / MultiFieldQA-en）：
+
+- Score function 三任务均值：Random `0.3027`，ValueNorm `0.3596`，
+  Receiver×ValueNorm `0.4771`，Receiver `0.4896`，
+  Receiver+Recency `0.4936`。
+- Receiver-aware scoring 明显强于 query-agnostic 对照；recency 只有很小增益，
+  正文仍可保留原始 Receiver score 以保持方法简洁。
+- Layer aggregation 三任务均值：Last `0.3580`，Mean `0.4004`，
+  Last4 `0.4198`，Top4 `0.4400`，Identity `0.4896`。
+- 原始 paired-layer identity 明显最稳，不建议改成全层平均或只取最后层。
+
+本次审计时的未完成项：
+
+- 按文件覆盖，Table 1 ReKV 六配置完成 `23/24` 个 pair-task 单元；仅 Pair #7
+  tmath 为 `3/6`。
+- 按显式 `query_sketch_bf16_v1` metadata，当前为 `94/144` runs、`15/24`
+  完整 pair-task 单元；差异来自 Pair #6 的 pre-instrumentation v0 数据。
+- 冻结 B-ReKV 主矩阵尚未开始产出，因此不能生成最终 Table 1 平均值。
+- `snapshots/query_sketch_cost_v1/` 尚无正式 cost 结果；oracle-gap profile
+  不能替代独立 cost 表。

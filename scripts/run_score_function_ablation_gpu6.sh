@@ -28,6 +28,7 @@ PAIRS=${PAIRS:-"1 6 7"}
 TASKS=${TASKS:-"hotpotqa musique multifieldqa_en"}
 RATIOS=${RATIOS:-"0.3 0.5"}
 WINDOWS=${WINDOWS:-"8 16"}
+FOREGROUND=${FOREGROUND:-0}
 
 ROOT=${ROOT:-snapshots/score_function_ablation}
 LOG_ROOT="${ROOT}/logs"
@@ -114,7 +115,8 @@ run_score_mode() {
 
   echo "==== [GPU${GPU}] pair${pair} ${task} ${score_mode} w${win} r=${ratio} $(date '+%F %T') ===="
   common_args "${model_a}" "${model_b}" "${task}" "${out}" "${run_name}" \
-    --merge --merge_mode evict --score_mode "${score_mode}" --recv_window "${win}" \
+    --merge --merge_mode evict --score_mode "${score_mode}" \
+    --query_sketch_mode bf16 --recv_window "${win}" \
     --merge_ratio "${ratio}" --merge_sink 4 --merge_recent 8
 }
 
@@ -161,7 +163,7 @@ run_pair() {
 
 LOG_PATH="${LOG_ROOT}/gpu${GPU}_score_function_ablation_${TAG}.log"
 
-(
+run_all() {
   echo "######## Score function ablation START $(date '+%F %T') ########"
   echo "GPU=${GPU}"
   echo "PAIRS=${PAIRS}"
@@ -174,8 +176,14 @@ LOG_PATH="${LOG_ROOT}/gpu${GPU}_score_function_ablation_${TAG}.log"
     run_pair "${pair}"
   done
   echo "######## Score function ablation DONE $(date '+%F %T') ########"
-) > "${LOG_PATH}" 2>&1 &
+}
 
-pid=$!
-echo "score function ablation GPU${GPU} pid=${pid} -> ${LOG_PATH}"
+if [[ "${FOREGROUND}" == "1" ]]; then
+  run_all > "${LOG_PATH}" 2>&1
+  echo "score function ablation GPU${GPU} done -> ${LOG_PATH}"
+else
+  run_all > "${LOG_PATH}" 2>&1 &
+  pid=$!
+  echo "score function ablation GPU${GPU} pid=${pid} -> ${LOG_PATH}"
+fi
 echo "root -> ${ROOT}"
