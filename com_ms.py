@@ -43,8 +43,9 @@ class AlignConfig:
     merge_sink: int = 4
     merge_recent: int = 8
     merge_mode: str = "merge"  # "merge" (normalized value merge) or "evict" (drop only)
-    score_mode: str = "value_norm"  # "value_norm", "random", or "receiver"
+    score_mode: str = "value_norm"  # receiver=query sketch; receiver_oracle=full-KV upper bound
     recv_window: int = 0
+    query_sketch_mode: str = "bf16"
     budget_mode: str = "uniform"
     budget_min: float = 0.05
     budget_max: float = 0.5
@@ -148,7 +149,8 @@ def main(cfg: AlignConfig):
                 apply_attn_tracer=True, merge=cfg.merge, merge_ratio=cfg.merge_ratio,
                 merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent,
                 merge_mode=cfg.merge_mode, score_mode=cfg.score_mode,
-                recv_window=cfg.recv_window, budget_mode=cfg.budget_mode,
+                recv_window=cfg.recv_window, query_sketch_mode=cfg.query_sketch_mode,
+                budget_mode=cfg.budget_mode,
                 budget_min=cfg.budget_min, budget_max=cfg.budget_max,
                 budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor,
                 coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale,
@@ -163,11 +165,12 @@ def main(cfg: AlignConfig):
         cv = CVCommunicator(
             model_A1, model_A2, model_B, cfg.layer_from, cfg.layer_to,
             layers_list=cfg.layers_list, top_layers=cfg.top_layers,
-            apply_attn_tracer=(cfg.score_mode == "receiver"),
+            apply_attn_tracer=(cfg.score_mode in {"receiver", "receiver_oracle"}),
             merge=cfg.merge, merge_ratio=cfg.merge_ratio,
             merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent,
             merge_mode=cfg.merge_mode, score_mode=cfg.score_mode,
-            recv_window=cfg.recv_window, budget_mode=cfg.budget_mode,
+            recv_window=cfg.recv_window, query_sketch_mode=cfg.query_sketch_mode,
+            budget_mode=cfg.budget_mode,
             budget_min=cfg.budget_min, budget_max=cfg.budget_max,
             budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor,
             coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale,

@@ -150,6 +150,10 @@ class CommunicationEvaluator:
 
         if getattr(cv, "score_mode", "value_norm") == "receiver":
             cv.compute_receiver_importance(input_ids_B, out_A1_past_key_values, out_A2_past_key_values)
+        elif getattr(cv, "score_mode", "value_norm") == "receiver_oracle":
+            cv.compute_oracle_receiver_importance(
+                input_ids_B, out_A1_past_key_values, out_A2_past_key_values
+            )
 
         output = cv.generate(
             input_ids_B, 
@@ -189,6 +193,19 @@ class CommunicationEvaluator:
                 qb = getattr(cv, "last_query_budget", None)
                 if qb is not None:
                     row["query_budget"] = round(float(qb), 6)
+                for key, value in (getattr(cv, "last_kv_cost", None) or {}).items():
+                    if key in {
+                        "protocol_version",
+                        "query_sketch_mode",
+                        "query_sketch_bytes",
+                        "query_sketch_metadata_bytes",
+                        "kv_bytes_sent",
+                        "selection_index_bytes",
+                        "a_to_b_communication_bytes",
+                        "b_to_a_communication_bytes",
+                        "total_communication_bytes",
+                    }:
+                        row[key] = value
                 per_sample.append(row)
             
             result = self.evaluator.get_result()
@@ -204,11 +221,13 @@ class CommunicationEvaluator:
         if run_dir is None:
             return
         meta = {
+            "protocol_version": getattr(cv, "protocol_version", None),
             "dataset": getattr(self.evaluator, "name", None),
             "multi_source": True,
             "num_senders": 2,
             "score_mode": getattr(cv, "score_mode", None),
             "recv_window": getattr(cv, "recv_window", None),
+            "query_sketch_mode": getattr(cv, "query_sketch_mode", None),
             "merge": getattr(cv, "merge", None),
             "merge_mode": getattr(cv, "merge_mode", None),
             "merge_ratio": getattr(cv, "merge_ratio", None),

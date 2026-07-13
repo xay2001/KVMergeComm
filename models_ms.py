@@ -1,6 +1,7 @@
 from typing import Literal, Optional
 import copy
 import math
+import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -34,6 +35,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         merge_mode: str = "merge",
         score_mode: str = "value_norm",
         recv_window: int = 0,
+        query_sketch_mode: str = "bf16",
         budget_mode: str = "uniform",
         budget_min: float = 0.05,
         budget_max: float = 0.5,
@@ -56,6 +58,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.merge_mode = merge_mode
         self.score_mode = score_mode
         self.recv_window = recv_window
+        self.query_sketch_mode = str(query_sketch_mode).lower()
+        if self.query_sketch_mode != "bf16":
+            raise ValueError("multi-source Query-Sketch currently supports query_sketch_mode=bf16 only")
         self.budget_mode = budget_mode
         self.budget_min = budget_min
         self.budget_max = budget_max
@@ -68,6 +73,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.last_query_budget = None
         self.last_kept_ratio = None
         self.last_kv_cost = None
+        self.last_query_sketch_cost = {}
+        self.last_protocol_timing = {}
+        self.protocol_version = self._protocol_version()
         self._merge_logged = False
         for p in self.A1.parameters(): p.requires_grad = False
         for p in self.A2.parameters(): p.requires_grad = False
@@ -105,6 +113,18 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             self.apply_B_attn_tracer()
 
         logging.info(f"CVCommunicator initialized")
+
+    def _protocol_version(self) -> str:
+        if self.score_mode == "receiver_oracle":
+            return "full_kv_oracle_multi_source_v1"
+        if self.score_mode == "receiver":
+            return f"query_sketch_{self.query_sketch_mode}_multi_source_v1"
+        return "query_agnostic_kv_multi_source_v1"
+
+    @staticmethod
+    def _sync_tensor_device(tensor: torch.Tensor):
+        if tensor.is_cuda:
+            torch.cuda.synchronize(tensor.device)
 
     def apply_B_attn_tracer(self):
         if hasattr(self.B.model, "language_model"):
@@ -181,6 +201,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                 kept_kv_bytes += key.numel() * key.element_size() + value.numel() * value.element_size()
         self.last_kept_ratio = kept_tokens / total_tokens if total_tokens else None
         self.last_kv_cost = {
+            "protocol_version": self.protocol_version,
             "kv_tokens_sent": int(kept_tokens),
             "kv_tokens_total": int(total_tokens),
             "kv_token_ratio": float(kept_tokens / total_tokens) if total_tokens else None,
@@ -190,7 +211,22 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             "kv_bytes_sent": int(kept_kv_bytes),
             "kv_bytes_total": int(total_kv_bytes),
             "kv_byte_ratio": float(kept_kv_bytes / total_kv_bytes) if total_kv_bytes else None,
+            **self.last_query_sketch_cost,
         }
+        index_bytes = int(kept_tokens * 4)
+        kv_metadata_bytes = int(8 + len(A1_key_cache) * 20)
+        sketch_bytes = int(self.last_query_sketch_cost.get("query_sketch_bytes", 0))
+        sketch_metadata_bytes = int(self.last_query_sketch_cost.get("query_sketch_metadata_bytes", 0))
+        # The receiver sends the same sketch to both independent senders.
+        b_to_a_bytes = 2 * (sketch_bytes + sketch_metadata_bytes)
+        a_to_b_bytes = int(kept_kv_bytes + index_bytes + kv_metadata_bytes)
+        self.last_kv_cost.update({
+            "selection_index_bytes": index_bytes,
+            "kv_metadata_bytes": kv_metadata_bytes,
+            "a_to_b_communication_bytes": a_to_b_bytes,
+            "b_to_a_communication_bytes": b_to_a_bytes,
+            "total_communication_bytes": a_to_b_bytes + b_to_a_bytes,
+        })
         return past_key_values_new
 
     @torch.no_grad()
@@ -203,7 +239,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             return K, V
 
         if (
-            self.score_mode == "receiver"
+            self.score_mode in {"receiver", "receiver_oracle"}
             and self.token_importance is not None
             and layer_idx in self.token_importance
             and len(self.token_importance[layer_idx]) > sender_idx
@@ -331,10 +367,111 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
 
     @torch.no_grad()
     def compute_receiver_importance(self, input_ids_B, out_A1_past_key_values, out_A2_past_key_values):
-        """Score each sender token by B's question attention over the full concatenated KV."""
+        """Score both senders locally from one deployable B-to-A query sketch."""
         assert self.apply_attn_tracer, "receiver scoring needs apply_attn_tracer=True"
-        assert self.A1_num_layers == self.A2_num_layers == self.B_num_layers, "receiver scoring needs same-depth senders/receiver"
+        self.last_protocol_timing = {}
+        ctx_lens = [
+            (
+                out_A1_past_key_values.key_cache[i].shape[-2],
+                out_A2_past_key_values.key_cache[i].shape[-2],
+            )
+            for i in range(self.A1_num_layers)
+        ]
+        if len({a + b for a, b in ctx_lens}) != 1:
+            raise ValueError("multi-source query-sketch requires equal total context length across layers")
+        context_length = sum(ctx_lens[0])
+        query_length = int(input_ids_B.shape[-1])
+        position_ids = torch.arange(
+            context_length,
+            context_length + query_length,
+            device=input_ids_B.device,
+            dtype=torch.long,
+        ).unsqueeze(0)
 
+        self._sync_tensor_device(input_ids_B)
+        prefill_start = time.perf_counter()
+        _ = self.B(
+            input_ids=input_ids_B,
+            position_ids=position_ids,
+            use_cache=False,
+            return_dict=True,
+        )
+        self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_b_query_prefill"] = float(
+            time.perf_counter() - prefill_start
+        )
+
+        layers = self.B.model.language_model.layers if hasattr(
+            self.B.model, "language_model"
+        ) else self.B.model.layers
+        self.token_importance = {}
+        sketch_elements = 0
+        sketch_bytes = 0
+        sketch_tokens = 0
+        self._sync_tensor_device(input_ids_B)
+        score_start = time.perf_counter()
+        for bl, block in enumerate(layers):
+            attn_inputs = block.self_attn.attn_inputs
+            if attn_inputs is None:
+                raise RuntimeError(f"query tracer did not capture layer {bl}")
+            query = attn_inputs["query"]
+            if self.recv_window > 0 and query.shape[-2] > self.recv_window:
+                query = query[:, :, -self.recv_window :, :]
+            wire_query = query.to(torch.bfloat16).contiguous()
+            sketch_elements += wire_query.numel()
+            sketch_bytes += wire_query.numel() * wire_query.element_size()
+            sketch_tokens = int(wire_query.shape[-2])
+
+            importance = []
+            for key in (
+                out_A1_past_key_values.key_cache[bl],
+                out_A2_past_key_values.key_cache[bl],
+            ):
+                local_query = wire_query.to(key.dtype)
+                if local_query.shape[-1] != key.shape[-1]:
+                    raise ValueError(
+                        f"multi-source query-sketch head_dim mismatch at layer {bl}: "
+                        f"Q={local_query.shape[-1]}, K={key.shape[-1]}"
+                    )
+                expected_heads = key.shape[1] * block.self_attn.num_key_value_groups
+                if local_query.shape[1] != expected_heads:
+                    raise ValueError(
+                        f"multi-source query-sketch head mismatch at layer {bl}: "
+                        f"Q heads={local_query.shape[1]}, expected={expected_heads}"
+                    )
+                weights = eager_attention_forward_without_value(
+                    block.self_attn,
+                    query=local_query,
+                    key=key,
+                    attention_mask=None,
+                    scaling=block.self_attn.scaling,
+                )
+                importance.append(
+                    weights.float().mean(dim=1)[0].sum(dim=0).contiguous()
+                )
+            self.token_importance[bl] = [
+                importance[0],
+                importance[1],
+            ]
+        self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_sender_score"] = float(
+            time.perf_counter() - score_start
+        )
+        self.last_query_sketch_cost = {
+            "protocol_version": self.protocol_version,
+            "query_sketch_mode": self.query_sketch_mode,
+            "query_sketch_tokens": sketch_tokens,
+            "query_sketch_layers": self.B_num_layers,
+            "query_sketch_elements": int(sketch_elements),
+            "query_sketch_bytes": int(sketch_bytes),
+            "query_sketch_metadata_bytes": int(8 + self.B_num_layers * 16),
+        }
+        self._compute_budget()
+
+    @torch.no_grad()
+    def compute_oracle_receiver_importance(self, input_ids_B, out_A1_past_key_values, out_A2_past_key_values):
+        """Full-KV multi-source receiver scoring retained only as an oracle."""
+        assert self.apply_attn_tracer, "receiver scoring needs apply_attn_tracer=True"
         A1_copy = copy.deepcopy(out_A1_past_key_values)
         A2_copy = copy.deepcopy(out_A2_past_key_values)
         ctx_lens = [
@@ -342,18 +479,15 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             for i in range(len(A1_copy.key_cache))
         ]
         kv_copy = self.prepare_key_cache(A1_copy, A2_copy, compress=False)
-
         _ = self.B(input_ids=input_ids_B, past_key_values=kv_copy, use_cache=True)
-
-        if hasattr(self.B.model, "language_model"):
-            layers = self.B.model.language_model.layers
-        else:
-            layers = self.B.model.layers
-
+        layers = self.B.model.language_model.layers if hasattr(
+            self.B.model, "language_model"
+        ) else self.B.model.layers
         self.token_importance = {}
         for bl, block in enumerate(layers):
-            attn_inputs = block.self_attn.attn_inputs
-            attn_weights = eager_attention_forward_without_value(block.self_attn, **attn_inputs)
+            attn_weights = eager_attention_forward_without_value(
+                block.self_attn, **block.self_attn.attn_inputs
+            )
             aw = attn_weights.float().mean(dim=1)[0]
             if self.recv_window > 0 and aw.shape[0] > self.recv_window:
                 aw = aw[-self.recv_window :, :]
@@ -363,7 +497,18 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                 imp[:len_a1].contiguous(),
                 imp[len_a1 : len_a1 + len_a2].contiguous(),
             ]
-
+        self.last_query_sketch_cost = {
+            "protocol_version": self.protocol_version,
+            "query_sketch_bytes": 0,
+            "query_sketch_metadata_bytes": 0,
+            "oracle_full_kv_bytes": int(
+                sum(
+                    key.numel() * key.element_size() + value.numel() * value.element_size()
+                    for cache in (out_A1_past_key_values, out_A2_past_key_values)
+                    for key, value in zip(cache.key_cache, cache.value_cache)
+                )
+            ),
+        }
         self._compute_budget()
 
     def forward(
