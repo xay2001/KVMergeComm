@@ -1,0 +1,11 @@
+{
+  "accepted": true,
+  "selection": {
+    "config": "B-ReKV-t0.95-s0.75-w8",
+    "tau": 0.95,
+    "scale": 0.75,
+    "window": 8
+  },
+  "selection_basis": "Stage 3 canonical low-budget operating point with complete query_sketch_bf16_v1 fairness, Pareto, and per-query budget evidence.",
+  "note": "Manually retained paper main configuration. The previous t0.98-s1-w8 selection is invalid because its budgets exceeded the fixed-ReKV calibration range."
+}

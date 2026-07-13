@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /home/xay/KVComm || exit 1
+cd /home/xay/KVMergeComm || exit 1
 
 GPU_PAIR1=${GPU_PAIR1:-2}
 GPU_PAIR6=${GPU_PAIR6:-3}
 GPU_PAIR7=${GPU_PAIR7:-7}
 PYTHON=${PYTHON:-/home/xay/.conda/envs/kvcomm/bin/python}
-SELECTION=${SELECTION:-snapshots/query_sketch_config_freeze/analysis/selection.json}
+SELECTION=${SELECTION:-snapshots/query_sketch_config_freeze/analysis/main_config.json}
 ROOT=${ROOT:-snapshots/query_sketch_cost_v1}
 TASKS=${TASKS:-"hotpotqa musique multifieldqa_en"}
 PROFILE_LIMIT=${PROFILE_LIMIT:-50}

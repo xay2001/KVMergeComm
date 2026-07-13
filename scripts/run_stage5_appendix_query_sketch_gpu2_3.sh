@@ -20,7 +20,7 @@ PYTHON=${PYTHON:-/home/xay/miniconda3/envs/ReKV/bin/python}
 PHASE=${PHASE:-all}
 LIMIT=${LIMIT:-0}
 SKIP_EXISTING=${SKIP_EXISTING:-1}
-SELECTION=${SELECTION:-snapshots/query_sketch_config_freeze/analysis/selection.json}
+SELECTION=${SELECTION:-snapshots/query_sketch_config_freeze/analysis/main_config.json}
 LOG_ROOT=${LOG_ROOT:-snapshots/stage5_appendix_query_sketch/logs}
 
 MAIN_TASKS=${MAIN_TASKS:-"countries tipsheets hotpotqa qasper musique multifieldqa_en twowikimqa tmath"}
@@ -203,9 +203,7 @@ table6_worker() {
         run_single_rekv "${gpu}" "${model_a}" "${model_b}" "${root}" "${task}" "${win}" "${ratio}"
       done
     done
-    run_single_brekv "${gpu}" "${model_a}" "${model_b}" "${root}" "${task}" 8 0.95 0.75
-    run_single_brekv "${gpu}" "${model_a}" "${model_b}" "${root}" "${task}" 8 0.95 0.85
-    run_single_brekv "${gpu}" "${model_a}" "${model_b}" "${root}" "${task}" 16 0.95 0.90
+    run_single_brekv "${gpu}" "${model_a}" "${model_b}" "${root}" "${task}" 8 0.95 0.75 coverage_main
   done
 }
 

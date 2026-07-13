@@ -143,8 +143,10 @@ Protocol separation is mandatory:
 
 At this audit point, Oracle gap (18/18), representation ablation (72 runs),
 score-function ablation (15 runs), layer aggregation ablation (15 runs), and
-Stage 3 reviewer evidence (360/360 runs) are complete. The accepted frozen
-configuration is `B-ReKV-t0.98-s1-w8`; configuration selection is complete,
-but its Table-1 main matrix is still 0/24. Table-1 fixed ReKV has 23/24 blocks
+Stage 3 reviewer evidence (360/360 runs) are complete. The original
+`B-ReKV-t0.98-s1-w8` freeze is invalid because all six budgets exceeded the
+fixed-r calibration range and were endpoint-clamped. The main operating point
+therefore remains `t0.95-s0.75-w8`; its Table-1 main matrix is still 0/24.
+Table-1 fixed ReKV has 23/24 blocks
 by file coverage, while pair #6 remains mostly pre-instrumentation. The
 independent new-protocol cost table and Stage 5 Query-Sketch reruns are pending.

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /home/xay/KVComm || exit 1
+cd /home/xay/KVMergeComm || exit 1
 
 GPU0=${GPU0:-0}
 GPU1=${GPU1:-1}
 PYTHON=${PYTHON:-/home/xay/.conda/envs/kvcomm/bin/python}
 ROOT=${ROOT:-snapshots/query_sketch_oracle_gap}
-SELECTION=${SELECTION:-snapshots/query_sketch_config_freeze/analysis/selection.json}
+SELECTION=${SELECTION:-snapshots/query_sketch_config_freeze/analysis/main_config.json}
 PROFILE_LIMIT=${PROFILE_LIMIT:-50}
 PROFILE_WARMUP=${PROFILE_WARMUP:-3}
 REKV_RATIO=${REKV_RATIO:-0.30}
@@ -40,6 +40,9 @@ run_method() {
   local gpu=$1 pair=$2 model_a=$3 model_b=$4 task=$5 method=$6 score_mode=$7
   local out="${ROOT}/${pair}/${task}/${method}"
   local run_name="${method}_${score_mode}"
+  if [[ "${method}" == "brekv" ]]; then
+    run_name="${run_name}_t${TAU}_s${SCALE}_w${BREKV_WINDOW}"
+  fi
   if has_done_run "${out}" "${run_name}"; then
     echo "==== [skip] ${pair} ${task} ${run_name} ===="
     return

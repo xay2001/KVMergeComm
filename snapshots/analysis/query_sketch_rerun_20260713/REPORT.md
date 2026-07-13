@@ -11,16 +11,19 @@
 ## 完成状态
 
 - Table 1 文件覆盖：ReKV 六配置完成 23/24 个 pair-task 单元。
-- Table 1 显式 v1 metadata：ReKV 完成 94/144 runs、15/24 个完整单元；Pair #6 的 v0 结果需单列。
+- Table 1 显式 v1 metadata：ReKV 完成 95/144 runs、15/24 个完整单元；Pair #6 的 v0 结果需单列。
 - Table 1 冻结 B-ReKV 主矩阵完成 0/24；完整主块 0/24。
 - Oracle gap：18/18 个 matched method-pair-task 单元。
 - 表示消融：12 个聚合点（2 pairs × 3 tasks × 3 modes × 4 windows 原始共 72 runs）。
 - 新协议独立 cost：0 runs；若为 0，说明第二阶段 cost 尚未启动。
 
-## 冻结配置
+## 配置选择审计
 
-- 已接受 `B-ReKV-t0.98-s1-w8`：平均预算 0.5919，matched-budget 平均分差 +0.0250，6/6 持平或获胜，最差分差 +0.0100。
-- 注意：配置冻结校准已完成；上面的 0/24 指该冻结配置尚未进入 Table 1 三个 pair × 八任务主矩阵。
+- 原分析器接受了 `B-ReKV-t0.98-s1-w8`，但其 6 个实际预算均超过
+  fixed-r 校准网格上界；“+0.025、6/6”来自端点截断，不是有效的
+  matched-budget 验收。
+- 当前正文主点回到 `B-ReKV-t0.95-s0.75-w8`，`t0.95-s0.85-w8`
+  作为中预算 Pareto 点；主 B-ReKV 矩阵仍为 0/24。
 
 ## Oracle gap（Query-Sketch − Full-KV Oracle）
 

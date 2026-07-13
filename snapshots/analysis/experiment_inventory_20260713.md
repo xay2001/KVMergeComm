@@ -25,12 +25,13 @@
   cost-only/profile 设计，也包含部分中断和早期 sweep，不能统一视作失败。
 - 619/2,074 个结果明确记录 `protocol_version`；其余 1,455 个主要是历史实验。
 - 当前没有实验 worker 在运行。
-- Query-Sketch 配置冻结和 Stage 3 核心审稿矩阵已经完成。
+- Query-Sketch 配置搜索网格和 Stage 3 核心审稿矩阵已经完成；原冻结判定
+  存在 matched-budget 越界问题，需撤回并重新确认。
 - Stage 5 的 Table 6 / Table 8 / Table 10 Query-Sketch 重跑尚未启动。
 
 ## 3. 新协议：已经完成的核心证据
 
-### 3.1 全局 B-ReKV 配置冻结
+### 3.1 B-ReKV 配置搜索：网格完成，冻结判定无效
 
 Root：`snapshots/query_sketch_config_freeze/`
 
@@ -38,13 +39,21 @@ Root：`snapshots/query_sketch_config_freeze/`
 - 物理文件：131 个，包含两轮重复运行；分析脚本按 logical config 取最新结果。
 - 每个 run 使用相同的前 100 个样本。
 - 全部结果为 `query_sketch_bf16_v1`。
-- 最终接受的冻结配置：`B-ReKV-t0.98-s1-w8`。
-- 平均实际预算：0.5919。
-- 相对 matched-budget fixed ReKV：平均分差 +0.0250，最差 +0.0100，
-  6/6 单元持平或获胜。
+- 原分析器选择了 `B-ReKV-t0.98-s1-w8`，平均实际预算 0.5919。
+- 但它的 6 个预算均为 0.54–0.67，全部超过 fixed ReKV 校准曲线的实际
+  上界约 0.42。
+- `analyze_query_sketch_config_freeze.py` 对越界预算直接返回最高 fixed-r
+  端点，而不是标记 `above_range`；因此“平均 +0.025、最差 +0.010、
+  6/6 胜/平”不是 matched-budget 结果。
+- `selection.json` 当前应视为失效的历史分析产物，不能驱动 Table 1/8/cost
+  主矩阵。
 
-注意：这里“冻结完成”指配置选择完成，不表示该配置已经在 Table 1 的
-3 pairs × 8 tasks 主矩阵跑完；后者目前仍是 0/24。
+当前建议：
+
+- 正文低预算主 operating point：`t=0.95, scale=0.75, w=8`；
+- 中预算 Pareto/稳健点：`t=0.95, scale=0.85, w=8`；
+- `t=0.98, scale=1.0, w=8`：仅作为 high-fidelity/high-budget 消融；
+- 若要重新冻结，fixed ReKV 校准网格至少补到实际预算 0.70，并在越界时拒绝验收。
 
 ### 3.2 Stage 3：Query-aware fairness、Pareto 和预算分布
 
@@ -64,8 +73,8 @@ Root：`snapshots/stage3_core_reviewer_query_sketch/`
 #### Matched-budget fairness
 
 Stage 3 的 canonical 比较点是 `t=0.95, scale=0.75, w=8`，它是用于
-fairness/Pareto 的统一观察点，和最终冻结的 `t=0.98, scale=1.0, w=8`
-不是同一个配置。
+fairness/Pareto 的统一观察点，和原分析器选出的高预算
+`t=0.98, scale=1.0, w=8` 不是同一个配置。
 
 Canonical B-ReKV 在 9 个 pair-task 单元上：
 
@@ -161,7 +170,7 @@ Root：`snapshots/query_sketch_representation_ablation/`，72 runs 完成。
 |---|---:|---:|---|
 | #1 | 48/48 | 0/8 | fixed ReKV 全部为 v1 |
 | #6 | 72 个 unique cell | 0/8 | 仅 5 个物理文件有 v1；68 个为 v0 pre-instrumentation |
-| #7 | 45/48 | 0/8 | v1；缺 tmath w16 × 3 |
+| #7 | 46/48 | 0/8 | v1；仅缺 tmath w16 r=0.5/0.7 |
 
 当前不能生成最终 Query-Sketch Table 1：冻结 B-ReKV 主块 0/24，pair #6
 缺完整 v1 instrumentation，pair #7 尚缺 3 个 fixed ReKV runs。
@@ -190,7 +199,9 @@ Pair #7 RepoBench 已从早期 OOM 中恢复，9/9 最终完成。
 
 ### 5.2 新协议重跑
 
-Table 6 Query-Sketch 目标为 90 runs，目前 0/90，尚未启动。
+Table 6 Query-Sketch 主矩阵已统一为每任务 6 个 fixed ReKV +
+`t0.95-s0.75-w8` 一个 B-ReKV，共 70 runs，目前 0/70，尚未启动。
+旧三点 B-ReKV 中的 `s0.85-w8` 和 `s0.90-w16` 不再计入主矩阵。
 
 ## 6. Table 8：模型泛化
 
@@ -261,13 +272,16 @@ Root：`snapshots/table10_multi_source_rekv/`。
 
 - Query-aware selection 在 matched budget 下稳定优于 ValueNorm/Random。
 - B-ReKV 的 per-query 预算分布有明显方差，不是固定比例换名。
-- 冻结配置在 6 个 calibration cells 上 matched-budget 6/6 胜/平。
+- 配置搜索已完成；低预算 `t0.95-s0.75-w8` 有完整 Stage 3 fairness、
+  Pareto 和预算分布证据。
 - INT8 sketch 可减半 B→A payload，且平均分不降。
 - Legacy Table 6/8/10 已完整，但必须明确 pre-protocol。
 
 暂时不能写：
 
 - “Query-Sketch Table 1 已完整”：冻结 B-ReKV 仍是 0/24。
+- “`t0.98-s1-w8` 已通过 matched-budget 冻结”：其预算全部超出 fixed-r
+  校准网格，原 6/6 结论来自端点截断。
 - “Table 6/8/10 已用新协议重跑”：三个新矩阵均为 0。
 - “Canonical B-ReKV 在所有 matched-budget 单元都优于 fixed ReKV”：实际为 3/9。
 - 把旧 Table 10 当成真正 Multi-Source Query-Sketch。

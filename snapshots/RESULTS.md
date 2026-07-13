@@ -2496,17 +2496,19 @@ snapshots/analysis/query_sketch_rerun_20260713/figures/
   因此仅用于准确率参考，不能用于新 bytes / timing 结论，也不冒充显式 v1。
 - 其他历史 snapshots 不进入本轮主结论。
 
-冻结配置：
+配置选择审计：
 
-- 全局主配置冻结为 `B-ReKV t=0.98, s=0.95, w=8`。
-- 两个模型对、三个任务的 matched-budget 验收中，平均实际预算 `0.5698`，
-  平均分差 `+0.0267`，6/6 单元持平或获胜，最差分差为 `0`。
+- 原分析器选择的高预算配置不应作为全局主配置。`t=0.98` 候选的
+  6 个实际预算全部超过 fixed-r 校准网格上界，原 matched-budget
+  胜/平统计来自端点截断。
+- 正文低预算主 operating point 继续使用 `B-ReKV t=0.95, s=0.75, w=8`；
+  `t=0.95, s=0.85, w=8` 作为中预算 Pareto 点。
 
 Query-Sketch vs 显式 Full-KV Oracle（3 pairs × 3 tasks，profile n=50）：
 
 - ReKV：平均 score gap `-0.0378`，端到端通信降低 `61.0%`，平均 latency
   降低约 `4.1%`。
-- 冻结 B-ReKV：平均 score gap `+0.0067`，端到端通信降低 `35.1%`，
+- 高预算 B-ReKV 消融：平均 score gap `+0.0067`，端到端通信降低 `35.1%`，
   平均 latency 降低约 `1.6%`。
 - 两种方法峰值显存均与 Oracle 基本持平并略低。该结果支持“部署协议闭环后，
   性能没有系统性崩塌，通信收益也没有被 scoring latency 抵消”。
@@ -2535,8 +2537,8 @@ Query-sketch 表示消融（2 pairs × 3 tasks × 4 windows，共 72 runs）：
 
 - 按文件覆盖，Table 1 ReKV 六配置完成 `23/24` 个 pair-task 单元；仅 Pair #7
   tmath 为 `3/6`。
-- 按显式 `query_sketch_bf16_v1` metadata，当前为 `94/144` runs、`15/24`
+- 按显式 `query_sketch_bf16_v1` metadata，当前为 `95/144` runs、`15/24`
   完整 pair-task 单元；差异来自 Pair #6 的 pre-instrumentation v0 数据。
-- 冻结 B-ReKV 主矩阵尚未开始产出，因此不能生成最终 Table 1 平均值。
+- 主 B-ReKV 配置矩阵尚未开始产出，因此不能生成最终 Table 1 平均值。
 - `snapshots/query_sketch_cost_v1/` 尚无正式 cost 结果；oracle-gap profile
   不能替代独立 cost 表。

@@ -28,11 +28,11 @@ Full-KV Oracle 口径。论文最终表必须以本节的新协议状态为准�
 
 | 新协议模块 | 当前状态 | 口径 |
 |---|---|---|
-| 全局 B-ReKV 配置冻结 | 已完成 | `t=0.98, s=0.95, w=8`；matched-budget 平均分差 `+0.0267`，6/6 持平或胜 |
+| B-ReKV 配置搜索 | 网格完成、冻结无效 | `t0.98` 候选全部超出 fixed-r 校准范围；正文主点回到 `t=0.95, s=0.75, w=8` |
 | Query-Sketch vs 显式 Oracle | 已完成 | 18/18 matched 单元；ReKV 通信降 `61.0%`、score gap `-0.0378`；B-ReKV 通信降 `35.1%`、gap `+0.0067` |
 | Sketch 表示与窗口 | 已完成 | 72 runs；BF16/INT8/Token IDs × w4/8/16/32；INT8-w8 最优轻量折中 |
-| Table 1 fixed ReKV | 进行中 | 文件覆盖 23/24 blocks；显式 v1 为 94/144 runs、15/24 blocks；Pair #7 tmath 仅 3/6，Pair #6 其余为 v0 pre-instrumentation |
-| Table 1 frozen B-ReKV | 待产出 | 0/24 pair-task blocks；不能提前生成最终主表 |
+| Table 1 fixed ReKV | 进行中 | 文件覆盖 23/24 blocks；显式 v1 为 95/144 runs、15/24 blocks；Pair #7 tmath 仅缺 w16 r0.5/r0.7，Pair #6 其余为 v0 pre-instrumentation |
+| Table 1 main B-ReKV | 待产出 | `t0.95-s0.75-w8` 为 0/24 pair-task blocks；不能提前生成最终主表 |
 | 新协议正式 Cost / Efficiency | 待产出 | `snapshots/query_sketch_cost_v1/` 当前无结果 |
 | 新协议 Score Function | 已完成 | Pair #6 三任务 × 5 score modes，共 15 runs |
 | 新协议 Layer Aggregation | 已完成 | Pair #6 三任务 × 5 aggregations，共 15 runs |
