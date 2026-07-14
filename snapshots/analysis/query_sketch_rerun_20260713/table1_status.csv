@@ -1,12 +1,12 @@
 pair,pair_label,task,rekv_configs_done,rekv_complete,rekv_v1_configs_done,rekv_v1_complete,best_rekv_score,best_rekv_config,frozen_brekv_done,frozen_brekv_score,frozen_brekv_budget,primary_block_complete
-pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,countries,6,True,6,True,0.605,recv_w8_r0.3,False,,,False
-pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,tipsheets,6,True,6,True,0.912,recv_w16_r0.7,False,,,False
-pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,hotpotqa,6,True,6,True,0.732,recv_w8_r0.7,False,,,False
-pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,qasper,6,True,6,True,0.33,recv_w16_r0.7,False,,,False
-pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,musique,6,True,6,True,0.464,recv_w8_r0.7,False,,,False
-pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,multifieldqa_en,6,True,6,True,0.5466666666666666,recv_w16_r0.7,False,,,False
-pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,twowikimqa,6,True,6,True,0.425,recv_w16_r0.3,False,,,False
-pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,tmath,6,True,6,True,0.3581506099999999,recv_w16_r0.7,False,,,False
+pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,countries,6,True,6,True,0.605,recv_w8_r0.3,True,0.615,0.294377,True
+pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,tipsheets,6,True,6,True,0.912,recv_w16_r0.7,True,0.712,0.278143,True
+pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,hotpotqa,6,True,6,True,0.732,recv_w8_r0.7,True,0.56,0.275448,True
+pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,qasper,6,True,6,True,0.33,recv_w16_r0.7,True,0.31,0.35254,True
+pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,musique,6,True,6,True,0.464,recv_w8_r0.7,True,0.304,0.274547,True
+pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,multifieldqa_en,6,True,6,True,0.5466666666666666,recv_w16_r0.7,True,0.5,0.335368,True
+pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,twowikimqa,6,True,6,True,0.425,recv_w16_r0.3,True,0.43,0.339691,True
+pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,tmath,6,True,6,True,0.3581506099999999,recv_w16_r0.7,True,0.355938,0.264843,True
 pair6,S: Llama-3.2-3B Abl.; R: DeepSeek-Llama-3B,countries,6,True,0,False,0.575,recv_w8_r0.7,False,,,False
 pair6,S: Llama-3.2-3B Abl.; R: DeepSeek-Llama-3B,tipsheets,6,True,0,False,0.75,recv_w8_r0.7,False,,,False
 pair6,S: Llama-3.2-3B Abl.; R: DeepSeek-Llama-3B,hotpotqa,6,True,0,False,0.718,recv_w16_r0.7,False,,,False
@@ -15,11 +15,11 @@ pair6,S: Llama-3.2-3B Abl.; R: DeepSeek-Llama-3B,musique,6,True,0,False,0.396,re
 pair6,S: Llama-3.2-3B Abl.; R: DeepSeek-Llama-3B,multifieldqa_en,6,True,0,False,0.5266666666666666,recv_w8_r0.3,False,,,False
 pair6,S: Llama-3.2-3B Abl.; R: DeepSeek-Llama-3B,twowikimqa,6,True,0,False,0.435,recv_w16_r0.7,False,,,False
 pair6,S: Llama-3.2-3B Abl.; R: DeepSeek-Llama-3B,tmath,6,True,1,False,0.32663696000000003,recv_w8_r0.7,False,,,False
-pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,countries,6,True,6,True,0.5,recv_w8_r0.5,False,,,False
-pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,tipsheets,6,True,6,True,0.954,recv_w16_r0.7,False,,,False
-pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,hotpotqa,6,True,6,True,0.482,recv_w16_r0.7,False,,,False
-pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,qasper,6,True,6,True,0.218,recv_w16_r0.5,False,,,False
-pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,musique,6,True,6,True,0.35,recv_w8_r0.7,False,,,False
-pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,multifieldqa_en,6,True,6,True,0.42,recv_w16_r0.7,False,,,False
-pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,twowikimqa,6,True,6,True,0.19,recv_w8_r0.5,False,,,False
-pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,tmath,3,False,3,False,0.33654426666666687,recv_w8_r0.7,False,,,False
+pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,countries,6,True,6,True,0.5,recv_w8_r0.5,True,0.485,0.400814,True
+pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,tipsheets,6,True,6,True,0.954,recv_w16_r0.7,True,0.916,0.398047,True
+pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,hotpotqa,6,True,6,True,0.482,recv_w16_r0.7,True,0.352,0.385345,True
+pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,qasper,6,True,6,True,0.218,recv_w16_r0.5,True,0.172,0.368372,True
+pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,musique,6,True,6,True,0.35,recv_w8_r0.7,True,0.224,0.344117,True
+pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,multifieldqa_en,6,True,6,True,0.42,recv_w16_r0.7,True,0.31333333333333335,0.358472,True
+pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,twowikimqa,6,True,6,True,0.19,recv_w8_r0.5,True,0.17,0.341696,True
+pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,tmath,6,True,6,True,0.33654426666666687,recv_w8_r0.7,True,0.329423,0.390694,True

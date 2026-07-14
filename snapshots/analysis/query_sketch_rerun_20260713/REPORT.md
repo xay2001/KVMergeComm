@@ -1,4 +1,4 @@
-# Query-Sketch 论文重跑审计（2026-07-13）
+# Query-Sketch 论文重跑审计（更新至 2026-07-14）
 
 ## 口径
 
@@ -10,12 +10,14 @@
 
 ## 完成状态
 
-- Table 1 文件覆盖：ReKV 六配置完成 23/24 个 pair-task 单元。
-- Table 1 显式 v1 metadata：ReKV 完成 95/144 runs、15/24 个完整单元；Pair #6 的 v0 结果需单列。
-- Table 1 冻结 B-ReKV 主矩阵完成 0/24；完整主块 0/24。
-- Oracle gap：18/18 个 matched method-pair-task 单元。
+- Table 1 显式 v1：fixed ReKV 97/144，main B-ReKV 16/24，合计 113/168。
+- Pair #1/#7 各 56/56 完成；Pair #6 仅 1/56 为正式 v1，其 v0 结果需单列。
+- Table 6 v1：35/70，Pair #7 完成。
+- Table 8 v1：28/224，Pair #5 前四任务完成。
+- Table 10 真 Multi-Source v1：18/18 完成。
+- Main B-ReKV Oracle gap：12/18 physical runs，Pair #1/#7 完成。
 - 表示消融：12 个聚合点（2 pairs × 3 tasks × 3 modes × 4 windows 原始共 72 runs）。
-- 新协议独立 cost：0 runs；若为 0，说明第二阶段 cost 尚未启动。
+- 新协议独立 cost：12/18，Pair #1/#7 完成，Pair #6 缺 6。
 
 ## 配置选择审计
 
@@ -23,9 +25,11 @@
   fixed-r 校准网格上界；“+0.025、6/6”来自端点截断，不是有效的
   matched-budget 验收。
 - 当前正文主点回到 `B-ReKV-t0.95-s0.75-w8`，`t0.95-s0.85-w8`
-  作为中预算 Pareto 点；主 B-ReKV 矩阵仍为 0/24。
+  作为中预算 Pareto 点；主 B-ReKV 矩阵现为 16/24。
 
-## Oracle gap（Query-Sketch − Full-KV Oracle）
+## Oracle gap（旧批次，Query-Sketch − Full-KV Oracle）
+
+以下 B-ReKV 数字来自旧高预算配置，只保留为历史消融。
 
 | method | mean_score_gap_query_minus_oracle | cells |
 |---|---|---|
@@ -43,6 +47,18 @@
 |---|---|---|---|---|---|
 | ReKV | 1.0584 | 1.1040 | -4.1239 | 24.5451 | 24.7157 |
 | B-ReKV | 1.1264 | 1.1449 | -1.6157 | 24.6956 | 24.7549 |
+
+## 当前 main B-ReKV Oracle gap
+
+Pair #1/#7 × HotpotQA/MuSiQue/MultiFieldQA，共 6 matched cells：
+
+- 平均 Query-Sketch − Oracle score gap：`-0.1300`；
+- 平均通信节省：`59.6212%`；
+- Pair #1：gap `-0.1267`，通信节省 `65.05%`；
+- Pair #7：gap `-0.1333`，通信节省 `54.19%`。
+
+QS 与 Oracle 的实际动态预算不同，因此不能把该 gap 解释成严格
+matched-budget selector gap。Pair #6 尚未完成。
 
 ## 表示与窗口消融
 
@@ -80,7 +96,7 @@
 
 ## 当前不能提前写入论文的部分
 
-- 冻结 B-ReKV 的 24 个 Table-1 主单元尚未全部完成前，不生成最终主表平均值。
-- `query_sketch_cost_v1` 尚未完整时，不用 Oracle-gap profile 代替正式 cost 表。
+- Main B-ReKV 的 24 个 Table-1 单元目前完成 16/24，Pair #6 完成前不生成最终三 pair 平均值。
+- `query_sketch_cost_v1` 目前 12/18，Pair #6 完成前不生成最终三 pair cost 表。
 - Pair #6 pre-instrumentation 结果不能用于 bytes / timing 结论。
 

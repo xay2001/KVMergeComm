@@ -1,4 +1,5 @@
 from .base_evaluator import BaseEvaluator
+from .local_loader import local_or_hub
 from datasets import load_dataset
 from rouge import Rouge
 
@@ -22,7 +23,7 @@ class SAMSumEvaluator(BaseEvaluator):
         self.rouge = Rouge()
         
     def load_data(self):
-        dataset = load_dataset("knkarthick/samsum")["test"]
+        dataset = load_dataset(local_or_hub("SAMSum", "knkarthick/samsum"))["test"]
         dataset = dataset.map(lambda x: split_dialogue(x))
         return dataset
 

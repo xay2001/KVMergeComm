@@ -2533,12 +2533,28 @@ Query-sketch 表示消融（2 pairs × 3 tasks × 4 windows，共 72 runs）：
   Last4 `0.4198`，Top4 `0.4400`，Identity `0.4896`。
 - 原始 paired-layer identity 明显最稳，不建议改成全层平均或只取最后层。
 
-本次审计时的未完成项：
+## 2026-07-14 本机 Query-Sketch fast-node 队列完成
 
-- 按文件覆盖，Table 1 ReKV 六配置完成 `23/24` 个 pair-task 单元；仅 Pair #7
-  tmath 为 `3/6`。
-- 按显式 `query_sketch_bf16_v1` metadata，当前为 `95/144` runs、`15/24`
-  完整 pair-task 单元；差异来自 Pair #6 的 pre-instrumentation v0 数据。
-- 主 B-ReKV 配置矩阵尚未开始产出，因此不能生成最终 Table 1 平均值。
-- `snapshots/query_sketch_cost_v1/` 尚无正式 cost 结果；oracle-gap profile
-  不能替代独立 cost 表。
+完整报告：`snapshots/analysis/fast_node_completion_20260714.md`。
+
+- 本机目标 123/123 unique cells 完成：GPU0 54/54、GPU3 69/69。
+- Table 10 真 Multi-Source：18/18；best score 为 HotpotQA 0.668、
+  MuSiQue 0.450、2WikiMQA 0.440。
+- Table 6 Pair #7：35/35；main B-ReKV 宏平均 0.2899 @ budget 0.3475，
+  相对 best ReKV 平均少 0.0793 分、预算低 51.09%。
+- Table 8 Pair #5 前四任务：28/28；main B-ReKV 宏平均
+  0.4315 @ budget 0.3142。
+- Table 1 Pair #1/#7 各 56/56；Pair #1 main B-ReKV
+  0.4734 @ 0.3019，Pair #7 为 0.3702 @ 0.3734。
+- 正式 cost v1：12/18，Pair #1/#7 完成。
+- 当前 main B-ReKV Oracle gap：12/18；六单元平均 score gap -0.1300，
+  通信节省 59.62%。旧报告的 B-ReKV `+0.0067` 来自旧高预算配置，
+  不再作为主配置结论。
+
+更新后的未完成项：
+
+- Table 1：113/168，Pair #6 尚缺 47 fixed ReKV + 8 main B-ReKV。
+- Table 6：35/70，Pair #6 尚缺 35。
+- Table 8：28/224，尚缺 196。
+- Cost v1：12/18，Pair #6 尚缺 6。
+- Main B-ReKV Oracle gap：12/18，Pair #6 尚缺 6。

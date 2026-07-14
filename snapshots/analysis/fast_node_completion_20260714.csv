@@ -1,0 +1,15 @@
+scope,pair_or_scope,completed,expected,status,protocol,headline
+Fast-node total,local GPU0/GPU3,123,123,complete,mixed explicit v1,All assigned unique cells validated
+Table10 Multi-Source,multi-source,18,18,complete,query_sketch_bf16_multi_source_v1,Best scores 0.668/0.450/0.440
+Table6 extended,pair7,35,35,complete,query_sketch_bf16_v1,Main B mean 0.2899 at budget 0.3475
+Table8 generalization,pair5 first four tasks,28,28,complete,query_sketch_bf16_v1,Best ReKV mean 0.5928; main B 0.4315 at budget 0.3142
+Table1 main,pair1,56,56,complete,query_sketch_bf16_v1,Main B 0.4734 at budget 0.3019
+Table1 main,pair7,56,56,complete,query_sketch_bf16_v1,Main B 0.3702 at budget 0.3734
+Cost v1,pair1 and pair7,12,12,complete,query_sketch_bf16_v1,Three tasks x ReKV/main B x two pairs
+Main B Oracle gap,pair1 and pair7,12,12,complete,query_sketch_bf16_v1 vs full_kv_oracle_v1,Mean score gap -0.1300; communication reduction 59.62%
+Global Table1,#1/#6/#7,113,168,partial,query_sketch_bf16_v1,Pair6 missing 55
+Global Table6,#6/#7,35,70,partial,query_sketch_bf16_v1,Pair6 missing 35
+Global Table8,#2/#3/#4/#5,28,224,partial,query_sketch_bf16_v1,196 cells remain
+Global Table10,multi-source,18,18,complete,query_sketch_bf16_multi_source_v1,No remaining cells
+Global cost,#1/#6/#7,12,18,partial,query_sketch_bf16_v1,Pair6 missing 6
+Global main B Oracle,#1/#6/#7,12,18,partial,query_sketch_bf16_v1 vs full_kv_oracle_v1,Pair6 missing 6

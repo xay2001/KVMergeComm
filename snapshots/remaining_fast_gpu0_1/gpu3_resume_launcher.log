@@ -1,0 +1,3 @@
+nohup: ignoring input
+GPU3 pid=799974 -> snapshots/remaining_fast_gpu0_1/logs/gpu3_remaining_fast_0713_1707.log
+Fast-node workers=gpu1 queue completed.

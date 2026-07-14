@@ -1,4 +1,4 @@
-# 实验结果总盘点（2026-07-13）
+# 实验结果总盘点（更新至 2026-07-14）
 
 本文件是当前实验数据的协议感知入口。所有结果先按协议代际分组，再讨论
 完成度和数值；禁止仅凭目录名或 `score_mode=receiver` 判断为 Query-Sketch。
@@ -27,7 +27,9 @@
 - 当前没有实验 worker 在运行。
 - Query-Sketch 配置搜索网格和 Stage 3 核心审稿矩阵已经完成；原冻结判定
   存在 matched-budget 越界问题，需撤回并重新确认。
-- Stage 5 的 Table 6 / Table 8 / Table 10 Query-Sketch 重跑尚未启动。
+- 2026-07-14 本机 fast-node 队列 123/123 完成：Table 6 为 35/70、
+  Table 8 为 28/224、Table 10 为 18/18、Table 1 main B-ReKV 为 16/24、
+  正式 cost 为 12/18。详见 `fast_node_completion_20260714.md`。
 
 ## 3. 新协议：已经完成的核心证据
 
@@ -128,8 +130,15 @@ Root：`snapshots/query_sketch_oracle_gap/`，18/18 matched cells 完成。
 
 - ReKV：Query-Sketch 相对 Full-KV Oracle 平均分差 -0.0378；
   通信量平均减少 61.0%。
-- B-ReKV：平均分差 +0.0067；通信量平均减少 35.1%。
+- 旧高预算 B-ReKV：平均分差 +0.0067；通信量平均减少 35.1%。
 - Query-Sketch latency 略低，峰值显存略低。
+
+2026-07-14 已补当前主配置 `t0.95-s0.75-w8` 的 Pair #1/#7 六单元：
+
+- 平均 score gap 为 -0.1300；
+- 平均通信节省为 59.62%；
+- Pair #6 尚缺，因此为 12/18 physical runs；
+- QS 与 Oracle 动态预算不同，该值不是严格 matched-budget selector gap。
 
 #### Sketch 表示与窗口
 
@@ -168,12 +177,12 @@ Root：`snapshots/query_sketch_representation_ablation/`，72 runs 完成。
 
 | Pair | Fixed ReKV | Frozen B-ReKV | 协议状态 |
 |---|---:|---:|---|
-| #1 | 48/48 | 0/8 | fixed ReKV 全部为 v1 |
-| #6 | 72 个 unique cell | 0/8 | 仅 5 个物理文件有 v1；68 个为 v0 pre-instrumentation |
-| #7 | 46/48 | 0/8 | v1；仅缺 tmath w16 r=0.5/0.7 |
+| #1 | 48/48 | 8/8 | 56/56，全部为 v1 |
+| #6 | 1/48 | 0/8 | 其余早期结果为 v0 pre-instrumentation |
+| #7 | 48/48 | 8/8 | 56/56，全部为 v1 |
 
-当前不能生成最终 Query-Sketch Table 1：冻结 B-ReKV 主块 0/24，pair #6
-缺完整 v1 instrumentation，pair #7 尚缺 3 个 fixed ReKV runs。
+当前 Table 1 为 113/168：Pair #1/#7 完成，Pair #6 尚缺 47 个 fixed
+ReKV 和 8 个 main B-ReKV，因此仍不能生成最终三 pair 汇总。
 
 ## 5. Table 6：五个 extended tasks
 
@@ -200,7 +209,8 @@ Pair #7 RepoBench 已从早期 OOM 中恢复，9/9 最终完成。
 ### 5.2 新协议重跑
 
 Table 6 Query-Sketch 主矩阵已统一为每任务 6 个 fixed ReKV +
-`t0.95-s0.75-w8` 一个 B-ReKV，共 70 runs，目前 0/70，尚未启动。
+`t0.95-s0.75-w8` 一个 B-ReKV，共 70 runs，目前 35/70；Pair #7
+五个任务全部完成，Pair #6 尚缺 35。
 旧三点 B-ReKV 中的 `s0.85-w8` 和 `s0.90-w16` 不再计入主矩阵。
 
 ## 6. Table 8：模型泛化
@@ -216,7 +226,7 @@ Table 6 Query-Sketch 主矩阵已统一为每任务 6 个 fixed ReKV +
 Query-Sketch 重跑目标：
 
 - Pair #2/#3/#4/#5 使用冻结配置，共 224 runs；
-- 当前 0/224，尚未启动；
+- 当前 28/224；Pair #5 前四任务完成，剩余 196；
 - Pair #9 不重跑正向主表，Pair #8 暂缓。
 
 ## 7. Table 10：Multi-Source
@@ -237,7 +247,11 @@ Root：`snapshots/table10_multi_source_rekv/`。
 
 新实现已经把流程改为：B 发送 bf16 Q sketch，A1/A2 各自用本地 key
 评分并压缩，然后只发送压缩 KV。目标 root：
-`snapshots/table10_multi_source_query_sketch/`，当前 0/18，尚未启动。
+`snapshots/table10_multi_source_query_sketch/`，当前 18/18 完成。
+
+- HotpotQA best：0.6680（w16-r0.7）。
+- MuSiQue best：0.4500（w8-r0.7）。
+- 2WikiMQA best：0.4400（w8-r0.7）。
 
 ## 8. 历史 supporting evidence
 
@@ -275,13 +289,17 @@ Root：`snapshots/table10_multi_source_rekv/`。
 - 配置搜索已完成；低预算 `t0.95-s0.75-w8` 有完整 Stage 3 fairness、
   Pareto 和预算分布证据。
 - INT8 sketch 可减半 B→A payload，且平均分不降。
+- 真正 Multi-Source Query-Sketch 已完成 18/18，三任务 best 为
+  0.6680 / 0.4500 / 0.4400。
+- Table 6 Pair #7 的五个 extended tasks 已完成新协议重跑；main B-ReKV
+  平均以约 51% 更低预算换取 0.0793 的平均分数下降。
 - Legacy Table 6/8/10 已完整，但必须明确 pre-protocol。
 
 暂时不能写：
 
-- “Query-Sketch Table 1 已完整”：冻结 B-ReKV 仍是 0/24。
+- “Query-Sketch Table 1 已完整”：当前为 113/168，Pair #6 尚缺 55。
 - “`t0.98-s1-w8` 已通过 matched-budget 冻结”：其预算全部超出 fixed-r
   校准网格，原 6/6 结论来自端点截断。
-- “Table 6/8/10 已用新协议重跑”：三个新矩阵均为 0。
+- “Table 6/8 已完整用新协议重跑”：当前分别为 35/70 和 28/224。
 - “Canonical B-ReKV 在所有 matched-budget 单元都优于 fixed ReKV”：实际为 3/9。
 - 把旧 Table 10 当成真正 Multi-Source Query-Sketch。

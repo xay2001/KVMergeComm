@@ -21,7 +21,7 @@
 | Table 1 pair #8 Falcon | 暂缓/最后处理 | `Falcon3-7B-Instruct-abliterated` checkpoint 目前不可获得或目录不完整；不阻塞主线，放到最后可选处理。 |
 | Table 6 / 10 / 11 | Table 6/10 完成，Table 11 可跑部分完成 | Table 6 pair #6/#7 均完成 5 个 extended tasks x 9 runs；pair #7 RepoBench 已在 98 GB GPU 上补齐。Table 10 三任务共 18 runs 已完成。Table 11 已完成 ReKV normal / ReKV-S / B-ReKV normal x 8 主任务，B-ReKV-S 暂缓。 |
 
-## 0.1 2026-07-13 新 Query-Sketch 协议重跑状态
+## 0.1 2026-07-14 新 Query-Sketch 协议重跑状态
 
 上面的“已完成”大多指历史实验资产，其中 receiver-aware 部分多数属于旧隐式
 Full-KV Oracle 口径。论文最终表必须以本节的新协议状态为准，不能直接混用。
@@ -29,11 +29,14 @@ Full-KV Oracle 口径。论文最终表必须以本节的新协议状态为准�
 | 新协议模块 | 当前状态 | 口径 |
 |---|---|---|
 | B-ReKV 配置搜索 | 网格完成、冻结无效 | `t0.98` 候选全部超出 fixed-r 校准范围；正文主点回到 `t=0.95, s=0.75, w=8` |
-| Query-Sketch vs 显式 Oracle | 已完成 | 18/18 matched 单元；ReKV 通信降 `61.0%`、score gap `-0.0378`；B-ReKV 通信降 `35.1%`、gap `+0.0067` |
+| Query-Sketch vs 显式 Oracle | 部分更新 | 旧 ReKV 证据：通信降 `61.0%`、score gap `-0.0378`；当前 main B-ReKV 在 #1/#7 六单元通信降 `59.62%`、score gap `-0.1300`，#6 尚缺 |
 | Sketch 表示与窗口 | 已完成 | 72 runs；BF16/INT8/Token IDs × w4/8/16/32；INT8-w8 最优轻量折中 |
-| Table 1 fixed ReKV | 进行中 | 文件覆盖 23/24 blocks；显式 v1 为 95/144 runs、15/24 blocks；Pair #7 tmath 仅缺 w16 r0.5/r0.7，Pair #6 其余为 v0 pre-instrumentation |
-| Table 1 main B-ReKV | 待产出 | `t0.95-s0.75-w8` 为 0/24 pair-task blocks；不能提前生成最终主表 |
-| 新协议正式 Cost / Efficiency | 待产出 | `snapshots/query_sketch_cost_v1/` 当前无结果 |
+| Table 1 fixed ReKV | 进行中 | 显式 v1 为 97/144；Pair #1/#7 均 48/48，Pair #6 仅 1/48，其余为 v0 pre-instrumentation |
+| Table 1 main B-ReKV | 进行中 | `t0.95-s0.75-w8` 为 16/24；Pair #1/#7 完成，Pair #6 缺 8 |
+| Table 6 Query-Sketch | 进行中 | 35/70；Pair #7 五个 extended tasks 全完成，Pair #6 缺 35 |
+| Table 8 Query-Sketch | 进行中 | 28/224；Pair #5 前四任务完成，剩 196 |
+| Table 10 Query-Sketch | 已完成 | 真 Multi-Source 协议 18/18；HotpotQA/MuSiQue/2WikiMQA best 为 0.668/0.450/0.440 |
+| 新协议正式 Cost / Efficiency | 进行中 | 12/18；Pair #1/#7 完成，Pair #6 缺 6 |
 | 新协议 Score Function | 已完成 | Pair #6 三任务 × 5 score modes，共 15 runs |
 | 新协议 Layer Aggregation | 已完成 | Pair #6 三任务 × 5 aggregations，共 15 runs |
 
