@@ -1,0 +1,10 @@
+pair,pair_label,method_group,n_tasks,score,payload_tokens,total_communication_mb,selected_kv_mb,t_total,peak_mem_gb,compute_tokens_proxy
+pair1_llama31_same,S: Llama-3.1-8B; R: Llama-3.1-8B,B-ReKV,3,0.493333,27711.793333,110.356,108.249167,0.400943,31.163151,2644.52
+pair1_llama31_same,S: Llama-3.1-8B; R: Llama-3.1-8B,NLD,3,0.186462,28.004575,0.0001,,2.641569,30.504238,2773.182886
+pair1_llama31_same,S: Llama-3.1-8B; R: Llama-3.1-8B,ReKV-w8 r=0.3,3,0.546667,26359.28,105.0676,102.965933,0.376702,31.151686,2643.58
+pair6_llama32_abliterated_deepseek3b,S: Llama-3.2-3B-Abliterated; R: DeepSeek-R1-3B,B-ReKV,3,0.5,28715.28,113.5921,112.169067,0.531967,13.126048,2591.113333
+pair6_llama32_abliterated_deepseek3b,S: Llama-3.2-3B-Abliterated; R: DeepSeek-R1-3B,NLD,3,0.145269,17.037919,6.6e-05,,1.418809,12.411413,2655.636132
+pair6_llama32_abliterated_deepseek3b,S: Llama-3.2-3B-Abliterated; R: DeepSeek-R1-3B,ReKV-w8 r=0.3,3,0.56,23060.073333,91.479833,90.0784,0.496852,13.079995,2590.793333
+pair7_qwen25_uncensored_bespoke,S: Qwen2.5-7B-Uncensored; R: Bespoke-Stratos-7B,B-ReKV,3,0.346667,27570.82,55.4867,53.849233,1.724823,29.464829,2728.573333
+pair7_qwen25_uncensored_bespoke,S: Qwen2.5-7B-Uncensored; R: Bespoke-Stratos-7B,NLD,3,0.091606,24.633879,9.8e-05,,3.795746,28.861376,2922.704075
+pair7_qwen25_uncensored_bespoke,S: Qwen2.5-7B-Uncensored; R: Bespoke-Stratos-7B,ReKV-w8 r=0.3,3,0.34,23953.566667,48.407933,46.7843,1.373001,29.450224,2728.486667

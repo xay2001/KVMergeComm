@@ -212,6 +212,8 @@ __marimo__/
 .deepeval/
 wandb/
 # snapshots/
+# Machine-local model symlink views (for example /NAS vs /sharedspace).
+snapshots/**/model_views/
 plots/
 test/
 notebooks/

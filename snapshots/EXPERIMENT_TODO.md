@@ -28,35 +28,34 @@ Full-KV Oracle 口径。论文最终表必须以本节的新协议状态为准�
 
 | 新协议模块 | 当前状态 | 口径 |
 |---|---|---|
-| B-ReKV 配置搜索 | 网格完成、冻结无效 | `t0.98` 候选全部超出 fixed-r 校准范围；正文主点回到 `t=0.95, s=0.75, w=8` |
-| Query-Sketch vs 显式 Oracle | 部分更新 | 旧 ReKV 证据：通信降 `61.0%`、score gap `-0.0378`；当前 main B-ReKV 在 #1/#7 六单元通信降 `59.62%`、score gap `-0.1300`，#6 尚缺 |
-| Sketch 表示与窗口 | 已完成 | 72 runs；BF16/INT8/Token IDs × w4/8/16/32；INT8-w8 最优轻量折中 |
-| Table 1 fixed ReKV | 进行中 | 显式 v1 为 97/144；Pair #1/#7 均 48/48，Pair #6 仅 1/48，其余为 v0 pre-instrumentation |
-| Table 1 main B-ReKV | 进行中 | `t0.95-s0.75-w8` 为 16/24；Pair #1/#7 完成，Pair #6 缺 8 |
-| Table 6 Query-Sketch | 进行中 | 35/70；Pair #7 五个 extended tasks 全完成，Pair #6 缺 35 |
-| Table 8 Query-Sketch | 进行中 | 28/224；Pair #5 前四任务完成，剩 196 |
-| Table 10 Query-Sketch | 已完成 | 真 Multi-Source 协议 18/18；HotpotQA/MuSiQue/2WikiMQA best 为 0.668/0.450/0.440 |
-| 新协议正式 Cost / Efficiency | 进行中 | 12/18；Pair #1/#7 完成，Pair #6 缺 6 |
-| 新协议 Score Function | 已完成 | Pair #6 三任务 × 5 score modes，共 15 runs |
-| 新协议 Layer Aggregation | 已完成 | Pair #6 三任务 × 5 aggregations，共 15 runs |
+| B-ReKV 配置搜索 | 已冻结 | 高预算冻结作废；正文主点 `t=0.95, s=0.75, w=8` |
+| Query-Sketch vs 显式 Oracle | 已完成（pair #6 canonical） | 三任务平均通信降约 `65%`，score gap `-0.08` |
+| Sketch 表示与窗口 | 已完成 | 72 runs；INT8-w8 最优轻量折中 |
+| Table 1 七点主矩阵 | **已完成 24/24** | pair #1/#6/#7 × 8 tasks；canonical B-ReKV 平均预算 `0.30/0.32/0.37` |
+| Table 6 Query-Sketch | **已完成 10/10** | pair #6/#7 × 5 extended tasks |
+| Table 8 Query-Sketch | **已完成 32/32** | pair #2/#3/#4/#5 × 8 tasks |
+| Table 10 Query-Sketch | 已完成 | 18/18；best 0.668 / 0.450 / 0.440 |
+| 新协议正式 Cost / Efficiency | **已完成 18/18** | pair #1/#6/#7 × 3 tasks × ReKV/B-ReKV |
+| NLD vs Query-Sketch v1 | 已完成 | ReKV/B-ReKV 准确率高约 +0.25~+0.41，latency 快约 2.8×–7.0× |
+| 新协议 Score Function | 已完成 | Pair #6 三任务 × 5 score modes |
+| 新协议 Layer Aggregation | 已完成 | Pair #6 三任务 × 5 aggregations |
 
 严格区分：
 
 - `query_sketch_bf16_v1` / `int8_v1` / `token_ids_v1`：当前可部署协议。
 - `full_kv_oracle_v1`：显式性能上界，只进入 oracle-gap。
 - `query_agnostic_kv_v1`：ValueNorm / Random 公平性对照。
-- Pair #6 缺少 protocol metadata 的早期 Query-Sketch 结果标记为
-  `query_sketch_bf16_v0_pre_instrumentation`：47 个 fixed ReKV + 21 个
-  provisional B-ReKV。仅用于准确率参考，不用于新计费，也不冒充显式 v1。
-- 历史隐式 Oracle 表不删除，但不进入新协议主表。
+- `query_sketch_bf16_v0_pre_instrumentation` 与历史隐式 Oracle：不进入最终主表。
 
-统一汇总：
+最终汇总：
 
 ```text
-snapshots/analysis/query_sketch_rerun_20260713/REPORT.md
-snapshots/analysis/query_sketch_rerun_20260713/
-scripts/summarize_query_sketch_rerun.py
+snapshots/analysis/query_sketch_final_20260714/REPORT.md
+snapshots/analysis/nld_vs_rekv_query_sketch_v1/
+scripts/summarize_query_sketch_final.py
 ```
+
+仍暂缓：Pair #8 Falcon、Pair #9 SuperNova、B-ReKV-S、Head-wise B-ReKV。
 
 ## 0.2 2026-07-05 历史审计记录
 
