@@ -2558,3 +2558,80 @@ Query-sketch 表示消融（2 pairs × 3 tasks × 4 windows，共 72 runs）：
 - Table 8：28/224，尚缺 196。
 - Cost v1：12/18，Pair #6 尚缺 6。
 - Main B-ReKV Oracle gap：12/18，Pair #6 尚缺 6。
+
+### 10.8 2026-07-14 本机全部完成后的最终汇总
+
+本机六卡队列与外机合并结果后，**可部署 Query-Sketch 正文证据已齐**。
+最终汇总只计入 `protocol_version=query_sketch_bf16_v1`，canonical
+B-ReKV 固定为 `tau=0.95, scale=0.75, window=8`。
+
+```text
+snapshots/analysis/query_sketch_final_20260714/REPORT.md
+snapshots/analysis/query_sketch_final_20260714/table1_summary.csv
+snapshots/analysis/query_sketch_final_20260714/extended_summary.csv
+snapshots/analysis/query_sketch_final_20260714/appendix_summary.csv
+snapshots/analysis/query_sketch_final_20260714/cost_all_pairs.csv
+snapshots/analysis/query_sketch_final_20260714/canonical_oracle_gap_pair6.csv
+snapshots/analysis/query_sketch_final_20260714/figures/
+scripts/summarize_query_sketch_final.py
+```
+
+完整度（相对最终口径）：
+
+| 模块 | 完成度 | 说明 |
+|---|---|---|
+| Table 1 主任务七点单元 | 24/24 | pair #1/#6/#7 × 8 tasks；fixed ReKV 6 + canonical B-ReKV 1 |
+| Extended tasks | 10/10 | pair #6/#7 × 5 tasks |
+| Appendix model settings | 32/32 | pair #2/#3/#4/#5 × 8 tasks |
+| Multi-source | 18/18 | HotpotQA / MuSiQue / 2WikiMQA × 6 fixed configs |
+| Cost / Efficiency v1 | 18/18 | pair #1/#6/#7 × 3 tasks × ReKV/B-ReKV |
+| Canonical B Oracle-gap | 3/3 | pair #6 三任务 |
+
+主任务模型设置平均（best fixed ReKV vs canonical B-ReKV）：
+
+| Model setting | Best ReKV | B-ReKV | Budget | Δ score |
+|---|---:|---:|---:|---:|
+| Llama-3.1 same | 0.5466 | 0.4734 | 0.3019 | -0.0732 |
+| Llama-3.2 Abl. / DeepSeek | 0.5052 | 0.4071 | 0.3185 | -0.0981 |
+| Qwen2.5 Unc. / Bespoke | 0.4313 | 0.3702 | 0.3734 | -0.0611 |
+
+结论表述（给论文用）：
+
+- B-ReKV 主任务平均实际预算约 **33%**，属于明确低预算 operating point。
+- 准确率通常低于 high-budget best fixed ReKV（约 -0.06 ~ -0.10），这是预期 tradeoff，不是失败。
+- Extended / appendix 同模式：约 **27%–35%** 预算，分数差约 **-0.08 ~ -0.13**。
+- Multi-source best：HotpotQA **0.668**、MuSiQue **0.450**、2WikiMQA **0.440**。
+
+Canonical B-ReKV vs Full-KV Oracle（pair #6，profile n=50）：
+
+| Task | Query-Sketch | Oracle | Score gap | Communication cut |
+|---|---:|---:|---:|---:|
+| HotpotQA | 0.62 | 0.78 | -0.16 | 64.8% |
+| MuSiQue | 0.42 | 0.54 | -0.12 | 71.8% |
+| MultiFieldQA-en | 0.46 | 0.42 | +0.04 | 58.4% |
+
+平均 score gap **-0.08**，通信节省约 **65%**；latency / peak memory 基本持平。
+
+NLD vs Query-Sketch v1（NLD baseline 复用，ReKV/B-ReKV 换正式 cost）：
+
+```text
+snapshots/analysis/nld_vs_rekv_query_sketch_v1/
+snapshots/analysis/nld_vs_rekv_query_sketch_v1/figures/nld_vs_rekv_cost_overview.png
+```
+
+三 pair 平均：
+
+| Setting | NLD score | ReKV score | B-ReKV score | NLD time | ReKV time |
+|---|---:|---:|---:|---:|---:|
+| Pair #1 | 0.186 | 0.547 | 0.493 | 2.64 s | 0.38 s |
+| Pair #6 | 0.145 | 0.560 | 0.500 | 1.42 s | 0.50 s |
+| Pair #7 | 0.092 | 0.340 | 0.347 | 3.80 s | 1.37 s |
+
+相对自然语言传递：ReKV/B-ReKV 准确率约高 **+0.25 ~ +0.41**，端到端 latency 约快 **2.8×–7.0×**，峰值显存接近。NLD 文本 payload 极小，但生成+refine 的 compute tokens 与 KV 路径同量级，因此 token 消耗不是优势。
+
+论文可写边界：
+
+1. 正文本表与附录表以 Query-Sketch v1 + canonical B-ReKV 为准。
+2. Full-KV Oracle 只作上界；旧 v0/legacy 不混入平均值。
+3. 高预算 freeze（`t0.98,s1.0`）作废，不引用。
+4. Pair #8 Falcon / Pair #9 SuperNova / B-ReKV-S / Head-wise 仍可暂缓。

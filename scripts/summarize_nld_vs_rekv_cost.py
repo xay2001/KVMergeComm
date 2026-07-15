@@ -64,23 +64,36 @@ def kv_method(run_dir: Path, summary: dict) -> str | None:
     name = run_dir.name
     if m := re.search(r"recv_w(\d+)_r([0-9.]+)", name):
         return f"ReKV-w{m.group(1)} r={m.group(2)}"
+    if m := re.search(r"rekv_bf16_w(\d+)_r([0-9.]+)", name):
+        ratio = m.group(2).rstrip("0").rstrip(".") if "." in m.group(2) else m.group(2)
+        if ratio.endswith("."):
+            ratio = ratio[:-1]
+        # Normalize 0.30 -> 0.3 while preserving 0.3 / 0.5 / 0.7.
+        ratio_f = float(m.group(2))
+        ratio_s = f"{ratio_f:g}"
+        return f"ReKV-w{m.group(1)} r={ratio_s}"
     if m := re.search(r"cov_t([0-9.]+)_s([0-9.]+)_w(\d+)", name):
         return f"B-ReKV t={m.group(1)} s={m.group(2)} w{m.group(3)}"
+    if m := re.search(r"brekv_bf16_t([0-9.]+)_s([0-9.]+)_w(\d+)", name):
+        return f"B-ReKV t={m.group(1)} s={m.group(2)} w{m.group(3)}"
     meta = summary.get("_meta", {})
-    if meta.get("score_mode") == "receiver" and meta.get("budget_mode") == "uniform":
+    if meta.get("score_mode") in {"receiver", "receiver_oracle"} and meta.get("budget_mode") == "uniform":
         return f"ReKV-w{meta.get('recv_window')} r={meta.get('merge_ratio')}"
     if meta.get("budget_mode") == "coverage":
         return f"B-ReKV t={meta.get('coverage_tau')} s={meta.get('coverage_scale')} w{meta.get('recv_window')}"
     return None
 
 
-def collect_kv_rows(root: Path) -> list[dict]:
+def collect_kv_rows(root: Path, require_protocol: str | None = None) -> list[dict]:
     rows = []
     for path in sorted(root.glob("**/cost_summary.json")):
         task = infer_task(path)
         if task not in TASKS:
             continue
         summary = load_json(path)
+        meta = summary.get("_meta", {})
+        if require_protocol and meta.get("protocol_version") != require_protocol:
+            continue
         method = kv_method(path.parent, summary)
         if method is None:
             continue
@@ -93,10 +106,11 @@ def collect_kv_rows(root: Path) -> list[dict]:
             continue
         total_bytes = communication_bytes(summary, "kv_bytes_sent_mean")
         selected_kv_bytes = summary.get("kv_bytes_sent_mean")
+        pair = infer_pair(path)
         rows.append(
             {
-                "pair": infer_pair(path),
-                "pair_label": PAIR_LABELS.get(infer_pair(path), infer_pair(path)),
+                "pair": pair,
+                "pair_label": PAIR_LABELS.get(pair, pair),
                 "task": task,
                 "task_label": TASK_LABELS.get(task, task),
                 "method": method,
@@ -114,6 +128,7 @@ def collect_kv_rows(root: Path) -> list[dict]:
                     summary.get("query_tokens_B_mean"),
                     summary.get("output_tokens_mean"),
                 ),
+                "protocol_version": meta.get("protocol_version"),
                 "run_dir": str(path.parent),
             }
         )
@@ -228,8 +243,15 @@ def write_csv(rows: list[dict], path: Path) -> None:
     if not rows:
         path.write_text("")
         return
+    fields: list[str] = []
+    seen = set()
+    for row in rows:
+        for key in row:
+            if key not in seen:
+                seen.add(key)
+                fields.append(key)
     with path.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -307,15 +329,39 @@ def plot_task_scores(rows: list[dict], out: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--kv-root", type=Path, default=Path("snapshots/cost_profile"))
+    parser.add_argument("--kv-root", type=Path, default=Path("snapshots/query_sketch_cost_v1"))
     parser.add_argument("--nld-root", type=Path, default=Path("snapshots/nld_cost_profile"))
-    parser.add_argument("--csv", type=Path, default=Path("snapshots/analysis/nld_vs_rekv/nld_vs_rekv_cost_summary.csv"))
-    parser.add_argument("--focused-csv", type=Path, default=Path("snapshots/analysis/nld_vs_rekv/nld_vs_rekv_cost_focused.csv"))
-    parser.add_argument("--average-csv", type=Path, default=Path("snapshots/analysis/nld_vs_rekv/nld_vs_rekv_cost_average_by_pair.csv"))
-    parser.add_argument("--figure-dir", type=Path, default=Path("snapshots/analysis/nld_vs_rekv/figures"))
+    parser.add_argument(
+        "--require-protocol",
+        default="query_sketch_bf16_v1",
+        help="Only keep KV cost rows with this protocol_version; empty disables filter.",
+    )
+    parser.add_argument(
+        "--csv",
+        type=Path,
+        default=Path("snapshots/analysis/nld_vs_rekv_query_sketch_v1/nld_vs_rekv_cost_summary.csv"),
+    )
+    parser.add_argument(
+        "--focused-csv",
+        type=Path,
+        default=Path("snapshots/analysis/nld_vs_rekv_query_sketch_v1/nld_vs_rekv_cost_focused.csv"),
+    )
+    parser.add_argument(
+        "--average-csv",
+        type=Path,
+        default=Path("snapshots/analysis/nld_vs_rekv_query_sketch_v1/nld_vs_rekv_cost_average_by_pair.csv"),
+    )
+    parser.add_argument(
+        "--figure-dir",
+        type=Path,
+        default=Path("snapshots/analysis/nld_vs_rekv_query_sketch_v1/figures"),
+    )
     args = parser.parse_args()
 
-    rows = collect_kv_rows(args.kv_root) + collect_nld_rows(args.nld_root)
+    require_protocol = args.require_protocol or None
+    rows = collect_kv_rows(args.kv_root, require_protocol=require_protocol) + collect_nld_rows(
+        args.nld_root
+    )
     rows.sort(key=lambda r: (r["pair"], r["task"], r["method"]))
     write_csv(rows, args.csv)
     focused = focused_rows(rows)

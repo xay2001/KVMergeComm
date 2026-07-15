@@ -6,6 +6,8 @@ manifest.
 
 ## Primary Files
 
+- `snapshots/analysis/query_sketch_final_20260714/REPORT.md`: final Query-Sketch v1 rollup after local + remote merges.
+- `snapshots/analysis/nld_vs_rekv_query_sketch_v1/`: NLD vs ReKV/B-ReKV cost comparison under formal cost v1.
 - `snapshots/analysis/experiment_inventory_20260713.md`: protocol-aware current status, results, and data-quality audit.
 - `snapshots/analysis/experiment_inventory_20260713.csv`: machine-readable protocol/status inventory.
 - `snapshots/analysis/fast_node_completion_20260714.md`: audited 123/123 fast-node Query-Sketch results and metrics.
@@ -112,45 +114,41 @@ These experiments were added to support the paper framing beyond raw accuracy.
 | Receiver-layer aggregation ablation | `snapshots/layer_aggregation_ablation/`, `snapshots/analysis/latest_experiments/layer_aggregation_summary.csv`, `snapshots/analysis/latest_experiments/figures/layer_aggregation_heatmap.png` | Done for pair #1 on 8 main tasks; original paired-layer identity is strongest or near-strongest on most evidence-heavy tasks |
 | NLD vs ReKV cost comparison | `snapshots/nld_cost_profile/`, `snapshots/analysis/nld_vs_rekv/nld_vs_rekv_report.md`, `snapshots/analysis/nld_vs_rekv/nld_vs_rekv_cost_focused.csv`, `snapshots/analysis/nld_vs_rekv/figures/nld_vs_rekv_cost_overview.png`, `snapshots/analysis/nld_vs_rekv/figures/nld_vs_rekv_accuracy_by_task.png` | Done for pair #1/#6/#7 on HotpotQA / MuSiQue / MultiFieldQA-en; NLD has much lower accuracy and roughly 2x latency, with similar peak memory |
 
-Main remaining work is now narrower: fold the completed Table 6 and NLD
-comparisons into the paper, then implement memory-safe pre-softmax receiver
-windowing before any further long-code receiver-scoring runs.
-Pair #9 and B-ReKV-S are deferred from positive claims.
+Main Query-Sketch paper evidence is now complete under the deployable
+protocol. Remaining optional work: Pair #8 Falcon, Pair #9 SuperNova,
+B-ReKV-S, Head-wise B-ReKV, and memory-safe pre-softmax receiver windowing
+before any further long-code receiver-scoring runs.
 
-## Query-Sketch Rerun Audit (2026-07-13)
+## Query-Sketch Final Audit (2026-07-14)
 
-Current deployable-protocol audit:
+Final deployable-protocol rollup after local + remote merges:
 
-- Report: `snapshots/analysis/query_sketch_rerun_20260713/REPORT.md`
-- Raw run index: `snapshots/analysis/query_sketch_rerun_20260713/table1_all_runs.csv`
-- Table-1 status: `snapshots/analysis/query_sketch_rerun_20260713/table1_status.csv`
-- Explicit Oracle gap: `snapshots/analysis/query_sketch_rerun_20260713/oracle_gap.csv`
-- Sketch representation ablation:
-  `snapshots/analysis/query_sketch_rerun_20260713/representation_summary.csv`
-- Query-Sketch mechanism ablations:
-  `snapshots/analysis/query_sketch_rerun_20260713/mechanism_runs.csv`
-- Figures: `snapshots/analysis/query_sketch_rerun_20260713/figures/`
-- Rebuild command: `python scripts/summarize_query_sketch_rerun.py`
+- Final report: `snapshots/analysis/query_sketch_final_20260714/REPORT.md`
+- Rebuild: `python scripts/summarize_query_sketch_final.py`
+- NLD vs Query-Sketch v1:
+  `snapshots/analysis/nld_vs_rekv_query_sketch_v1/`
+- Earlier interim audit remains at
+  `snapshots/analysis/query_sketch_rerun_20260713/`
 
-Protocol separation is mandatory:
+Completion under `query_sketch_bf16_v1` + canonical B-ReKV `t0.95-s0.75-w8`:
 
-- `query_sketch_*_v1`: deployable protocol and current paper evidence.
-- `full_kv_oracle_v1`: explicit upper bound only.
-- `query_agnostic_kv_v1`: ValueNorm / Random controls only.
-- Pair #6 `v0_pre_instrumentation`: 47 fixed ReKV + 21 provisional B-ReKV
-  results lack explicit protocol metadata; accuracy is reference-only and cost
-  cannot be used.
-- Legacy snapshots are historical evidence and must not be mixed into the new
-  protocol tables without an explicit protocol column.
+| Module | Done |
+|---|---|
+| Table 1 seven-point cells | 24/24 |
+| Extended tasks | 10/10 |
+| Appendix model settings | 32/32 |
+| Multi-source | 18/18 |
+| Cost / Efficiency | 18/18 |
+| Canonical B Oracle-gap (pair #6) | 3/3 |
 
-At the 2026-07-14 audit point, representation ablation (72 runs),
-score-function ablation (15 runs), layer aggregation ablation (15 runs), and
-Stage 3 reviewer evidence (360/360 runs) are complete. The original
-`B-ReKV-t0.98-s1-w8` freeze is invalid because all six budgets exceeded the
-fixed-r calibration range and were endpoint-clamped. The main operating point
-therefore remains `t0.95-s0.75-w8`. Its Table-1 main matrix is now 16/24:
-pairs #1/#7 are complete and pair #6 remains. Table-1 fixed ReKV is 97/144
-explicit v1 cells; pair #6 remains mostly pre-instrumentation. Table 6 is
-35/70 (pair #7 complete), Table 8 is 28/224, true Query-Sketch Table 10 is
-18/18, and the independent cost table is 12/18. See the 2026-07-14 fast-node
-report for exact results.
+Main-task B-ReKV budgets: pair #1 **0.302**, pair #6 **0.319**, pair #7 **0.373**.
+Oracle-gap average communication cut **~65%**, average score gap **-0.08**.
+
+Protocol separation is still mandatory:
+
+- `query_sketch_*_v1`: deployable paper evidence.
+- `full_kv_oracle_v1`: upper bound only.
+- `query_agnostic_kv_v1`: fairness controls only.
+- `v0_pre_instrumentation` / legacy roots: historical only.
+
+Still deferred: Pair #8 Falcon, Pair #9 SuperNova, B-ReKV-S, Head-wise B-ReKV.

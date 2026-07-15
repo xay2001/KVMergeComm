@@ -1,0 +1,4 @@
+task,runs_done,complete,best_score,best_budget,best_config
+hotpotqa,6,True,0.668,0.7091016380000003,w16-r0.7
+musique,6,True,0.45,0.7094588460000006,w8-r0.7
+twowikimqa,6,True,0.44,0.7093704499999993,w8-r0.7

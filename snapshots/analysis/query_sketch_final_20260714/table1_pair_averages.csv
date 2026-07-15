@@ -1,0 +1,4 @@
+pair,pair_label,cells,complete_cells,mean_best_rekv_score,mean_brekv_score,mean_brekv_budget,mean_gap_brekv_minus_best
+pair1,S: Llama-3.1-8B; R: Llama-3.1-8B,8,8,0.5466021595833332,0.4733673120833333,0.30186968649999996,-0.0732348475
+pair6,S: Llama-3.2-3B Abl.; R: DeepSeek-Llama-3B,8,8,0.5051629533333333,0.40709852874999997,0.31853545333333316,-0.09806442458333336
+pair7,S: Qwen2.5-7B Unc.; R: Bespoke-Stratos-7B,8,8,0.43131803333333335,0.37021949333333337,0.37344456637499995,-0.061098540000000014
