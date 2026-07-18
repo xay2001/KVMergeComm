@@ -1,0 +1,13 @@
+######## Full matched-budget fairness supervisor START 2026-07-15 13:37:42 ########
+ROOT=snapshots/full_matched_budget_fairness_query_sketch
+GPU0=0
+GPU1=1
+WORKERS=both
+PAIR_IDS=1 2 3 4 5 6 7
+TASKS=countries tipsheets hotpotqa qasper musique multifieldqa_en twowikimqa tmath
+RUN_ITEMS=
+FIXED_RATIOS=0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.50 0.60
+B-ReKV=t0.95,s0.75,w8
+LIMIT=0
+GPU0 pid=1750371: snapshots/full_matched_budget_fairness_query_sketch/logs/gpu0_full_matched_budget_fairness_0715_1337.log
+GPU1 pid=1750372: snapshots/full_matched_budget_fairness_query_sketch/logs/gpu1_full_matched_budget_fairness_0715_1337.log
