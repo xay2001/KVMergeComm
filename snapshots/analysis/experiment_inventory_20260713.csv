@@ -1,6 +1,7 @@
 scope,pair,root,protocol,status,completed,expected,metric_source,notes
 Config search,#1/#6,snapshots/query_sketch_config_freeze,query_sketch_bf16_v1,grid complete; selection invalid,66,66,per_sample.jsonl,"t=0.98 s=1.0 w=8 exceeded the fixed-r budget grid in all 6 cells; endpoint clamping invalidated matched-budget acceptance"
 Stage3 fairness/Pareto,#1/#6/#7,snapshots/stage3_core_reviewer_query_sketch,query_sketch_bf16_v1 + query_agnostic_kv_v1,complete,360,360,per_sample.jsonl,"234 receiver-aware + 126 query-agnostic controls"
+Full matched-budget fairness,#1-#7 x 8 tasks,snapshots/full_matched_budget_fairness_query_sketch,query_sketch_bf16_v1 + query_agnostic_kv_v1,in progress 92%,1443,1568,per_sample.jsonl,"51 complete units: matched ReKV 26/51 ~tied; VN 47/51; Random 50/51; remaining pair6/tmath + pair7 odd tasks"
 Table1 Query-Sketch main,#1,snapshots/table1_pair1_query_sketch_llama31_same,query_sketch_bf16_v1,complete,56,56,per_sample.jsonl,"48/48 fixed ReKV + 8/8 main B-ReKV"
 Table1 Query-Sketch main,#6,snapshots/table1_pair6_query_sketch_llama32_abliterated_deepseek3b,mixed v1 + v0_pre_instrumentation,not protocol-complete,1,56,per_sample.jsonl,"Only one unique fixed cell is explicit v1; 47 fixed and provisional B-ReKV results are v0 accuracy-only"
 Table1 Query-Sketch main,#7,snapshots/table1_pair7_query_sketch_qwen25_uncensored_bespoke,query_sketch_bf16_v1,complete,56,56,per_sample.jsonl,"48/48 fixed ReKV + 8/8 main B-ReKV"

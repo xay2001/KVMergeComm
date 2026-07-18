@@ -8,3 +8,5 @@
 2026-07-18 18:19:02,990 - root - INFO - CUDA_VISIBLE_DEVICES: 1
 2026-07-18 18:19:07,964 - root - INFO - CVCommunicator initialized
 2026-07-18 18:19:08,532 - root - INFO - [merge] mode=evict score=value_norm budget=uniform layer compress: L=149 -> k=60 (r_eff=0.400, base_ratio=0.4, sink=4, recent=8)
+2026-07-18 18:37:11,335 - root - INFO - per-sample scores written to /home/xay/KVMergeComm/snapshots/full_matched_budget_fairness_query_sketch/pair6_llama32_abliterated_deepseek3b/tmath/fairness_evict/evict_r0.40_0718_1819/per_sample.jsonl
+2026-07-18 18:37:11,335 - root - INFO - communication result: 0.3272, communication time: 1083.37s

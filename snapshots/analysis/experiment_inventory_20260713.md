@@ -89,6 +89,30 @@ ValueNorm/Random”；不能声称 canonical B-ReKV 在所有 pair/task 都优�
 matched-budget fixed ReKV。B-ReKV 的主要价值是动态预算和 Pareto，而不是
 每个单元都提升绝对分数。
 
+#### Full 7×8 matched-budget expansion（2026-07-18 阶段性）
+
+Root：`snapshots/full_matched_budget_fairness_query_sketch/`
+
+- 进度：**1443/1568（92.0%）**；GPU1 仍在跑剩余项。
+- 已完成可分析单元：**51** 个 pair-task（每单元 ReKV + ValueNorm + Random 插值）。
+- 缺块：`pair6/tmath`，以及 `pair7` 的 `tipsheets/qasper/multifieldqa_en/tmath`。
+- 主配置仍为 `t0.95-s0.75-w8`；fixed ratio 网格 `0.10..0.60`。
+- 详细报告：`snapshots/analysis/full_matched_budget_fairness_20260718.md`
+
+在已完成 51 个单元上（B-ReKV − matched baseline）：
+
+| Baseline | wins | mean Δ | 结论 |
+|---|---:|---:|---|
+| matched ReKV | 26/51 | +0.0056 | 基本持平 |
+| ValueNorm/Evict | 47/51 | +0.0771 | 明显更强 |
+| Random | 50/51 | +0.1182 | 明显更强 |
+| best-per-task fixed ReKV | 1/51 | -0.0937 | 事后最优预算上界；非公平主结论 |
+| global fixed `r=0.6` | 5/51 | -0.0874 | 全局高预算；非免调参设定 |
+
+论文口径应写：B-ReKV 的价值是**无需逐任务选预算**，在 matched-budget
+下接近 ReKV 并显著超过 query-agnostic 基线；不要把 vs best-fixed 写成
+“B-ReKV 更弱”的主结论。
+
 代表性 matched-budget 分差（B-ReKV − baseline）：
 
 | Pair / Task | vs ReKV | vs Evict | vs Random | B-ReKV 实际预算 |

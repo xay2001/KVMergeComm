@@ -1,5 +1,17 @@
 # KVComm / ReKV 实验方案、结果与后续计划总文档
 
+> **2026-07-18 Full matched-budget fairness（阶段性）：**
+> 7 模型对 × 8 任务扩展公平比较已完成 **1443/1568（92%）**。
+> 在已完成的 51 个 pair-task 单元上：
+> - B-ReKV vs matched-budget ReKV：`26/51` 胜，mean Δ `+0.0056`（基本持平）
+> - vs ValueNorm：`47/51` 胜，mean Δ `+0.077`
+> - vs Random：`50/51` 胜，mean Δ `+0.118`
+> - vs best-per-task fixed ReKV：系统性落后（`1/51`），应解释为免调参代价，不是同预算质量更差
+>
+> 详细表与口径见
+> `snapshots/analysis/full_matched_budget_fairness_20260718.md`；
+> 原始 CSV 在 `snapshots/full_matched_budget_fairness_query_sketch/analysis/`。
+
 > **2026-07-13 协议区分说明：** 本文件包含大量历史实验记录，其中早期
 > `score_mode=receiver` 结果属于 `legacy_implicit_receiver_v0`，不能自动
 > 解释为当前可部署 Query-Sketch。最新完成度、冻结配置、Stage 3 结果及

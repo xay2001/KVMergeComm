@@ -1,0 +1,220 @@
+# Stage 3 核心审稿证据
+
+- 完成 runs：1443
+- 协议标识：query_agnostic_kv_v1, query_sketch_bf16_v1
+- matched-budget 比较：153/153 可插值
+- 超出 fixed-r 网格：0
+- B-ReKV Pareto 点：51
+- 预算分布单元：51
+- Strict 对比单元：0
+- PNG 图：未生成（缺少 matplotlib 或无数据）
+
+## Matched-budget fairness
+
+- pair1_llama31_same / countries / ReKV: budget=0.2944, delta=+0.0217, status=matched
+- pair1_llama31_same / countries / ValueNorm/Evict: budget=0.2944, delta=+0.0412, status=matched
+- pair1_llama31_same / countries / Random: budget=0.2944, delta=+0.2709, status=matched
+- pair1_llama31_same / hotpotqa / ReKV: budget=0.2754, delta=-0.0122, status=matched
+- pair1_llama31_same / hotpotqa / ValueNorm/Evict: budget=0.2754, delta=+0.0367, status=matched
+- pair1_llama31_same / hotpotqa / Random: budget=0.2754, delta=+0.1992, status=matched
+- pair1_llama31_same / multifieldqa_en / ReKV: budget=0.3354, delta=+0.0067, status=matched
+- pair1_llama31_same / multifieldqa_en / ValueNorm/Evict: budget=0.3354, delta=+0.1715, status=matched
+- pair1_llama31_same / multifieldqa_en / Random: budget=0.3354, delta=+0.1003, status=matched
+- pair1_llama31_same / musique / ReKV: budget=0.2745, delta=-0.0345, status=matched
+- pair1_llama31_same / musique / ValueNorm/Evict: budget=0.2745, delta=+0.0234, status=matched
+- pair1_llama31_same / musique / Random: budget=0.2745, delta=+0.1594, status=matched
+- pair1_llama31_same / qasper / ReKV: budget=0.3525, delta=-0.0012, status=matched
+- pair1_llama31_same / qasper / ValueNorm/Evict: budget=0.3525, delta=+0.0352, status=matched
+- pair1_llama31_same / qasper / Random: budget=0.3525, delta=+0.0796, status=matched
+- pair1_llama31_same / tipsheets / ReKV: budget=0.2781, delta=+0.1833, status=matched
+- pair1_llama31_same / tipsheets / ValueNorm/Evict: budget=0.2781, delta=+0.0852, status=matched
+- pair1_llama31_same / tipsheets / Random: budget=0.2781, delta=+0.1110, status=matched
+- pair1_llama31_same / tmath / ReKV: budget=0.2648, delta=+0.0068, status=matched
+- pair1_llama31_same / tmath / ValueNorm/Evict: budget=0.2648, delta=+0.0070, status=matched
+- pair1_llama31_same / tmath / Random: budget=0.2648, delta=+0.0146, status=matched
+- pair1_llama31_same / twowikimqa / ReKV: budget=0.3397, delta=+0.0126, status=matched
+- pair1_llama31_same / twowikimqa / ValueNorm/Evict: budget=0.3397, delta=+0.0958, status=matched
+- pair1_llama31_same / twowikimqa / Random: budget=0.3397, delta=+0.1218, status=matched
+- pair2_llama32_same / countries / ReKV: budget=0.2746, delta=+0.0402, status=matched
+- pair2_llama32_same / countries / ValueNorm/Evict: budget=0.2746, delta=+0.0607, status=matched
+- pair2_llama32_same / countries / Random: budget=0.2746, delta=+0.0517, status=matched
+- pair2_llama32_same / hotpotqa / ReKV: budget=0.2560, delta=-0.0035, status=matched
+- pair2_llama32_same / hotpotqa / ValueNorm/Evict: budget=0.2560, delta=+0.0325, status=matched
+- pair2_llama32_same / hotpotqa / Random: budget=0.2560, delta=+0.1768, status=matched
+- pair2_llama32_same / multifieldqa_en / ReKV: budget=0.4015, delta=-0.0188, status=matched
+- pair2_llama32_same / multifieldqa_en / ValueNorm/Evict: budget=0.4015, delta=+0.1460, status=matched
+- pair2_llama32_same / multifieldqa_en / Random: budget=0.4015, delta=+0.1554, status=matched
+- pair2_llama32_same / musique / ReKV: budget=0.2648, delta=+0.0060, status=matched
+- pair2_llama32_same / musique / ValueNorm/Evict: budget=0.2648, delta=+0.0309, status=matched
+- pair2_llama32_same / musique / Random: budget=0.2648, delta=+0.1184, status=matched
+- pair2_llama32_same / qasper / ReKV: budget=0.4068, delta=+0.0070, status=matched
+- pair2_llama32_same / qasper / ValueNorm/Evict: budget=0.4068, delta=+0.0555, status=matched
+- pair2_llama32_same / qasper / Random: budget=0.4068, delta=+0.0799, status=matched
+- pair2_llama32_same / tipsheets / ReKV: budget=0.2368, delta=+0.0439, status=matched
+- pair2_llama32_same / tipsheets / ValueNorm/Evict: budget=0.2368, delta=+0.0203, status=matched
+- pair2_llama32_same / tipsheets / Random: budget=0.2368, delta=+0.0493, status=matched
+- pair2_llama32_same / tmath / ReKV: budget=0.2576, delta=+0.0098, status=matched
+- pair2_llama32_same / tmath / ValueNorm/Evict: budget=0.2576, delta=+0.0156, status=matched
+- pair2_llama32_same / tmath / Random: budget=0.2576, delta=+0.0167, status=matched
+- pair2_llama32_same / twowikimqa / ReKV: budget=0.4015, delta=+0.0200, status=matched
+- pair2_llama32_same / twowikimqa / ValueNorm/Evict: budget=0.4015, delta=+0.1141, status=matched
+- pair2_llama32_same / twowikimqa / Random: budget=0.4015, delta=+0.1045, status=matched
+- pair3_qwen25_7b_same / countries / ReKV: budget=0.3849, delta=+0.1453, status=matched
+- pair3_qwen25_7b_same / countries / ValueNorm/Evict: budget=0.3849, delta=+0.1276, status=matched
+- pair3_qwen25_7b_same / countries / Random: budget=0.3849, delta=+0.1328, status=matched
+- pair3_qwen25_7b_same / hotpotqa / ReKV: budget=0.3619, delta=-0.0100, status=matched
+- pair3_qwen25_7b_same / hotpotqa / ValueNorm/Evict: budget=0.3619, delta=-0.0948, status=matched
+- pair3_qwen25_7b_same / hotpotqa / Random: budget=0.3619, delta=+0.0854, status=matched
+- pair3_qwen25_7b_same / multifieldqa_en / ReKV: budget=0.3399, delta=-0.0641, status=matched
+- pair3_qwen25_7b_same / multifieldqa_en / ValueNorm/Evict: budget=0.3399, delta=+0.0887, status=matched
+- pair3_qwen25_7b_same / multifieldqa_en / Random: budget=0.3399, delta=+0.1092, status=matched
+- pair3_qwen25_7b_same / musique / ReKV: budget=0.3209, delta=-0.0505, status=matched
+- pair3_qwen25_7b_same / musique / ValueNorm/Evict: budget=0.3209, delta=-0.0920, status=matched
+- pair3_qwen25_7b_same / musique / Random: budget=0.3209, delta=+0.0595, status=matched
+- pair3_qwen25_7b_same / qasper / ReKV: budget=0.3502, delta=-0.0422, status=matched
+- pair3_qwen25_7b_same / qasper / ValueNorm/Evict: budget=0.3502, delta=-0.0466, status=matched
+- pair3_qwen25_7b_same / qasper / Random: budget=0.3502, delta=+0.0311, status=matched
+- pair3_qwen25_7b_same / tipsheets / ReKV: budget=0.3713, delta=-0.0376, status=matched
+- pair3_qwen25_7b_same / tipsheets / ValueNorm/Evict: budget=0.3713, delta=+0.2120, status=matched
+- pair3_qwen25_7b_same / tipsheets / Random: budget=0.3713, delta=+0.1370, status=matched
+- pair3_qwen25_7b_same / tmath / ReKV: budget=0.3631, delta=-0.0046, status=matched
+- pair3_qwen25_7b_same / tmath / ValueNorm/Evict: budget=0.3631, delta=-0.0051, status=matched
+- pair3_qwen25_7b_same / tmath / Random: budget=0.3631, delta=-0.0050, status=matched
+- pair3_qwen25_7b_same / twowikimqa / ReKV: budget=0.3182, delta=-0.0601, status=matched
+- pair3_qwen25_7b_same / twowikimqa / ValueNorm/Evict: budget=0.3182, delta=+0.0672, status=matched
+- pair3_qwen25_7b_same / twowikimqa / Random: budget=0.3182, delta=+0.0943, status=matched
+- pair4_falcon3_7b_same / countries / ReKV: budget=0.4357, delta=-0.0752, status=matched
+- pair4_falcon3_7b_same / countries / ValueNorm/Evict: budget=0.4357, delta=+0.0728, status=matched
+- pair4_falcon3_7b_same / countries / Random: budget=0.4357, delta=+0.1506, status=matched
+- pair4_falcon3_7b_same / hotpotqa / ReKV: budget=0.3393, delta=-0.0306, status=matched
+- pair4_falcon3_7b_same / hotpotqa / ValueNorm/Evict: budget=0.3393, delta=+0.0384, status=matched
+- pair4_falcon3_7b_same / hotpotqa / Random: budget=0.3393, delta=+0.1027, status=matched
+- pair4_falcon3_7b_same / multifieldqa_en / ReKV: budget=0.1525, delta=-0.0600, status=matched
+- pair4_falcon3_7b_same / multifieldqa_en / ValueNorm/Evict: budget=0.1525, delta=+0.0231, status=matched
+- pair4_falcon3_7b_same / multifieldqa_en / Random: budget=0.1525, delta=+0.0526, status=matched
+- pair4_falcon3_7b_same / musique / ReKV: budget=0.2592, delta=-0.0063, status=matched
+- pair4_falcon3_7b_same / musique / ValueNorm/Evict: budget=0.2592, delta=+0.0684, status=matched
+- pair4_falcon3_7b_same / musique / Random: budget=0.2592, delta=+0.1532, status=matched
+- pair4_falcon3_7b_same / qasper / ReKV: budget=0.2143, delta=-0.0509, status=matched
+- pair4_falcon3_7b_same / qasper / ValueNorm/Evict: budget=0.2143, delta=+0.0724, status=matched
+- pair4_falcon3_7b_same / qasper / Random: budget=0.2143, delta=+0.0790, status=matched
+- pair4_falcon3_7b_same / tipsheets / ReKV: budget=0.3281, delta=+0.1377, status=matched
+- pair4_falcon3_7b_same / tipsheets / ValueNorm/Evict: budget=0.3281, delta=+0.1689, status=matched
+- pair4_falcon3_7b_same / tipsheets / Random: budget=0.3281, delta=+0.1560, status=matched
+- pair4_falcon3_7b_same / tmath / ReKV: budget=0.2964, delta=+0.0023, status=matched
+- pair4_falcon3_7b_same / tmath / ValueNorm/Evict: budget=0.2964, delta=+0.0063, status=matched
+- pair4_falcon3_7b_same / tmath / Random: budget=0.2964, delta=+0.0049, status=matched
+- pair4_falcon3_7b_same / twowikimqa / ReKV: budget=0.1490, delta=-0.0220, status=matched
+- pair4_falcon3_7b_same / twowikimqa / ValueNorm/Evict: budget=0.1490, delta=+0.0280, status=matched
+- pair4_falcon3_7b_same / twowikimqa / Random: budget=0.1490, delta=+0.0783, status=matched
+- pair5_evolcodellama_toolace / countries / ReKV: budget=0.2951, delta=+0.0049, status=matched
+- pair5_evolcodellama_toolace / countries / ValueNorm/Evict: budget=0.2951, delta=+0.0456, status=matched
+- pair5_evolcodellama_toolace / countries / Random: budget=0.2951, delta=+0.2399, status=matched
+- pair5_evolcodellama_toolace / hotpotqa / ReKV: budget=0.2886, delta=-0.0448, status=matched
+- pair5_evolcodellama_toolace / hotpotqa / ValueNorm/Evict: budget=0.2886, delta=+0.0901, status=matched
+- pair5_evolcodellama_toolace / hotpotqa / Random: budget=0.2886, delta=+0.2702, status=matched
+- pair5_evolcodellama_toolace / multifieldqa_en / ReKV: budget=0.3594, delta=+0.0260, status=matched
+- pair5_evolcodellama_toolace / multifieldqa_en / ValueNorm/Evict: budget=0.3594, delta=+0.2073, status=matched
+- pair5_evolcodellama_toolace / multifieldqa_en / Random: budget=0.3594, delta=+0.1120, status=matched
+- pair5_evolcodellama_toolace / musique / ReKV: budget=0.3020, delta=-0.0194, status=matched
+- pair5_evolcodellama_toolace / musique / ValueNorm/Evict: budget=0.3020, delta=+0.1015, status=matched
+- pair5_evolcodellama_toolace / musique / Random: budget=0.3020, delta=+0.1667, status=matched
+- pair5_evolcodellama_toolace / qasper / ReKV: budget=0.3836, delta=+0.0143, status=matched
+- pair5_evolcodellama_toolace / qasper / ValueNorm/Evict: budget=0.3836, delta=+0.0537, status=matched
+- pair5_evolcodellama_toolace / qasper / Random: budget=0.3836, delta=+0.0986, status=matched
+- pair5_evolcodellama_toolace / tipsheets / ReKV: budget=0.2895, delta=+0.1348, status=matched
+- pair5_evolcodellama_toolace / tipsheets / ValueNorm/Evict: budget=0.2895, delta=+0.1921, status=matched
+- pair5_evolcodellama_toolace / tipsheets / Random: budget=0.2895, delta=+0.2234, status=matched
+- pair5_evolcodellama_toolace / tmath / ReKV: budget=0.2803, delta=+0.0027, status=matched
+- pair5_evolcodellama_toolace / tmath / ValueNorm/Evict: budget=0.2803, delta=+0.0179, status=matched
+- pair5_evolcodellama_toolace / tmath / Random: budget=0.2803, delta=+0.0202, status=matched
+- pair5_evolcodellama_toolace / twowikimqa / ReKV: budget=0.3749, delta=-0.0241, status=matched
+- pair5_evolcodellama_toolace / twowikimqa / ValueNorm/Evict: budget=0.3749, delta=+0.0508, status=matched
+- pair5_evolcodellama_toolace / twowikimqa / Random: budget=0.3749, delta=+0.0945, status=matched
+- pair6_llama32_abliterated_deepseek3b / countries / ReKV: budget=0.3529, delta=+0.0957, status=matched
+- pair6_llama32_abliterated_deepseek3b / countries / ValueNorm/Evict: budget=0.3529, delta=+0.1418, status=matched
+- pair6_llama32_abliterated_deepseek3b / countries / Random: budget=0.3529, delta=+0.1321, status=matched
+- pair6_llama32_abliterated_deepseek3b / hotpotqa / ReKV: budget=0.2530, delta=-0.0472, status=matched
+- pair6_llama32_abliterated_deepseek3b / hotpotqa / ValueNorm/Evict: budget=0.2530, delta=+0.0575, status=matched
+- pair6_llama32_abliterated_deepseek3b / hotpotqa / Random: budget=0.2530, delta=+0.1478, status=matched
+- pair6_llama32_abliterated_deepseek3b / multifieldqa_en / ReKV: budget=0.3948, delta=+0.0023, status=matched
+- pair6_llama32_abliterated_deepseek3b / multifieldqa_en / ValueNorm/Evict: budget=0.3948, delta=+0.1131, status=matched
+- pair6_llama32_abliterated_deepseek3b / multifieldqa_en / Random: budget=0.3948, delta=+0.1030, status=matched
+- pair6_llama32_abliterated_deepseek3b / musique / ReKV: budget=0.2519, delta=+0.0263, status=matched
+- pair6_llama32_abliterated_deepseek3b / musique / ValueNorm/Evict: budget=0.2519, delta=+0.1115, status=matched
+- pair6_llama32_abliterated_deepseek3b / musique / Random: budget=0.2519, delta=+0.1725, status=matched
+- pair6_llama32_abliterated_deepseek3b / qasper / ReKV: budget=0.4039, delta=+0.0042, status=matched
+- pair6_llama32_abliterated_deepseek3b / qasper / ValueNorm/Evict: budget=0.4039, delta=+0.0614, status=matched
+- pair6_llama32_abliterated_deepseek3b / qasper / Random: budget=0.4039, delta=+0.0464, status=matched
+- pair6_llama32_abliterated_deepseek3b / tipsheets / ReKV: budget=0.2370, delta=+0.0285, status=matched
+- pair6_llama32_abliterated_deepseek3b / tipsheets / ValueNorm/Evict: budget=0.2370, delta=+0.0529, status=matched
+- pair6_llama32_abliterated_deepseek3b / tipsheets / Random: budget=0.2370, delta=+0.0543, status=matched
+- pair6_llama32_abliterated_deepseek3b / twowikimqa / ReKV: budget=0.3999, delta=-0.0028, status=matched
+- pair6_llama32_abliterated_deepseek3b / twowikimqa / ValueNorm/Evict: budget=0.3999, delta=+0.0739, status=matched
+- pair6_llama32_abliterated_deepseek3b / twowikimqa / Random: budget=0.3999, delta=+0.0629, status=matched
+- pair7_qwen25_uncensored_bespoke / countries / ReKV: budget=0.4008, delta=+0.0725, status=matched
+- pair7_qwen25_uncensored_bespoke / countries / ValueNorm/Evict: budget=0.4008, delta=+0.4800, status=matched
+- pair7_qwen25_uncensored_bespoke / countries / Random: budget=0.4008, delta=+0.3893, status=matched
+- pair7_qwen25_uncensored_bespoke / hotpotqa / ReKV: budget=0.3853, delta=-0.0326, status=matched
+- pair7_qwen25_uncensored_bespoke / hotpotqa / ValueNorm/Evict: budget=0.3853, delta=+0.1827, status=matched
+- pair7_qwen25_uncensored_bespoke / hotpotqa / Random: budget=0.3853, delta=+0.2059, status=matched
+- pair7_qwen25_uncensored_bespoke / musique / ReKV: budget=0.3441, delta=-0.0187, status=matched
+- pair7_qwen25_uncensored_bespoke / musique / ValueNorm/Evict: budget=0.3441, delta=+0.0701, status=matched
+- pair7_qwen25_uncensored_bespoke / musique / Random: budget=0.3441, delta=+0.1296, status=matched
+- pair7_qwen25_uncensored_bespoke / twowikimqa / ReKV: budget=0.3417, delta=+0.0063, status=matched
+- pair7_qwen25_uncensored_bespoke / twowikimqa / ValueNorm/Evict: budget=0.3417, delta=+0.1198, status=matched
+- pair7_qwen25_uncensored_bespoke / twowikimqa / Random: budget=0.3417, delta=+0.1283, status=matched
+
+## Budget distribution
+
+- pair1_llama31_same / countries: mean=0.2944, std=0.0057, p10-p90=0.2889-0.3008, unique=133
+- pair1_llama31_same / hotpotqa: mean=0.2754, std=0.0202, p10-p90=0.2487-0.3000, unique=486
+- pair1_llama31_same / multifieldqa_en: mean=0.3354, std=0.0331, p10-p90=0.2928-0.3737, unique=149
+- pair1_llama31_same / musique: mean=0.2745, std=0.0243, p10-p90=0.2427-0.3028, unique=500
+- pair1_llama31_same / qasper: mean=0.3525, std=0.0228, p10-p90=0.3217-0.3813, unique=434
+- pair1_llama31_same / tipsheets: mean=0.2781, std=0.0074, p10-p90=0.2676-0.2870, unique=451
+- pair1_llama31_same / tmath: mean=0.2648, std=0.0241, p10-p90=0.2321-0.2947, unique=297
+- pair1_llama31_same / twowikimqa: mean=0.3397, std=0.0254, p10-p90=0.3088-0.3712, unique=200
+- pair2_llama32_same / countries: mean=0.2746, std=0.0036, p10-p90=0.2713-0.2779, unique=108
+- pair2_llama32_same / hotpotqa: mean=0.2560, std=0.0176, p10-p90=0.2332-0.2768, unique=485
+- pair2_llama32_same / multifieldqa_en: mean=0.4015, std=0.0447, p10-p90=0.3445-0.4497, unique=149
+- pair2_llama32_same / musique: mean=0.2648, std=0.0248, p10-p90=0.2326-0.2939, unique=498
+- pair2_llama32_same / qasper: mean=0.4068, std=0.0276, p10-p90=0.3701-0.4407, unique=434
+- pair2_llama32_same / tipsheets: mean=0.2368, std=0.0059, p10-p90=0.2290-0.2444, unique=443
+- pair2_llama32_same / tmath: mean=0.2576, std=0.0231, p10-p90=0.2256-0.2854, unique=297
+- pair2_llama32_same / twowikimqa: mean=0.4015, std=0.0328, p10-p90=0.3640-0.4382, unique=200
+- pair3_qwen25_7b_same / countries: mean=0.3849, std=0.0055, p10-p90=0.3802-0.3898, unique=115
+- pair3_qwen25_7b_same / hotpotqa: mean=0.3619, std=0.0245, p10-p90=0.3291-0.3907, unique=479
+- pair3_qwen25_7b_same / multifieldqa_en: mean=0.3399, std=0.0430, p10-p90=0.2905-0.3831, unique=149
+- pair3_qwen25_7b_same / musique: mean=0.3209, std=0.0304, p10-p90=0.2848-0.3585, unique=498
+- pair3_qwen25_7b_same / qasper: mean=0.3502, std=0.0181, p10-p90=0.3256-0.3729, unique=435
+- pair3_qwen25_7b_same / tipsheets: mean=0.3713, std=0.0082, p10-p90=0.3602-0.3818, unique=447
+- pair3_qwen25_7b_same / tmath: mean=0.3631, std=0.0212, p10-p90=0.3401-0.3852, unique=297
+- pair3_qwen25_7b_same / twowikimqa: mean=0.3182, std=0.0294, p10-p90=0.2825-0.3573, unique=200
+- pair4_falcon3_7b_same / countries: mean=0.4357, std=0.0170, p10-p90=0.4157-0.4508, unique=115
+- pair4_falcon3_7b_same / hotpotqa: mean=0.3393, std=0.0385, p10-p90=0.2890-0.3880, unique=491
+- pair4_falcon3_7b_same / multifieldqa_en: mean=0.1525, std=0.0194, p10-p90=0.1297-0.1742, unique=149
+- pair4_falcon3_7b_same / musique: mean=0.2592, std=0.0366, p10-p90=0.2189-0.3102, unique=499
+- pair4_falcon3_7b_same / qasper: mean=0.2143, std=0.0195, p10-p90=0.1896-0.2389, unique=434
+- pair4_falcon3_7b_same / tipsheets: mean=0.3281, std=0.0163, p10-p90=0.3060-0.3498, unique=458
+- pair4_falcon3_7b_same / tmath: mean=0.2964, std=0.0302, p10-p90=0.2558-0.3297, unique=298
+- pair4_falcon3_7b_same / twowikimqa: mean=0.1490, std=0.0118, p10-p90=0.1359-0.1639, unique=200
+- pair5_evolcodellama_toolace / countries: mean=0.2951, std=0.0050, p10-p90=0.2901-0.3015, unique=123
+- pair5_evolcodellama_toolace / hotpotqa: mean=0.2886, std=0.0202, p10-p90=0.2645-0.3140, unique=487
+- pair5_evolcodellama_toolace / multifieldqa_en: mean=0.3594, std=0.0314, p10-p90=0.3172-0.3928, unique=149
+- pair5_evolcodellama_toolace / musique: mean=0.3020, std=0.0249, p10-p90=0.2715-0.3282, unique=500
+- pair5_evolcodellama_toolace / qasper: mean=0.3836, std=0.0207, p10-p90=0.3560-0.4094, unique=435
+- pair5_evolcodellama_toolace / tipsheets: mean=0.2895, std=0.0071, p10-p90=0.2800-0.2985, unique=460
+- pair5_evolcodellama_toolace / tmath: mean=0.2803, std=0.0210, p10-p90=0.2524-0.3072, unique=299
+- pair5_evolcodellama_toolace / twowikimqa: mean=0.3749, std=0.0222, p10-p90=0.3477-0.4028, unique=200
+- pair6_llama32_abliterated_deepseek3b / countries: mean=0.3529, std=0.0140, p10-p90=0.3377-0.3675, unique=93
+- pair6_llama32_abliterated_deepseek3b / hotpotqa: mean=0.2530, std=0.0211, p10-p90=0.2236-0.2791, unique=478
+- pair6_llama32_abliterated_deepseek3b / multifieldqa_en: mean=0.3948, std=0.0466, p10-p90=0.3395-0.4457, unique=149
+- pair6_llama32_abliterated_deepseek3b / musique: mean=0.2519, std=0.0259, p10-p90=0.2183-0.2823, unique=499
+- pair6_llama32_abliterated_deepseek3b / qasper: mean=0.4039, std=0.0287, p10-p90=0.3651-0.4399, unique=434
+- pair6_llama32_abliterated_deepseek3b / tipsheets: mean=0.2370, std=0.0085, p10-p90=0.2273-0.2481, unique=416
+- pair6_llama32_abliterated_deepseek3b / twowikimqa: mean=0.3999, std=0.0338, p10-p90=0.3591-0.4378, unique=200
+- pair7_qwen25_uncensored_bespoke / countries: mean=0.4008, std=0.0051, p10-p90=0.3953-0.4065, unique=124
+- pair7_qwen25_uncensored_bespoke / hotpotqa: mean=0.3853, std=0.0240, p10-p90=0.3540-0.4129, unique=488
+- pair7_qwen25_uncensored_bespoke / musique: mean=0.3441, std=0.0304, p10-p90=0.3094-0.3797, unique=496
+- pair7_qwen25_uncensored_bespoke / twowikimqa: mean=0.3417, std=0.0288, p10-p90=0.3038-0.3801, unique=200
