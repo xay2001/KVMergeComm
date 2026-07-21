@@ -1,15 +1,16 @@
 # KVComm / ReKV 实验方案、结果与后续计划总文档
 
-> **2026-07-18 Full matched-budget fairness（阶段性）：**
-> 7 模型对 × 8 任务扩展公平比较已完成 **1443/1568（92%）**。
-> 在已完成的 51 个 pair-task 单元上：
-> - B-ReKV vs matched-budget ReKV：`26/51` 胜，mean Δ `+0.0056`（基本持平）
-> - vs ValueNorm：`47/51` 胜，mean Δ `+0.077`
-> - vs Random：`50/51` 胜，mean Δ `+0.118`
-> - vs best-per-task fixed ReKV：系统性落后（`1/51`），应解释为免调参代价，不是同预算质量更差
+> **2026-07-21 Full matched-budget fairness（最终）：**
+> 7 模型对 × 8 任务扩展公平比较已完成 **1568/1568（100%）**。
+> 在全部 56 个 pair-task 单元上：
+> - B-ReKV vs matched-budget ReKV：`28/56` 胜，mean Δ `+0.0036`（基本持平）
+> - vs ValueNorm：`51/56` 胜，mean Δ `+0.0923`
+> - vs Random：`54/56` 胜，mean Δ `+0.1267`
+> - vs best-per-task fixed ReKV：`1/56` 胜、`54/56` 负、1 平，mean Δ `-0.0889`；这是逐任务事后选预算上界，不是 matched-budget 主结论
+> - B-ReKV 平均实际预算 `0.3215`，与 fixed `r=0.30` 的 `0.3244` 最接近；宏平均分差仅 `+0.0040`
 >
 > 详细表与口径见
-> `snapshots/analysis/full_matched_budget_fairness_20260718.md`；
+> `snapshots/analysis/full_matched_budget_fairness_20260721.md`；
 > 原始 CSV 在 `snapshots/full_matched_budget_fairness_query_sketch/analysis/`。
 
 > **2026-07-13 协议区分说明：** 本文件包含大量历史实验记录，其中早期

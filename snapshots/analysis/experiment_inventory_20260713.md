@@ -89,25 +89,25 @@ ValueNorm/Random”；不能声称 canonical B-ReKV 在所有 pair/task 都优�
 matched-budget fixed ReKV。B-ReKV 的主要价值是动态预算和 Pareto，而不是
 每个单元都提升绝对分数。
 
-#### Full 7×8 matched-budget expansion（2026-07-18 阶段性）
+#### Full 7×8 matched-budget expansion（2026-07-21 最终）
 
 Root：`snapshots/full_matched_budget_fairness_query_sketch/`
 
-- 进度：**1443/1568（92.0%）**；GPU1 仍在跑剩余项。
-- 已完成可分析单元：**51** 个 pair-task（每单元 ReKV + ValueNorm + Random 插值）。
-- 缺块：`pair6/tmath`，以及 `pair7` 的 `tipsheets/qasper/multifieldqa_en/tmath`。
+- 进度：**1568/1568（100%）**。
+- 已完成可分析单元：**56** 个 pair-task（每单元 ReKV + ValueNorm + Random 插值）。
+- 168/168 matched-budget 对比均可插值，0 个超出 fixed-r 网格。
 - 主配置仍为 `t0.95-s0.75-w8`；fixed ratio 网格 `0.10..0.60`。
-- 详细报告：`snapshots/analysis/full_matched_budget_fairness_20260718.md`
+- 详细报告：`snapshots/analysis/full_matched_budget_fairness_20260721.md`
 
-在已完成 51 个单元上（B-ReKV − matched baseline）：
+在全部 56 个单元上（B-ReKV − matched baseline）：
 
 | Baseline | wins | mean Δ | 结论 |
 |---|---:|---:|---|
-| matched ReKV | 26/51 | +0.0056 | 基本持平 |
-| ValueNorm/Evict | 47/51 | +0.0771 | 明显更强 |
-| Random | 50/51 | +0.1182 | 明显更强 |
-| best-per-task fixed ReKV | 1/51 | -0.0937 | 事后最优预算上界；非公平主结论 |
-| global fixed `r=0.6` | 5/51 | -0.0874 | 全局高预算；非免调参设定 |
+| matched ReKV | 28/56 | +0.0036 | 基本持平 |
+| ValueNorm/Evict | 51/56 | +0.0923 | 明显更强 |
+| Random | 54/56 | +0.1267 | 明显更强 |
+| best-per-task fixed ReKV | 1/56 | -0.0889 | 事后最优预算上界；非公平主结论 |
+| fixed `r=0.6` | 5/56 | -0.0828 | 平均实际预算 0.6137；非 matched-budget |
 
 论文口径应写：B-ReKV 的价值是**无需逐任务选预算**，在 matched-budget
 下接近 ReKV 并显著超过 query-agnostic 基线；不要把 vs best-fixed 写成

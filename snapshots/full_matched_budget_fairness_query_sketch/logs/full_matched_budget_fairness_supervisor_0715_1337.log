@@ -11,3 +11,6 @@ B-ReKV=t0.95,s0.75,w8
 LIMIT=0
 GPU0 pid=1750371: snapshots/full_matched_budget_fairness_query_sketch/logs/gpu0_full_matched_budget_fairness_0715_1337.log
 GPU1 pid=1750372: snapshots/full_matched_budget_fairness_query_sketch/logs/gpu1_full_matched_budget_fairness_0715_1337.log
+matplotlib is unavailable; CSV/Markdown written, PNG plots skipped
+runs=1568 analysis=/home/xay/KVMergeComm/snapshots/full_matched_budget_fairness_query_sketch/analysis
+######## Full matched-budget fairness supervisor DONE status=0 2026-07-20 05:05:28 ########

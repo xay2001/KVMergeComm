@@ -1,11 +1,11 @@
 # Stage 3 核心审稿证据
 
-- 完成 runs：1443
+- 完成 runs：1568
 - 协议标识：query_agnostic_kv_v1, query_sketch_bf16_v1
-- matched-budget 比较：153/153 可插值
+- matched-budget 比较：168/168 可插值
 - 超出 fixed-r 网格：0
-- B-ReKV Pareto 点：51
-- 预算分布单元：51
+- B-ReKV Pareto 点：56
+- 预算分布单元：56
 - Strict 对比单元：0
 - PNG 图：未生成（缺少 matplotlib 或无数据）
 
@@ -149,6 +149,9 @@
 - pair6_llama32_abliterated_deepseek3b / tipsheets / ReKV: budget=0.2370, delta=+0.0285, status=matched
 - pair6_llama32_abliterated_deepseek3b / tipsheets / ValueNorm/Evict: budget=0.2370, delta=+0.0529, status=matched
 - pair6_llama32_abliterated_deepseek3b / tipsheets / Random: budget=0.2370, delta=+0.0543, status=matched
+- pair6_llama32_abliterated_deepseek3b / tmath / ReKV: budget=0.2511, delta=+0.0029, status=matched
+- pair6_llama32_abliterated_deepseek3b / tmath / ValueNorm/Evict: budget=0.2511, delta=-0.0032, status=matched
+- pair6_llama32_abliterated_deepseek3b / tmath / Random: budget=0.2511, delta=+0.0022, status=matched
 - pair6_llama32_abliterated_deepseek3b / twowikimqa / ReKV: budget=0.3999, delta=-0.0028, status=matched
 - pair6_llama32_abliterated_deepseek3b / twowikimqa / ValueNorm/Evict: budget=0.3999, delta=+0.0739, status=matched
 - pair6_llama32_abliterated_deepseek3b / twowikimqa / Random: budget=0.3999, delta=+0.0629, status=matched
@@ -158,9 +161,21 @@
 - pair7_qwen25_uncensored_bespoke / hotpotqa / ReKV: budget=0.3853, delta=-0.0326, status=matched
 - pair7_qwen25_uncensored_bespoke / hotpotqa / ValueNorm/Evict: budget=0.3853, delta=+0.1827, status=matched
 - pair7_qwen25_uncensored_bespoke / hotpotqa / Random: budget=0.3853, delta=+0.2059, status=matched
+- pair7_qwen25_uncensored_bespoke / multifieldqa_en / ReKV: budget=0.3585, delta=-0.0759, status=matched
+- pair7_qwen25_uncensored_bespoke / multifieldqa_en / ValueNorm/Evict: budget=0.3585, delta=+0.2189, status=matched
+- pair7_qwen25_uncensored_bespoke / multifieldqa_en / Random: budget=0.3585, delta=+0.1569, status=matched
 - pair7_qwen25_uncensored_bespoke / musique / ReKV: budget=0.3441, delta=-0.0187, status=matched
 - pair7_qwen25_uncensored_bespoke / musique / ValueNorm/Evict: budget=0.3441, delta=+0.0701, status=matched
 - pair7_qwen25_uncensored_bespoke / musique / Random: budget=0.3441, delta=+0.1296, status=matched
+- pair7_qwen25_uncensored_bespoke / qasper / ReKV: budget=0.3684, delta=-0.0234, status=matched
+- pair7_qwen25_uncensored_bespoke / qasper / ValueNorm/Evict: budget=0.3684, delta=+0.1056, status=matched
+- pair7_qwen25_uncensored_bespoke / qasper / Random: budget=0.3684, delta=+0.0990, status=matched
+- pair7_qwen25_uncensored_bespoke / tipsheets / ReKV: budget=0.3980, delta=+0.0109, status=matched
+- pair7_qwen25_uncensored_bespoke / tipsheets / ValueNorm/Evict: budget=0.3980, delta=+0.9141, status=matched
+- pair7_qwen25_uncensored_bespoke / tipsheets / Random: budget=0.3980, delta=+0.8088, status=matched
+- pair7_qwen25_uncensored_bespoke / tmath / ReKV: budget=0.3907, delta=-0.0015, status=matched
+- pair7_qwen25_uncensored_bespoke / tmath / ValueNorm/Evict: budget=0.3907, delta=+0.0008, status=matched
+- pair7_qwen25_uncensored_bespoke / tmath / Random: budget=0.3907, delta=-0.0013, status=matched
 - pair7_qwen25_uncensored_bespoke / twowikimqa / ReKV: budget=0.3417, delta=+0.0063, status=matched
 - pair7_qwen25_uncensored_bespoke / twowikimqa / ValueNorm/Evict: budget=0.3417, delta=+0.1198, status=matched
 - pair7_qwen25_uncensored_bespoke / twowikimqa / Random: budget=0.3417, delta=+0.1283, status=matched
@@ -213,8 +228,13 @@
 - pair6_llama32_abliterated_deepseek3b / musique: mean=0.2519, std=0.0259, p10-p90=0.2183-0.2823, unique=499
 - pair6_llama32_abliterated_deepseek3b / qasper: mean=0.4039, std=0.0287, p10-p90=0.3651-0.4399, unique=434
 - pair6_llama32_abliterated_deepseek3b / tipsheets: mean=0.2370, std=0.0085, p10-p90=0.2273-0.2481, unique=416
+- pair6_llama32_abliterated_deepseek3b / tmath: mean=0.2511, std=0.0264, p10-p90=0.2178-0.2823, unique=297
 - pair6_llama32_abliterated_deepseek3b / twowikimqa: mean=0.3999, std=0.0338, p10-p90=0.3591-0.4378, unique=200
 - pair7_qwen25_uncensored_bespoke / countries: mean=0.4008, std=0.0051, p10-p90=0.3953-0.4065, unique=124
 - pair7_qwen25_uncensored_bespoke / hotpotqa: mean=0.3853, std=0.0240, p10-p90=0.3540-0.4129, unique=488
+- pair7_qwen25_uncensored_bespoke / multifieldqa_en: mean=0.3585, std=0.0420, p10-p90=0.3044-0.4018, unique=149
 - pair7_qwen25_uncensored_bespoke / musique: mean=0.3441, std=0.0304, p10-p90=0.3094-0.3797, unique=496
+- pair7_qwen25_uncensored_bespoke / qasper: mean=0.3684, std=0.0183, p10-p90=0.3434-0.3922, unique=434
+- pair7_qwen25_uncensored_bespoke / tipsheets: mean=0.3980, std=0.0088, p10-p90=0.3864-0.4093, unique=438
+- pair7_qwen25_uncensored_bespoke / tmath: mean=0.3907, std=0.0193, p10-p90=0.3686-0.4101, unique=296
 - pair7_qwen25_uncensored_bespoke / twowikimqa: mean=0.3417, std=0.0288, p10-p90=0.3038-0.3801, unique=200

@@ -12,8 +12,8 @@ manifest.
 - `snapshots/analysis/experiment_inventory_20260713.csv`: machine-readable protocol/status inventory.
 - `snapshots/analysis/fast_node_completion_20260714.md`: audited 123/123 fast-node Query-Sketch results and metrics.
 - `snapshots/analysis/fast_node_completion_20260714.csv`: machine-readable completion and global remaining-work summary.
-- `snapshots/analysis/full_matched_budget_fairness_20260718.md`: full 7×8 matched-budget fairness 阶段性分析（1443/1568）。
-- `snapshots/analysis/full_matched_budget_fairness_20260718.csv`: 51 个已完成 pair-task 的 matched-budget 主表。
+- `snapshots/analysis/full_matched_budget_fairness_20260721.md`: final 7×8 matched-budget fairness report（1568/1568）。
+- `snapshots/analysis/full_matched_budget_fairness_20260718.md`: superseded 92% interim report.
 - `snapshots/full_matched_budget_fairness_query_sketch/analysis/`: raw CSVs（all_runs / matched / distribution / vs-best / vs-global）。
 - `snapshots/RESULTS.md`: narrative experiment record and historical notes.
 - `snapshots/EXPERIMENT_TODO.md`: full paper/appendix/reviewer-risk experiment checklist.
@@ -29,7 +29,7 @@ python scripts/build_experiment_manifest.py
 
 ## Current Manifest Summary
 
-Generated from `snapshots/**/log.log`.
+Generated from `snapshots/**/log.log` on 2026-07-21; 4,758 runs indexed.
 
 | Paper table | Pair | Snapshot root | Runs indexed | Status |
 |---|---:|---|---:|---|
@@ -43,6 +43,7 @@ Generated from `snapshots/**/log.log`.
 | Table 8 | #5 | `snapshots/table8_pair5_evolcodellama_toolace/` | 72 | Complete for 8 datasets x 9 paper-table runs |
 | Table 8 | #9 | `snapshots/table8_pair9_supernova_deepseek_llama8b/` | 72 | Complete but deferred from positive comparison; KVComm probe is also poor on QA/multi-hop tasks |
 | Table 10 | multi-source | `snapshots/table10_multi_source_rekv/` | 18 | Complete for hotpotqa / musique / twowikimqa x ReKV-w8/w16 x r=0.3/0.5/0.7 |
+| Reviewer fairness | #1–#7 | `snapshots/full_matched_budget_fairness_query_sketch/` | 1,570 | Complete: 1,568 valid runs; 2 early interrupted `r0.10` attempts retained as `unknown` |
 
 ## Paper-Table Run Definition
 
@@ -107,7 +108,7 @@ These experiments were added to support the paper framing beyond raw accuracy.
 | Coverage robustness / Pareto | `snapshots/coverage_robustness_summary.txt`, `snapshots/{musique,hotpotqa,multifieldqa_en}/coverage_pareto.png`, `snapshots/analysis/robustness/pair6_pair7_brekv_robustness_summary.csv`, `snapshots/analysis/robustness/pair{6,7}_{hotpotqa,musique}_brekv_pareto.png` | Done; pair #6/#7 summary and Pareto plots generated |
 | B-ReKV budget adaptivity | `snapshots/brekv_budget_distribution.png`, `snapshots/brekv_budget_distribution_summary.csv` | Done |
 | Receiver-initiated fairness | `snapshots/query_fairness/pair1_llama31_same/query_fairness.csv` | Done |
-| Full matched-budget fairness (7 pairs × 8 tasks) | `snapshots/full_matched_budget_fairness_query_sketch/`, `snapshots/analysis/full_matched_budget_fairness_20260718.md` | **In progress 1443/1568 (92%)**; 51 complete units analyzed. Matched ReKV 26/51 (~tied); ValueNorm 47/51; Random 50/51. Remaining: `pair6/tmath` + `pair7` odd tasks |
+| Full matched-budget fairness (7 pairs × 8 tasks) | `snapshots/full_matched_budget_fairness_query_sketch/`, `snapshots/analysis/full_matched_budget_fairness_20260721.md` | **Complete 1568/1568**. Matched ReKV 28/56, mean Δ +0.0036; ValueNorm 51/56, +0.0923; Random 54/56, +0.1267 |
 | Interpretability / evidence proxy | `snapshots/interpretability/pair1_llama31_same/interpretability_overlap_summary.csv`, `interpretability_examples.md`, `cleaned/*_clean_top_tokens.png`, `snapshots/deletion_ablation/pair1_llama31_same/deletion_ablation_summary_w8_r0.3_k20.csv`, `snapshots/supporting_overlap/hotpotqa_pair1_full_context/supporting_overlap_summary_top20_w8_r0.3.csv`, `snapshots/analysis/figures/supporting_overlap_bar.png` | Done; supporting-facts overlap added |
 | Failure / task sensitivity analysis | `snapshots/analysis/failure_cases/`, `snapshots/analysis/task_type_sensitivity/`, `snapshots/analysis/figures/failure_rate_heatmap.png`, `snapshots/analysis/figures/task_type_sensitivity_bar.png` | Done from existing per-sample outputs |
 | Sink/recent token ablation | `snapshots/mechanism/pair1_llama31_same/sink_recent/` | Done for 8 main tasks |
