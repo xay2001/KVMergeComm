@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "dataset": "hotpotqa",
+    "method": "nld",
+    "sender_aware": false,
+    "receiver_aware": true,
+    "max_tokens_phase_1": 128,
+    "warmup": 3,
+    "n": 50
+  },
+  "score_mean": 0.64,
+  "ctx_tokens_A_mean": 156.9,
+  "query_tokens_B_mean": 50.24,
+  "nld_answer_tokens_A_mean": 72.02,
+  "nld_answer_tokens_B_initial_mean": 10.48,
+  "nld_refine_input_tokens_mean": 156.66,
+  "nld_text_payload_tokens_mean": 72.02,
+  "nld_text_payload_bytes_mean": 315.46,
+  "output_tokens_mean": 5.86,
+  "t_prepare_inputs_mean": 0.001105,
+  "t_model_a_phase1_mean": 1.022622,
+  "t_model_b_phase1_mean": 0.148628,
+  "t_prepare_refine_mean": 0.000733,
+  "t_model_b_refine_mean": 0.0841,
+  "t_total_mean": 1.257187,
+  "peak_mem_gb_mean": 12.0301
+}

@@ -1,0 +1,60 @@
+######## NLD receiver-aware cost profile START 2026-07-25 17:44:44 ########
+GPU=3
+PAIRS=1 6 7
+TASKS=hotpotqa musique multifieldqa_en
+PROFILE_LIMIT=50
+PROFILE_WARMUP=3
+PHASE1_TOKENS=128
+MODE=aware
+ROOT=snapshots/nld_receiver_aware_cost_v1
+==== [GPU3] pair1_llama31_same hotpotqa nld_aware_cost limit=50 warmup=3 2026-07-25 17:44:44 ====
+/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-25 17:44:49,061 - root - INFO - Logging setup completed. Log file: snapshots/nld_receiver_aware_cost_v1/pair1_llama31_same/hotpotqa/nld_aware/nld_aware_cost_0725_1744/log.log
+2026-07-25 17:44:49,061 - root - INFO - Log level: INFO
+2026-07-25 17:44:49,061 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/nld_receiver_aware_cost_v1/pair1_llama31_same/hotpotqa/nld_aware', model_A='/sharedspace/models/Llama-3.1-8B-Instruct', model_B='/sharedspace/models/Llama-3.1-8B-Instruct', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=True, profile_limit=50, profile_warmup=3, test_task='hotpotqa', task_name='', limit=0, do_test=False, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=True, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=True, f='replace', layer_k=26, layer_j=26, run_name='nld_aware_cost', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-25 17:44:49,061 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/nld_receiver_aware_cost_v1/pair1_llama31_same/hotpotqa/nld_aware/nld_aware_cost_0725_1744
+2026-07-25 17:44:49,062 - root - INFO - Log level: INFO
+2026-07-25 17:44:49,205 - root - INFO - Number of GPU: 1
+2026-07-25 17:44:49,206 - root - INFO - Using GPU: NVIDIA RTX PRO 6000 Blackwell Server Edition
+2026-07-25 17:44:49,206 - root - INFO - CUDA_VISIBLE_DEVICES: 3
+Traceback (most recent call last):
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/transformers/utils/hub.py", line 470, in cached_files
+    hf_hub_download(
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 106, in _inner_fn
+    validate_repo_id(arg_value)
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 154, in validate_repo_id
+    raise HFValidationError(
+huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/sharedspace/models/Llama-3.1-8B-Instruct'. Use `repo_type` argument if needed.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/xay/KVMergeComm/com.py", line 268, in <module>
+    main(config)
+  File "/home/xay/KVMergeComm/com.py", line 151, in main
+    tokenizer = AutoTokenizer.from_pretrained(cfg.model_B)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/transformers/models/auto/tokenization_auto.py", line 983, in from_pretrained
+    tokenizer_config = get_tokenizer_config(pretrained_model_name_or_path, **kwargs)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/transformers/models/auto/tokenization_auto.py", line 815, in get_tokenizer_config
+    resolved_config_file = cached_file(
+                           ^^^^^^^^^^^^
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/transformers/utils/hub.py", line 312, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/transformers/utils/hub.py", line 522, in cached_files
+    resolved_files = [
+                     ^
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/transformers/utils/hub.py", line 523, in <listcomp>
+    _get_cache_file_to_return(path_or_repo_id, filename, cache_dir, revision) for filename in full_filenames
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/transformers/utils/hub.py", line 140, in _get_cache_file_to_return
+    resolved_file = try_to_load_from_cache(path_or_repo_id, full_filename, cache_dir=cache_dir, revision=revision)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 106, in _inner_fn
+    validate_repo_id(arg_value)
+  File "/home/xay/miniconda3/envs/ReKV/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 154, in validate_repo_id
+    raise HFValidationError(
+huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/sharedspace/models/Llama-3.1-8B-Instruct'. Use `repo_type` argument if needed.

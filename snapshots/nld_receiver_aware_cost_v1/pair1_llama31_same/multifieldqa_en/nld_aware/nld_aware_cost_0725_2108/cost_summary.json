@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "dataset": "multifieldqa_en",
+    "method": "nld",
+    "sender_aware": false,
+    "receiver_aware": true,
+    "max_tokens_phase_1": 128,
+    "warmup": 3,
+    "n": 50
+  },
+  "score_mean": 0.62,
+  "ctx_tokens_A_mean": 7237.24,
+  "query_tokens_B_mean": 70.44,
+  "nld_answer_tokens_A_mean": 20.58,
+  "nld_answer_tokens_B_initial_mean": 21.96,
+  "nld_refine_input_tokens_mean": 136.18,
+  "nld_text_payload_tokens_mean": 20.58,
+  "nld_text_payload_bytes_mean": 87.34,
+  "output_tokens_mean": 18.16,
+  "t_prepare_inputs_mean": 0.013311,
+  "t_model_a_phase1_mean": 0.829479,
+  "t_model_b_phase1_mean": 0.364465,
+  "t_prepare_refine_mean": 0.000726,
+  "t_model_b_refine_mean": 0.305148,
+  "t_total_mean": 1.513129,
+  "peak_mem_gb_mean": 31.634111
+}

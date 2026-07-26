@@ -94,6 +94,9 @@ class AlignConfig:
     # max tokens to generate for model A and B in phase 1
     nld_max_tokens_model_A_and_B_phase1: int = 128
     sender_aware: bool = False
+    # receiver-aware NLD: give the sender the receiver's query text (fair-text
+    # baseline), instead of the default query-blind NLD protocol
+    nld_receiver_aware: bool = False
     # AC configuration
     f: Literal["replace", "sum", "mean"] = "replace"
     layer_k: int = 26
@@ -224,7 +227,7 @@ def main(cfg: AlignConfig):
         ac_evaluator = ACEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
         results = ac_evaluator.test(model_A, ac, limit=cfg.limit)
     if cfg.do_test_nld:
-        nld_evaluator = NLDEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length, cfg.nld_max_tokens_model_A_and_B_phase1, cfg.sender_aware)
+        nld_evaluator = NLDEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length, cfg.nld_max_tokens_model_A_and_B_phase1, cfg.sender_aware, cfg.nld_receiver_aware)
         if cfg.profile_cost:
             results = nld_evaluator.test_cost_profile(model_A, model_B, limit=cfg.profile_limit, warmup=cfg.profile_warmup)
         else:

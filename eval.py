@@ -100,6 +100,20 @@ SENDER_MATH_INSTRUCTION = "Summarize the hint in a concise way, as it will be us
 SENDER_CODE_INSTRUCTION = "Summarize the code snippet in a concise way, as it will be used by another agent to complete the code."
 SENDER_SUMMARIZE_INSTRUCTION = "Summarize the content in a concise way, as it will be used by another agent to understand the content."
 
+# Receiver-aware NLD: unlike COMMUNICATION_*_MSG_TEMPLATE_A (query-blind) or
+# SENDER_*_INSTRUCTION (still query-blind, only reworded), these templates give
+# the sender model the receiver's question/code/content alongside its own
+# context, mirroring what B-ReKV's query sketch already lets the sender see.
+COMMUNICATION_QA_MSG_TEMPLATE_A_AWARE = "Instruction: {instruction} Context: {context} Question: {question}"
+COMMUNICATION_MATH_MSG_TEMPLATE_A_AWARE = "Instruction: {instruction} Hint: {hint} Question: {question}"
+COMMUNICATION_CODE_MSG_TEMPLATE_A_AWARE = "Instruction: {instruction} Context: {context} Code Snippet: {code_snippet}"
+COMMUNICATION_SUMMARIZE_MSG_TEMPLATE_A_AWARE = "Instruction: {instruction} Content part 1: {content_part_1} Content part 2: {content_part_2}"
+
+RECEIVER_AWARE_QA_INSTRUCTION = "Given the question, extract and summarize the evidence from the context passage that is needed to answer it, as it will be used by another agent to produce the final answer."
+RECEIVER_AWARE_MATH_INSTRUCTION = "Given the question, extract and summarize the part of the hint that is needed to answer it, as it will be used by another agent to produce the final answer."
+RECEIVER_AWARE_CODE_INSTRUCTION = "Given the code snippet, extract and summarize the part of the context that is needed to complete it, as it will be used by another agent to complete the code."
+RECEIVER_AWARE_SUMMARIZE_INSTRUCTION = "Given content part 2, extract and summarize the part of content part 1 that is relevant to it, as it will be used by another agent."
+
 THINK_MODEL_LIST = ["deepseek-ai/DeepSeek-R1-Distill-Llama-8B"]
 
 def is_think_model(model):
@@ -848,14 +862,27 @@ REFINE_TMPL = "{prompt}\nYour previous answer:\n{self_answer}\nOther agents' ans
 
 
 class NLDEvaluator(CommunicationEvaluator):
-    def __init__(self, evaluator, tokenizer, use_wandb, max_input_length, max_tokens_A_model_phase1, sender_aware=False):
+    def __init__(self, evaluator, tokenizer, use_wandb, max_input_length, max_tokens_A_model_phase1, sender_aware=False, receiver_aware=False):
         super().__init__(evaluator, tokenizer, use_wandb, max_input_length)
         self.name = "nld"
         self.max_tokens_phase_1 = max_tokens_A_model_phase1
         self.sender_aware = sender_aware
+        # receiver_aware: give the sender (model A) the receiver's question/query
+        # text alongside its own context, so the NLD baseline is no longer
+        # query-blind. Takes precedence over sender_aware for template choice.
+        self.receiver_aware = receiver_aware
 
     def prepare_input_ids(self, item, model_A, model_B):
-        if self.sender_aware:
+        if self.receiver_aware:
+            if hasattr(self.evaluator, "tmath"):
+                msg_A = COMMUNICATION_MATH_MSG_TEMPLATE_A_AWARE.format(instruction=RECEIVER_AWARE_MATH_INSTRUCTION, hint=item["prompt_A"], question=item["prompt_B"])
+            elif hasattr(self.evaluator, "repobench"):
+                msg_A = COMMUNICATION_CODE_MSG_TEMPLATE_A_AWARE.format(instruction=RECEIVER_AWARE_CODE_INSTRUCTION, context=item["prompt_A"], code_snippet=item["prompt_B"])
+            elif hasattr(self.evaluator, "sasum"):
+                msg_A = COMMUNICATION_SUMMARIZE_MSG_TEMPLATE_A_AWARE.format(instruction=RECEIVER_AWARE_SUMMARIZE_INSTRUCTION, content_part_1=item["prompt_A"], content_part_2=item["prompt_B"])
+            else:
+                msg_A = COMMUNICATION_QA_MSG_TEMPLATE_A_AWARE.format(instruction=RECEIVER_AWARE_QA_INSTRUCTION, context=item["prompt_A"], question=item["prompt_B"])
+        elif self.sender_aware:
             if hasattr(self.evaluator, "tmath"):
                 msg_A = COMMUNICATION_MATH_MSG_TEMPLATE_A.format(instruction=SENDER_MATH_INSTRUCTION, hint=item["prompt_A"])
             elif hasattr(self.evaluator, "repobench"):
@@ -1075,6 +1102,7 @@ class NLDEvaluator(CommunicationEvaluator):
             "dataset": getattr(self.evaluator, "name", None),
             "method": self.name,
             "sender_aware": self.sender_aware,
+            "receiver_aware": self.receiver_aware,
             "max_tokens_phase_1": self.max_tokens_phase_1,
             "warmup": warmup,
             "n": len(rows),
