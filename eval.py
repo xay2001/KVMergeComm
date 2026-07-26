@@ -9,6 +9,9 @@ import time
 import os
 import json
 import copy
+import math
+import re
+from collections import Counter
 from pathlib import Path
 
 RECEIVER_AWARE_SCORE_MODES = {
@@ -859,6 +862,293 @@ class ACEvaluator(CommunicationEvaluator):
         return result
 
 REFINE_TMPL = "{prompt}\nYour previous answer:\n{self_answer}\nOther agents' answers (for your consideration):\n{others}\nIf needed, revise your answer. Your new answer is:"
+
+TEXT_RETRIEVAL_QA_TEMPLATE = (
+    "Instruction: {instruction}\n"
+    "Retrieved context passages:\n{context}\n"
+    "Question: {question}"
+)
+
+
+class QueryAwareTextRetrievalEvaluator(CommunicationEvaluator):
+    """Training-free query-aware BM25 text retrieval baseline.
+
+    The receiver sends its raw query to the context holder. The context holder
+    ranks token-window chunks of the original context with BM25 and returns only
+    the selected text. The receiver performs one prefill/generation pass.
+    """
+
+    protocol_version = "query_aware_text_retrieval_bm25_v1"
+
+    def __init__(
+        self,
+        evaluator,
+        tokenizer,
+        use_wandb,
+        max_input_length,
+        top_k=4,
+        chunk_tokens=128,
+        chunk_stride=96,
+        bm25_k1=1.5,
+        bm25_b=0.75,
+    ):
+        super().__init__(evaluator, tokenizer, use_wandb, max_input_length)
+        self.name = "query_aware_text_retrieval"
+        self.top_k = max(int(top_k), 1)
+        self.chunk_tokens = max(int(chunk_tokens), 8)
+        self.chunk_stride = max(min(int(chunk_stride), self.chunk_tokens), 1)
+        self.bm25_k1 = float(bm25_k1)
+        self.bm25_b = float(bm25_b)
+
+    def truncate_input(self, input_ids):
+        if input_ids.shape[-1] > self.max_input_length and self.evaluator.truncate_input:
+            half = int(self.max_input_length / 2)
+            input_ids = torch.cat([input_ids[:, :half], input_ids[:, -half:]], dim=-1)
+        return input_ids
+
+    @staticmethod
+    def _lexical_tokens(text):
+        return re.findall(r"\w+", str(text).lower(), flags=re.UNICODE)
+
+    def _chunk_context(self, context):
+        token_ids = self.tokenizer.encode(str(context), add_special_tokens=False)
+        if not token_ids:
+            return [str(context)]
+        chunks = []
+        for start in range(0, len(token_ids), self.chunk_stride):
+            ids = token_ids[start : start + self.chunk_tokens]
+            if not ids:
+                break
+            chunks.append(
+                self.tokenizer.decode(
+                    ids,
+                    skip_special_tokens=True,
+                    clean_up_tokenization_spaces=False,
+                )
+            )
+            if start + self.chunk_tokens >= len(token_ids):
+                break
+        return chunks
+
+    def _bm25_rank(self, query, chunks):
+        query_terms = self._lexical_tokens(query)
+        documents = [self._lexical_tokens(chunk) for chunk in chunks]
+        if not query_terms or not documents:
+            return list(range(min(self.top_k, len(chunks))))
+
+        n_docs = len(documents)
+        avgdl = sum(len(doc) for doc in documents) / max(n_docs, 1)
+        document_frequency = Counter()
+        term_frequencies = []
+        for document in documents:
+            frequencies = Counter(document)
+            term_frequencies.append(frequencies)
+            document_frequency.update(frequencies.keys())
+
+        query_frequency = Counter(query_terms)
+        scores = []
+        for index, (document, frequencies) in enumerate(zip(documents, term_frequencies)):
+            length_norm = 1.0 - self.bm25_b + self.bm25_b * len(document) / max(avgdl, 1.0)
+            score = 0.0
+            for term, query_count in query_frequency.items():
+                frequency = frequencies.get(term, 0)
+                if frequency == 0:
+                    continue
+                df = document_frequency[term]
+                inverse_document_frequency = math.log(
+                    1.0 + (n_docs - df + 0.5) / (df + 0.5)
+                )
+                score += (
+                    query_count
+                    * inverse_document_frequency
+                    * frequency
+                    * (self.bm25_k1 + 1.0)
+                    / (frequency + self.bm25_k1 * length_norm)
+                )
+            scores.append((score, index))
+        scores.sort(key=lambda pair: (-pair[0], pair[1]))
+        return [index for _, index in scores[: min(self.top_k, len(scores))]]
+
+    def _retrieve(self, item):
+        context = str(item["prompt_A"])
+        query = str(item["prompt_B"])
+        chunks = self._chunk_context(context)
+        selected_indices = self._bm25_rank(query, chunks)
+        selected_chunks = [chunks[index] for index in selected_indices]
+        retrieved_text = "\n\n".join(
+            f"[Passage {rank + 1}]\n{chunk}"
+            for rank, chunk in enumerate(selected_chunks)
+        )
+        return query, retrieved_text, selected_indices, len(chunks)
+
+    def _prepare_receiver_input(self, model_B, query, retrieved_text):
+        if hasattr(self.evaluator, "tmath"):
+            message = SKTLINE_MATH_MSG_TEMPLATE.format(
+                instruction=MATH_INSTRUCTION,
+                hint=retrieved_text,
+                question=query,
+            )
+        elif hasattr(self.evaluator, "repobench"):
+            message = SKTLINE_CODE_MSG_TEMPLATE.format(
+                instruction=CODE_INSTRUCTION,
+                context=retrieved_text,
+                code_snippet=query,
+            )
+        elif hasattr(self.evaluator, "sasum"):
+            message = SKTLINE_SUMMARIZE_MSG_TEMPLATE.format(
+                instruction=SUMMARIZE_INSTRUCTION,
+                content_part_1=retrieved_text,
+                content_part_2=query,
+            )
+        else:
+            message = TEXT_RETRIEVAL_QA_TEMPLATE.format(
+                instruction=QA_INSTRUCTION,
+                context=retrieved_text,
+                question=query,
+            )
+        input_ids = apply_chat_template(self.evaluator, self.tokenizer, message, model_B)
+        return self.truncate_input(input_ids)
+
+    def inference_with_cost(self, model_B, item):
+        _reset_peak_memory(model_B)
+        _sync_if_cuda(model_B)
+        started = time.perf_counter()
+
+        retrieval_started = time.perf_counter()
+        query, retrieved_text, selected_indices, chunk_count = self._retrieve(item)
+        t_retrieval = time.perf_counter() - retrieval_started
+
+        prepare_started = time.perf_counter()
+        input_ids = self._prepare_receiver_input(model_B, query, retrieved_text)
+        _sync_if_cuda(model_B)
+        t_prepare_receiver = time.perf_counter() - prepare_started
+
+        generation_started = time.perf_counter()
+        output = model_B.generate(
+            input_ids,
+            attention_mask=torch.ones_like(input_ids),
+            **self.generate_args,
+        )[0]
+        _sync_if_cuda(model_B)
+        t_receiver_generate = time.perf_counter() - generation_started
+
+        receiver_input_tokens = int(input_ids.shape[-1])
+        response = self.get_response(output, receiver_input_tokens)
+        output_tokens = int(max(output.shape[-1] - receiver_input_tokens, 0))
+        query_tokens = len(self.tokenizer.encode(query, add_special_tokens=False))
+        retrieved_tokens = len(
+            self.tokenizer.encode(retrieved_text, add_special_tokens=False)
+        )
+        query_bytes = len(query.encode("utf-8"))
+        retrieved_bytes = len(retrieved_text.encode("utf-8"))
+        selection_index_bytes = 4 * len(selected_indices)
+        metadata_bytes = 16
+        total_communication_bytes = (
+            query_bytes + retrieved_bytes + selection_index_bytes + metadata_bytes
+        )
+        return response, {
+            "query_tokens": query_tokens,
+            "retrieved_text_tokens": retrieved_tokens,
+            "receiver_input_tokens": receiver_input_tokens,
+            "output_tokens": output_tokens,
+            "query_bytes": query_bytes,
+            "retrieved_text_bytes": retrieved_bytes,
+            "selection_index_bytes": selection_index_bytes,
+            "communication_metadata_bytes": metadata_bytes,
+            "b_to_a_communication_bytes": query_bytes,
+            "a_to_b_communication_bytes": retrieved_bytes + selection_index_bytes + metadata_bytes,
+            "total_communication_bytes": total_communication_bytes,
+            "context_chunk_count": chunk_count,
+            "retrieved_chunk_count": len(selected_indices),
+            "selected_chunk_indices": selected_indices,
+            "t_retrieval": round(float(t_retrieval), 6),
+            "t_prepare_receiver": round(float(t_prepare_receiver), 6),
+            "t_receiver_generate": round(float(t_receiver_generate), 6),
+            "t_total": round(float(time.perf_counter() - started), 6),
+            "peak_mem_gb": (
+                round(float(_peak_memory_gb(model_B)), 6)
+                if _peak_memory_gb(model_B) is not None
+                else None
+            ),
+        }
+
+    def _dump_cost_profile(self, rows, warmup):
+        run_dir = _current_run_dir()
+        if run_dir is None:
+            return
+        meta = {
+            "dataset": getattr(self.evaluator, "name", None),
+            "method": self.name,
+            "protocol_version": self.protocol_version,
+            "retriever": "bm25",
+            "top_k": self.top_k,
+            "chunk_tokens": self.chunk_tokens,
+            "chunk_stride": self.chunk_stride,
+            "bm25_k1": self.bm25_k1,
+            "bm25_b": self.bm25_b,
+            "warmup": warmup,
+            "n": len(rows),
+        }
+        profile_path = os.path.join(run_dir, "cost_profile.jsonl")
+        summary_path = os.path.join(run_dir, "cost_summary.json")
+        scalar_keys = [
+            key
+            for key in rows[0]
+            if key not in {"id", "selected_chunk_indices"} and isinstance(rows[0][key], (int, float))
+        ] if rows else []
+        summary = {"_meta": meta}
+        for key in scalar_keys:
+            values = [float(row[key]) for row in rows if row.get(key) is not None]
+            summary[f"{key}_mean"] = round(sum(values) / len(values), 6) if values else None
+        with open(profile_path, "w") as handle:
+            handle.write(json.dumps({"_meta": meta}) + "\n")
+            for row in rows:
+                handle.write(json.dumps(row) + "\n")
+        with open(summary_path, "w") as handle:
+            json.dump(summary, handle, indent=2)
+            handle.write("\n")
+        logging.info("text retrieval cost profile written to %s", profile_path)
+
+    @torch.no_grad()
+    def test_cost_profile(self, model_B, limit=50, warmup=5):
+        measured = []
+        warmup = max(int(warmup or 0), 0)
+        limit = max(int(limit or 0), 0)
+        total_needed = None if limit <= 0 else warmup + limit
+        progress = tqdm(self.evaluator, desc=f"{self.name} cost-profile")
+        for source_idx, item in enumerate(progress):
+            if total_needed is not None and source_idx >= total_needed:
+                break
+            try:
+                response, row = self.inference_with_cost(model_B, item)
+            except Exception as error:
+                logging.error("Error during text retrieval inference: %s", error)
+                continue
+            if source_idx < warmup:
+                continue
+            previous_total = self.evaluator.f1_total
+            self.evaluator.evaluate_item(item, response)
+            row.update(
+                {
+                    "idx": source_idx - warmup,
+                    "source_idx": source_idx,
+                    "id": item.get("_id", item.get("id")) if hasattr(item, "get") else None,
+                    "score": round(float(self.evaluator.f1_total - previous_total), 6),
+                }
+            )
+            measured.append(row)
+            target = "all" if limit <= 0 else str(limit)
+            progress.set_description(f"{self.name} cost-profile [{len(measured)}/{target}]")
+        self._dump_cost_profile(measured, warmup)
+        result = self.evaluator.get_result()
+        logging.info(
+            "%s cost profile result: %.4f, measured=%d, warmup=%d",
+            self.name,
+            result,
+            len(measured),
+            warmup,
+        )
+        return result
 
 
 class NLDEvaluator(CommunicationEvaluator):

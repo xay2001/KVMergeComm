@@ -13,7 +13,15 @@ from models_cipher import CipherAgent
 from typing import Literal
 from utils import setup_logging, log_gpu_info, generate_run_name
 from dataloader import get_evaluator
-from eval import SkylineEvaluator, CommunicationEvaluator, BaselineEvaluator, ACEvaluator, NLDEvaluator, CipherEvaluator
+from eval import (
+    SkylineEvaluator,
+    CommunicationEvaluator,
+    BaselineEvaluator,
+    ACEvaluator,
+    NLDEvaluator,
+    QueryAwareTextRetrievalEvaluator,
+    CipherEvaluator,
+)
 from layer_importance import get_top_layers, get_layer_ranking
 import random
 
@@ -89,6 +97,7 @@ class AlignConfig:
     do_test_baseline: bool = False
     do_test_ac: bool = False
     do_test_nld: bool = False
+    do_test_text_retrieval: bool = False
     do_test_cipher: bool = False
     # NLD configuration
     # max tokens to generate for model A and B in phase 1
@@ -97,6 +106,12 @@ class AlignConfig:
     # receiver-aware NLD: give the sender the receiver's query text (fair-text
     # baseline), instead of the default query-blind NLD protocol
     nld_receiver_aware: bool = False
+    # Training-free receiver-aware original-text retrieval baseline.
+    text_retrieval_top_k: int = 4
+    text_retrieval_chunk_tokens: int = 128
+    text_retrieval_chunk_stride: int = 96
+    text_retrieval_bm25_k1: float = 1.5
+    text_retrieval_bm25_b: float = 0.75
     # AC configuration
     f: Literal["replace", "sum", "mean"] = "replace"
     layer_k: int = 26
@@ -152,16 +167,35 @@ def main(cfg: AlignConfig):
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    model_A = AutoModelForCausalLM.from_pretrained(cfg.model_A, device_map={"": cfg.device}, torch_dtype=torch.bfloat16, attn_implementation="sdpa")
+    needs_model_A = any(
+        [
+            cfg.do_test_skyline,
+            cfg.do_test_baseline,
+            cfg.do_test,
+            cfg.do_test_ac,
+            cfg.do_test_nld,
+            cfg.do_test_cipher,
+        ]
+    )
+    model_A = None
+    if needs_model_A:
+        model_A = AutoModelForCausalLM.from_pretrained(
+            cfg.model_A,
+            device_map={"": cfg.device},
+            torch_dtype=torch.bfloat16,
+            attn_implementation="sdpa",
+        )
     model_B = AutoModelForCausalLM.from_pretrained(cfg.model_B, device_map={"": cfg.device}, torch_dtype=torch.bfloat16, attn_implementation="sdpa")
-    model_A.eval()
+    if model_A is not None:
+        model_A.eval()
     model_B.eval()
 
     # special case for Gemma
     if "gemma" in cfg.model_A.lower() or "gemma" in cfg.model_B.lower():
         torch._dynamo.config.cache_size_limit = 64
 
-    model_A.name = cfg.model_A
+    if model_A is not None:
+        model_A.name = cfg.model_A
     model_B.name = cfg.model_B
 
     evaluator = get_evaluator(cfg.test_task)
@@ -232,6 +266,25 @@ def main(cfg: AlignConfig):
             results = nld_evaluator.test_cost_profile(model_A, model_B, limit=cfg.profile_limit, warmup=cfg.profile_warmup)
         else:
             results = nld_evaluator.test(model_A, model_B, limit=cfg.limit)
+    if cfg.do_test_text_retrieval:
+        text_retrieval_evaluator = QueryAwareTextRetrievalEvaluator(
+            evaluator,
+            tokenizer,
+            cfg.use_wandb,
+            cfg.max_input_length,
+            top_k=cfg.text_retrieval_top_k,
+            chunk_tokens=cfg.text_retrieval_chunk_tokens,
+            chunk_stride=cfg.text_retrieval_chunk_stride,
+            bm25_k1=cfg.text_retrieval_bm25_k1,
+            bm25_b=cfg.text_retrieval_bm25_b,
+        )
+        if not cfg.profile_cost:
+            raise ValueError("--do_test_text_retrieval currently requires --profile_cost")
+        results = text_retrieval_evaluator.test_cost_profile(
+            model_B,
+            limit=cfg.profile_limit,
+            warmup=cfg.profile_warmup,
+        )
     if cfg.do_test_cipher:
         model_A = CipherAgent(model_A, tokenizer)
         model_B = CipherAgent(model_B, tokenizer)
