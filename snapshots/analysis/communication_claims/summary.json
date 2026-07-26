@@ -1,0 +1,128 @@
+{
+  "inputs": {
+    "fairness_root": "/home/xay/KVMergeComm/snapshots/full_matched_budget_fairness_query_sketch",
+    "kv_cost_root": "/home/xay/KVMergeComm/snapshots/query_sketch_cost_v1",
+    "nld_cost_root": "/home/xay/KVMergeComm/snapshots/nld_receiver_aware_cost_v1"
+  },
+  "parameters": {
+    "bandwidth_gbps": [
+      1.0,
+      10.0,
+      25.0,
+      100.0
+    ],
+    "rtt_ms": [
+      0.0,
+      1.0,
+      10.0,
+      50.0
+    ],
+    "rtt_rounds": 1,
+    "n_bootstrap": 10000,
+    "seed": 42,
+    "canonical_brekv": {
+      "tau": 0.95,
+      "scale": 0.75,
+      "window": 8
+    }
+  },
+  "validation": {
+    "logical_runs": 1568,
+    "matched_rows": 168,
+    "fairness_cells": 168,
+    "cost_profiles": 27,
+    "cost_bootstrap_cells": 18,
+    "f3b_rows": 432
+  },
+  "m1_global": [
+    {
+      "scope": "global",
+      "group": "all",
+      "baseline_method": "ReKV",
+      "n_cells": 56,
+      "mean_delta": 0.003586524988461283,
+      "median_delta": 0.000538898972205798,
+      "wins": 28,
+      "losses": 28,
+      "ties": 0,
+      "mean_brekv_budget": 0.3215171662440478
+    },
+    {
+      "scope": "global",
+      "group": "all",
+      "baseline_method": "ValueNorm/Evict",
+      "n_cells": 56,
+      "mean_delta": 0.0922647523627019,
+      "median_delta": 0.06431242985996379,
+      "wins": 51,
+      "losses": 5,
+      "ties": 0,
+      "mean_brekv_budget": 0.3215171662440478
+    },
+    {
+      "scope": "global",
+      "group": "all",
+      "baseline_method": "Random",
+      "n_cells": 56,
+      "mean_delta": 0.1266804784208003,
+      "median_delta": 0.1068473074829572,
+      "wins": 54,
+      "losses": 2,
+      "ties": 0,
+      "mean_brekv_budget": 0.3215171662440478
+    }
+  ],
+  "m2_macro": [
+    {
+      "comparison": "B-ReKV - ReKV",
+      "scope": "56-cell stratified macro",
+      "n_cells": 56,
+      "mean_delta": 0.003586524988461292,
+      "ci_low": -0.000712082532731487,
+      "ci_high": 0.007894926369737274,
+      "bootstrap_win_probability": 0.95
+    },
+    {
+      "comparison": "B-ReKV - ValueNorm/Evict",
+      "scope": "56-cell stratified macro",
+      "n_cells": 56,
+      "mean_delta": 0.09226475236270189,
+      "ci_low": 0.08585143429022761,
+      "ci_high": 0.09866201566117613,
+      "bootstrap_win_probability": 1.0
+    },
+    {
+      "comparison": "B-ReKV - Random",
+      "scope": "56-cell stratified macro",
+      "n_cells": 56,
+      "mean_delta": 0.12668047842080027,
+      "ci_low": 0.12028866178427401,
+      "ci_high": 0.1333574383753399,
+      "bootstrap_win_probability": 1.0
+    },
+    {
+      "comparison": "NLD - B-ReKV",
+      "scope": "9-cell stratified macro",
+      "n_cells": 9,
+      "mean_delta": -0.013333333333333329,
+      "ci_low": -0.06444444444444444,
+      "ci_high": 0.03777777777777777,
+      "bootstrap_win_probability": 0.3036
+    },
+    {
+      "comparison": "NLD - ReKV",
+      "scope": "9-cell stratified macro",
+      "n_cells": 9,
+      "mean_delta": -0.0488888888888889,
+      "ci_low": -0.09777777777777778,
+      "ci_high": 2.3322393399240934e-18,
+      "bootstrap_win_probability": 0.0257
+    }
+  ],
+  "figures": [
+    "/home/xay/KVMergeComm/snapshots/analysis/communication_claims/figures/f3b_latency_curves.png",
+    "/home/xay/KVMergeComm/snapshots/analysis/communication_claims/figures/f3b_latency_curves.pdf",
+    "/home/xay/KVMergeComm/snapshots/analysis/communication_claims/figures/m1_rekv_pareto_macro.png",
+    "/home/xay/KVMergeComm/snapshots/analysis/communication_claims/figures/m1_rekv_pareto_macro.pdf"
+  ]
+}

@@ -1,0 +1,16 @@
+######## Communication claims analysis START 2026-07-26 17:01:21 ########
+CUDA_VISIBLE_DEVICES=0
+FAIRNESS_ROOT=snapshots/full_matched_budget_fairness_query_sketch
+KV_COST_ROOT=snapshots/query_sketch_cost_v1
+NLD_COST_ROOT=snapshots/nld_receiver_aware_cost_v1
+OUT_DIR=snapshots/analysis/communication_claims
+N_BOOTSTRAP=10000
+SEED=42
+BANDWIDTH_GBPS=1 10 25 100
+RTT_MS=0 1 10 50
+Loading 1568-run matched-budget sweep...
+Running fairness paired bootstrap (10000 replicates)...
+Loading paired cost profiles...
+Running cost paired bootstrap (10000 replicates)...
+Analysis complete: /home/xay/KVMergeComm/snapshots/analysis/communication_claims
+######## Communication claims analysis DONE 2026-07-26 17:01:32 ########

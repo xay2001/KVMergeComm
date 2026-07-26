@@ -11,3 +11,5 @@ tiktoken
 contractions
 rouge
 fuzzywuzzy
+numpy
+matplotlib
