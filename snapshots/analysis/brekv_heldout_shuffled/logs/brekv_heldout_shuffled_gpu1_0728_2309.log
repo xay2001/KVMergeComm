@@ -1,0 +1,10 @@
+######## B-ReKV held-out analysis START 2026-07-28 23:09:55 ########
+Traceback (most recent call last):
+  File "/home/xay/KVMergeComm/scripts/analyze_brekv_heldout_and_shuffled.py", line 583, in <module>
+    main()
+  File "/home/xay/KVMergeComm/scripts/analyze_brekv_heldout_and_shuffled.py", line 549, in main
+    shuffled_detail, shuffled_summary = build_shuffled(
+                                        ^^^^^^^^^^^^^^^
+  File "/home/xay/KVMergeComm/scripts/analyze_brekv_heldout_and_shuffled.py", line 446, in build_shuffled
+    raise ValueError(f"Budget multiset mismatch in {pair}/{task}: {max_error}")
+ValueError: Budget multiset mismatch in pair1_llama31_same/countries: 0.00024799999999997047

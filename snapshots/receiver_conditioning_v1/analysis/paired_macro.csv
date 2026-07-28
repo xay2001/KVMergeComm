@@ -1,0 +1,6 @@
+comparison,baseline,n_cells,mean_delta,ci_low,ci_high,p_delta_gt_zero,mean_budget_delta,max_abs_replay_error
+correct - shuffled,shuffled,9,0.11829629629629632,0.10066666666666667,0.13570370370370372,1.0,0.0,0.0
+correct - unrelated,unrelated,9,0.12185185185185188,0.10540740740740742,0.138,1.0,0.0,0.0
+correct - sender_text_receiver_encoder,sender_text_receiver_encoder,9,0.11792592592592592,0.10044444444444443,0.13577777777777778,1.0,0.0,0.0
+correct - sender_context_q,sender_context_q,9,0.12585185185185185,0.10814814814814816,0.1434074074074074,1.0,0.0,0.0
+correct - query_free,query_free,9,0.1322222222222222,0.11274074074074075,0.15148148148148147,1.0,0.0,0.0

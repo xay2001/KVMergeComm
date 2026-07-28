@@ -51,6 +51,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         coverage_tau_mode: str = "fixed",
         coverage_tau_min: float = 0.80,
         coverage_tau_max: float = 0.95,
+        query_condition_mode: str = "correct",
+        budget_replay_tolerance: float = 1e-3,
     ) -> None:
         super().__init__(model_B.config)
         self.A = model_A
@@ -87,6 +89,10 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.coverage_tau_mode = coverage_tau_mode
         self.coverage_tau_min = coverage_tau_min
         self.coverage_tau_max = coverage_tau_max
+        self.query_condition_mode = str(query_condition_mode).lower()
+        self.budget_replay_tolerance = float(budget_replay_tolerance)
+        self.replay_target_budget = None
+        self.replay_layer_budget = {}
         self.layer_budget = {}        # {layer_idx: r_l}, recomputed per query
         self.layer_coverage_target = {}
         self.layer_coverage_achieved = {}
@@ -128,12 +134,17 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         if apply_attn_tracer:
             self.B_attn_weights = {}
             self.apply_B_attn_tracer()
-            if self.query_sketch_mode == "token_ids" and self.score_mode != "receiver_oracle":
+            if (
+                self.query_sketch_mode == "token_ids"
+                and self.score_mode != "receiver_oracle"
+            ) or self.query_condition_mode == "sender_context_q":
                 self.apply_A_attn_tracer()
 
         logging.info(f"CVCommunicator initialized")
 
     def _protocol_version(self) -> str:
+        if self.query_condition_mode == "sender_context_q":
+            return "sender_context_q_local_v1"
         if self.score_mode == "receiver_oracle":
             return "full_kv_oracle_v1"
         if self.score_mode in {
@@ -145,6 +156,46 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         }:
             return f"query_sketch_{self.query_sketch_mode}_v1"
         return "query_agnostic_kv_v1"
+
+    def set_replay_budget(self, target: float, past_key_values) -> None:
+        """Build per-layer ratios whose realized total-KV ratio matches target."""
+        target = min(max(float(target), 0.0), 1.0)
+        lengths = [int(key.shape[-2]) for key in past_key_values.key_cache]
+        if not lengths:
+            raise ValueError("budget replay requires a non-empty KV cache")
+        total_tokens = sum(lengths)
+        desired_total = int(round(target * total_tokens))
+        minimum = [
+            min(self.merge_sink + self.merge_recent, length)
+            for length in lengths[1:]
+        ]
+        kept = minimum[:]
+        desired_compressed = min(
+            max(desired_total - lengths[0], sum(minimum)),
+            sum(lengths[1:]),
+        )
+        remaining = desired_compressed - sum(kept)
+        while remaining > 0:
+            active = [
+                index
+                for index, length in enumerate(lengths[1:])
+                if kept[index] < length
+            ]
+            if not active:
+                break
+            share = max(remaining // len(active), 1)
+            for index in active:
+                capacity = lengths[index + 1] - kept[index]
+                addition = min(share, capacity, remaining)
+                kept[index] += addition
+                remaining -= addition
+                if remaining == 0:
+                    break
+        self.replay_layer_budget = {
+            layer_idx: kept[layer_idx - 1] / lengths[layer_idx]
+            for layer_idx in range(1, len(lengths))
+        }
+        self.replay_target_budget = target
 
     @staticmethod
     def _sync_tensor_device(tensor: torch.Tensor):
@@ -227,6 +278,16 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                 + value_cache_i.numel() * value_cache_i.element_size()
             )
         self.last_kept_ratio = kept_tokens / total_tokens if total_tokens else None
+        if self.replay_target_budget is not None and self.last_kept_ratio is not None:
+            error = abs(self.last_kept_ratio - self.replay_target_budget)
+            if error > self.budget_replay_tolerance:
+                raise RuntimeError(
+                    "budget replay mismatch: "
+                    f"target={self.replay_target_budget:.6f}, "
+                    f"actual={self.last_kept_ratio:.6f}, "
+                    f"error={error:.6f}, "
+                    f"tolerance={self.budget_replay_tolerance:.6f}"
+                )
         self.last_kv_cost = {
             "protocol_version": self.protocol_version,
             "kv_tokens_sent": int(kept_tokens),
@@ -373,6 +434,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
     def _effective_ratio(self, layer_idx: int) -> float:
         """Per-layer keep ratio. Falls back to the global merge_ratio unless a
         budget-aware allocation has been computed for this query/layer."""
+        if layer_idx in self.replay_layer_budget:
+            return self.replay_layer_budget[layer_idx]
         if self.budget_mode == "uniform" or not self.layer_budget:
             return self.merge_ratio
         return self.layer_budget.get(layer_idx, self.merge_ratio)
@@ -677,6 +740,77 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.token_importance = self._aggregate_receiver_importance(per_layer_importance)
         self._compute_budget()
         self._sync_tensor_device(input_ids_B)
+        self.last_protocol_timing["t_budget_compute"] = float(
+            time.perf_counter() - budget_start
+        )
+
+    @torch.no_grad()
+    def compute_sender_context_importance(self, out_A_past_key_values):
+        """Score A's KV with A's own final context-query vectors.
+
+        This is a query-free sender-derived causal control: no receiver query or
+        B-side query sketch participates in token selection.
+        """
+        assert self.apply_attn_tracer, "sender-context scoring needs an attention tracer"
+        assert len(out_A_past_key_values.key_cache) == self.A_num_layers
+        self.last_protocol_timing = {
+            "t_b_query_prefill": 0.0,
+            "t_a_query_encode": 0.0,
+        }
+        layers = self._sender_layers()
+        per_layer_importance = {}
+        score_start = time.perf_counter()
+        for layer_idx, block in enumerate(layers):
+            attn_inputs = block.self_attn.attn_inputs
+            if attn_inputs is None:
+                raise RuntimeError(
+                    f"sender tracer did not capture layer {layer_idx}"
+                )
+            query = attn_inputs["query"]
+            if self.recv_window > 0 and query.shape[-2] > self.recv_window:
+                query = query[:, :, -self.recv_window :, :]
+            key = out_A_past_key_values.key_cache[layer_idx]
+            if query.shape[-1] != key.shape[-1]:
+                raise ValueError(
+                    f"sender Q/K head_dim mismatch at layer {layer_idx}: "
+                    f"Q={query.shape[-1]}, K={key.shape[-1]}"
+                )
+            expected_q_heads = (
+                key.shape[1] * block.self_attn.num_key_value_groups
+            )
+            if query.shape[1] != expected_q_heads:
+                raise ValueError(
+                    f"sender Q heads={query.shape[1]}, expected={expected_q_heads} "
+                    f"at layer {layer_idx}"
+                )
+            weights = eager_attention_forward_without_value(
+                block.self_attn,
+                query=query.to(key.dtype),
+                key=key,
+                attention_mask=None,
+                scaling=block.self_attn.scaling,
+            )
+            per_layer_importance[layer_idx] = (
+                weights.float().mean(dim=1)[0].sum(dim=0).contiguous()
+            )
+        self.last_protocol_timing["t_sender_score"] = float(
+            time.perf_counter() - score_start
+        )
+        self.last_query_sketch_cost = {
+            "protocol_version": self.protocol_version,
+            "query_sketch_mode": "none_sender_context_q",
+            "query_sketch_tokens": 0,
+            "query_sketch_layers": 0,
+            "query_sketch_elements": 0,
+            "query_sketch_bytes": 0,
+            "query_sketch_scale_bytes": 0,
+            "query_sketch_metadata_bytes": 0,
+        }
+        budget_start = time.perf_counter()
+        self.token_importance = self._aggregate_receiver_importance(
+            per_layer_importance
+        )
+        self._compute_budget()
         self.last_protocol_timing["t_budget_compute"] = float(
             time.perf_counter() - budget_start
         )

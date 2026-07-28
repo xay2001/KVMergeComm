@@ -1,0 +1,112 @@
+{
+  "inputs": {
+    "root": "/home/xay/KVMergeComm/snapshots/full_matched_budget_fairness_query_sketch",
+    "logical_runs": 1568
+  },
+  "parameters": {
+    "n_bootstrap": 10000,
+    "seed": 42,
+    "solve_threshold": 1.0,
+    "canonical_brekv": {
+      "tau": 0.95,
+      "scale": 0.75,
+      "window": 8
+    },
+    "metadata_offline": true
+  },
+  "validation": {
+    "cells": 56,
+    "fixed_rekv_levels_per_cell": 9,
+    "oracle_sample_cell_rows": 19950,
+    "focused_cells": 9
+  },
+  "metadata_status": {
+    "hotpotqa": null,
+    "musique": null,
+    "multifieldqa_en": null
+  },
+  "fixed_policy_macro": [
+    {
+      "policy": "global_budget_matched_fixed",
+      "group": "all",
+      "n_cells": 56,
+      "score_delta": 0.00582482886677741,
+      "ci_low": 0.0010497961660527206,
+      "ci_high": 0.010580662045058075,
+      "bootstrap_valid": 10000,
+      "bootstrap_win_probability": 0.9923
+    },
+    {
+      "policy": "per_task_budget_matched_fixed",
+      "group": "8-task macro",
+      "n_cells": 56,
+      "score_delta": 0.0075771325040174245,
+      "ci_low": 0.0030867253288971276,
+      "ci_high": 0.012042974814622364,
+      "bootstrap_valid": 10000,
+      "bootstrap_win_probability": 0.9992
+    },
+    {
+      "policy": "per_cell_budget_matched_fixed",
+      "group": "56-cell macro",
+      "n_cells": 56,
+      "score_delta": 0.003586524988461292,
+      "ci_low": -0.000655359625235098,
+      "ci_high": 0.007804597018062072,
+      "bootstrap_valid": 10000,
+      "bootstrap_win_probability": 0.9501
+    },
+    {
+      "policy": "per_cell_best_fixed_unmatched",
+      "group": "56-cell macro",
+      "n_cells": 56,
+      "score_delta": -0.08892312285714284,
+      "ci_low": -0.09429642147470234,
+      "ci_high": -0.08354026126041669,
+      "bootstrap_valid": 10000,
+      "bootstrap_win_probability": 0.0
+    }
+  ],
+  "oracle_macro": [
+    {
+      "scope": "macro",
+      "group": "all",
+      "n": 19950,
+      "n_solved": 11018,
+      "n_unsolved": 8932,
+      "unsolved_rate": 0.447719298245614,
+      "oracle_needed_budget_solved_mean": 0.25179039889271865,
+      "oracle_needed_budget_capped_mean": 0.4138524670676673,
+      "brekv_budget_mean": 0.31744448080200693,
+      "brekv_score_mean": 0.40538493293233047
+    }
+  ],
+  "spearman_macro": [
+    {
+      "scope": "macro",
+      "group": "56-cell equal-weight macro",
+      "sensitivity": "solved_only",
+      "n": 11018,
+      "n_cells": 56,
+      "spearman_rho": 0.08531002001797099,
+      "ci_low": 0.062464781923458654,
+      "ci_high": 0.10687553561142214,
+      "bootstrap_valid": 10000
+    },
+    {
+      "scope": "macro",
+      "group": "56-cell equal-weight macro",
+      "sensitivity": "unsolved_capped_at_observed_max",
+      "n": 19950,
+      "n_cells": 56,
+      "spearman_rho": 0.05270186164104933,
+      "ci_low": 0.036896093041944696,
+      "ci_high": 0.06808627640157218,
+      "bootstrap_valid": 10000
+    }
+  ],
+  "figures": [
+    "/home/xay/KVMergeComm/snapshots/analysis/brekv_adaptive_value/brekv_adaptive_value.png",
+    "/home/xay/KVMergeComm/snapshots/analysis/brekv_adaptive_value/brekv_adaptive_value.pdf"
+  ]
+}

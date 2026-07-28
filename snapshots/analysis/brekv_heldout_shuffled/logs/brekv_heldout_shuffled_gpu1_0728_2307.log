@@ -1,0 +1,10 @@
+######## B-ReKV held-out analysis START 2026-07-28 23:07:28 ########
+Traceback (most recent call last):
+  File "/home/xay/KVMergeComm/scripts/analyze_brekv_heldout_and_shuffled.py", line 583, in <module>
+    main()
+  File "/home/xay/KVMergeComm/scripts/analyze_brekv_heldout_and_shuffled.py", line 547, in main
+    cells, discover_r07(args.oracle_r07_root.resolve()), args.solve_threshold
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xay/KVMergeComm/scripts/analyze_brekv_heldout_and_shuffled.py", line 136, in discover_r07
+    raise ValueError(f"r=.7 coverage mismatch; missing={sorted(expected-set(latest))}, "
+ValueError: r=.7 coverage mismatch; missing=[('pair1_llama31_same', 'hotpotqa'), ('pair1_llama31_same', 'musique')], extra=[]

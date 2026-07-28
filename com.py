@@ -66,6 +66,15 @@ class AlignConfig:
     recv_window: int = 0  # Q-sketch tokens per layer: 0 = all query tokens, >0 = last N
     query_sketch_mode: str = "bf16"  # bf16 | int8 | token_ids
     receiver_layer_agg: str = "identity"  # receiver scoring layer aggregation: identity | last | mean | topK | lastK
+    # Receiver-conditioning causal controls. Scoring may use a different query
+    # from generation, while generation always receives the correct prompt_B.
+    query_condition_mode: str = "correct"
+    query_condition_seed: int = 42
+    query_unrelated_task: str = ""
+    budget_replay_from: str = ""
+    budget_replay_mode: str = "aligned"  # aligned | shuffled
+    budget_replay_seed: int = 42
+    budget_replay_tolerance: float = 1e-3
     # budget-aware allocation (Step 1): uniform | query | layer | query+layer
     budget_mode: str = "uniform"
     budget_min: float = 0.05  # query-adaptive total budget lower bound
@@ -199,6 +208,46 @@ def main(cfg: AlignConfig):
     model_B.name = cfg.model_B
 
     evaluator = get_evaluator(cfg.test_task)
+    causal_query_modes = {
+        "shuffled",
+        "unrelated",
+        "sender_text_receiver_encoder",
+        "sender_context_q",
+    }
+    if (
+        cfg.query_condition_mode in causal_query_modes
+        and cfg.score_mode not in RECEIVER_AWARE_SCORE_MODES
+    ):
+        raise ValueError(
+            f"query_condition_mode={cfg.query_condition_mode} requires a "
+            "receiver-aware score_mode"
+        )
+    if (
+        cfg.query_condition_mode == "query_free"
+        and cfg.score_mode in RECEIVER_AWARE_SCORE_MODES
+    ):
+        raise ValueError("query_free conditioning requires a query-agnostic score_mode")
+    if cfg.budget_replay_from and cfg.budget_mode != "uniform":
+        raise ValueError("budget replay requires --budget_mode uniform")
+    if cfg.budget_replay_mode not in {"aligned", "shuffled"}:
+        raise ValueError(
+            "--budget_replay_mode must be one of: aligned, shuffled"
+        )
+    if cfg.budget_replay_mode == "shuffled" and not cfg.budget_replay_from:
+        raise ValueError("shuffled budget replay requires --budget_replay_from")
+    unrelated_evaluator = None
+    if cfg.query_condition_mode == "unrelated":
+        if not cfg.query_unrelated_task:
+            raise ValueError(
+                "--query_unrelated_task is required for unrelated conditioning"
+            )
+        if cfg.query_unrelated_task == cfg.test_task:
+            raise ValueError("unrelated conditioning task must differ from test_task")
+        unrelated_evaluator = get_evaluator(cfg.query_unrelated_task)
+    if cfg.budget_replay_from and not os.path.isfile(cfg.budget_replay_from):
+        raise ValueError(
+            f"budget replay file does not exist: {cfg.budget_replay_from}"
+        )
     
     if cfg.limit == 0:
         cfg.limit = None
@@ -211,10 +260,51 @@ def main(cfg: AlignConfig):
         baseline_evaluator = BaselineEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
         results = baseline_evaluator.test(model_A, model_B, limit=cfg.limit)
     if cfg.do_test:
-        communication_evaluator = CommunicationEvaluator(evaluator, tokenizer, cfg.use_wandb, cfg.max_input_length)
+        communication_evaluator = CommunicationEvaluator(
+            evaluator,
+            tokenizer,
+            cfg.use_wandb,
+            cfg.max_input_length,
+            query_condition_mode=cfg.query_condition_mode,
+            query_condition_seed=cfg.query_condition_seed,
+            unrelated_evaluator=unrelated_evaluator,
+            budget_replay_from=cfg.budget_replay_from,
+            budget_replay_mode=cfg.budget_replay_mode,
+            budget_replay_seed=cfg.budget_replay_seed,
+        )
         if cfg.merge:
             # Merge-then-Communicate: keep all layers, compress tokens within each via merging
-            cv = CVCommunicator(model_A, model_B, cfg.layer_from, cfg.layer_to, layers_list=cfg.layers_list, top_layers=cfg.top_layers, apply_attn_tracer=(cfg.score_mode in RECEIVER_AWARE_SCORE_MODES), shift_back=cfg.shift_back, merge=True, merge_ratio=cfg.merge_ratio, merge_sink=cfg.merge_sink, merge_recent=cfg.merge_recent, merge_mode=cfg.merge_mode, score_mode=cfg.score_mode, recv_window=cfg.recv_window, query_sketch_mode=cfg.query_sketch_mode, receiver_layer_agg=cfg.receiver_layer_agg, budget_mode=cfg.budget_mode, budget_min=cfg.budget_min, budget_max=cfg.budget_max, budget_tau=cfg.budget_tau, budget_floor=cfg.budget_floor, coverage_tau=cfg.coverage_tau, coverage_scale=cfg.coverage_scale, coverage_tau_mode=cfg.coverage_tau_mode, coverage_tau_min=cfg.coverage_tau_min, coverage_tau_max=cfg.coverage_tau_max).to(cfg.device)
+            cv = CVCommunicator(
+                model_A,
+                model_B,
+                cfg.layer_from,
+                cfg.layer_to,
+                layers_list=cfg.layers_list,
+                top_layers=cfg.top_layers,
+                apply_attn_tracer=(cfg.score_mode in RECEIVER_AWARE_SCORE_MODES),
+                shift_back=cfg.shift_back,
+                merge=True,
+                merge_ratio=cfg.merge_ratio,
+                merge_sink=cfg.merge_sink,
+                merge_recent=cfg.merge_recent,
+                merge_mode=cfg.merge_mode,
+                score_mode=cfg.score_mode,
+                recv_window=cfg.recv_window,
+                query_sketch_mode=cfg.query_sketch_mode,
+                receiver_layer_agg=cfg.receiver_layer_agg,
+                budget_mode=cfg.budget_mode,
+                budget_min=cfg.budget_min,
+                budget_max=cfg.budget_max,
+                budget_tau=cfg.budget_tau,
+                budget_floor=cfg.budget_floor,
+                coverage_tau=cfg.coverage_tau,
+                coverage_scale=cfg.coverage_scale,
+                coverage_tau_mode=cfg.coverage_tau_mode,
+                coverage_tau_min=cfg.coverage_tau_min,
+                coverage_tau_max=cfg.coverage_tau_max,
+                query_condition_mode=cfg.query_condition_mode,
+                budget_replay_tolerance=cfg.budget_replay_tolerance,
+            ).to(cfg.device)
             if cfg.dump_pass1_features:
                 communication_evaluator.dump_pass1_features(model_A, cv, limit=cfg.limit)
                 results = None

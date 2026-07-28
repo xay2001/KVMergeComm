@@ -11,6 +11,7 @@ import json
 import copy
 import math
 import re
+import random
 from collections import Counter
 from pathlib import Path
 
@@ -33,7 +34,9 @@ PROTOCOL_ACCOUNTING = {
 
 
 def _compute_receiver_token_importance(cv, input_ids_B, out_A_past_key_values):
-    if getattr(cv, "score_mode", "") == "receiver_oracle":
+    if getattr(cv, "query_condition_mode", "") == "sender_context_q":
+        cv.compute_sender_context_importance(out_A_past_key_values)
+    elif getattr(cv, "score_mode", "") == "receiver_oracle":
         cv.compute_oracle_receiver_importance(input_ids_B, out_A_past_key_values)
     else:
         cv.compute_receiver_importance(input_ids_B, out_A_past_key_values)
@@ -268,10 +271,261 @@ class BaselineEvaluator(SkylineEvaluator):
         return input_ids
 
 class CommunicationEvaluator(SkylineEvaluator):
-    def __init__(self, evaluator, tokenizer, use_wandb, max_input_length):
+    QUERY_CONDITION_MODES = {
+        "correct",
+        "shuffled",
+        "unrelated",
+        "sender_text_receiver_encoder",
+        "sender_context_q",
+        "query_free",
+    }
+
+    def __init__(
+        self,
+        evaluator,
+        tokenizer,
+        use_wandb,
+        max_input_length,
+        query_condition_mode="correct",
+        query_condition_seed=42,
+        unrelated_evaluator=None,
+        budget_replay_from="",
+        budget_replay_mode="aligned",
+        budget_replay_seed=42,
+    ):
         super().__init__(evaluator, tokenizer, use_wandb, max_input_length)
         self.name = "communication"
         self.layer_importance_total = defaultdict(list)
+        self.query_condition_mode = str(query_condition_mode).lower()
+        if self.query_condition_mode not in self.QUERY_CONDITION_MODES:
+            raise ValueError(
+                f"unknown query_condition_mode={query_condition_mode}; "
+                f"expected one of {sorted(self.QUERY_CONDITION_MODES)}"
+            )
+        self.query_condition_seed = int(query_condition_seed)
+        self._condition_items = evaluator.data
+        self._unrelated_items = (
+            unrelated_evaluator.data if unrelated_evaluator is not None else None
+        )
+        self._unrelated_task = (
+            getattr(unrelated_evaluator, "name", None)
+            if unrelated_evaluator is not None
+            else None
+        )
+        self._shuffle_map = self._make_derangement(
+            len(self._condition_items), self.query_condition_seed
+        )
+        self._budget_replay_path = str(budget_replay_from or "")
+        self._budget_replay_mode = str(budget_replay_mode).lower()
+        self._budget_replay_seed = int(budget_replay_seed)
+        if self._budget_replay_mode not in {"aligned", "shuffled"}:
+            raise ValueError(
+                f"unknown budget_replay_mode={budget_replay_mode}"
+            )
+        self._budget_replay = self._load_budget_replay(self._budget_replay_path)
+        if self._budget_replay and self._budget_replay_mode == "shuffled":
+            self._budget_replay = self._shuffle_budget_replay(
+                self._budget_replay, self._budget_replay_seed
+            )
+        self.last_scoring_source_idx = None
+        self.last_scoring_source_task = None
+        self.last_replay_target_budget = None
+        self.last_replay_source_idx = None
+
+    @staticmethod
+    def _make_derangement(size, seed):
+        if size < 2:
+            return list(range(size))
+        order = list(range(size))
+        random.Random(seed).shuffle(order)
+        mapping = [None] * size
+        for position, source in enumerate(order):
+            mapping[source] = order[(position + 1) % size]
+        if any(index == target for index, target in enumerate(mapping)):
+            raise AssertionError("failed to construct a query derangement")
+        return mapping
+
+    @staticmethod
+    def _load_budget_replay(path):
+        if not path:
+            return {}
+        replay = {}
+        with open(path) as handle:
+            for line in handle:
+                row = json.loads(line)
+                if "_meta" in row:
+                    continue
+                if row.get("idx") is None or row.get("budget") is None:
+                    raise ValueError(f"invalid budget replay row in {path}: {row}")
+                budget = float(row["budget"])
+                minimum_budget = 0.0
+                kv_tokens_sent = row.get("kv_tokens_sent")
+                kv_metadata_bytes = row.get("kv_metadata_bytes")
+                if budget > 0 and kv_tokens_sent and kv_metadata_bytes:
+                    total_tokens = int(round(float(kv_tokens_sent) / budget))
+                    # Protocol metadata is an 8-byte header plus one 20-byte
+                    # descriptor per layer. Sender caches have equal sequence
+                    # lengths across layers, so this reconstructs the replay
+                    # floor imposed by the full first layer and sink/recent.
+                    layer_count = (int(kv_metadata_bytes) - 8) // 20
+                    if layer_count > 0 and total_tokens % layer_count == 0:
+                        layer_length = total_tokens // layer_count
+                        mandatory = min(12, layer_length)
+                        minimum_budget = (
+                            layer_length + (layer_count - 1) * mandatory
+                        ) / total_tokens
+                replay[int(row["idx"])] = {
+                    "budget": budget,
+                    "id": row.get("id"),
+                    "source_idx": int(row["idx"]),
+                    "minimum_budget": minimum_budget,
+                }
+        if not replay:
+            raise ValueError(f"budget replay file has no samples: {path}")
+        return replay
+
+    @classmethod
+    def _shuffle_budget_replay(cls, replay, seed):
+        indices = sorted(replay)
+        rng = random.Random(seed)
+        candidates = {}
+        for target_idx in indices:
+            minimum = replay[target_idx].get("minimum_budget", 0.0)
+            feasible = [
+                source_idx
+                for source_idx in indices
+                if source_idx != target_idx
+                and replay[source_idx]["budget"] + 1e-3 >= minimum
+            ]
+            rng.shuffle(feasible)
+            # Some extreme short-context samples may have a unique feasible
+            # budget. Keep their aligned budget only as a last-resort fallback;
+            # all other assignments remain randomly shuffled.
+            if replay[target_idx]["budget"] + 1e-3 >= minimum:
+                feasible.append(target_idx)
+            candidates[target_idx] = feasible
+
+        # Randomized bipartite matching maximizes reassignment while preventing
+        # a short target context from receiving an unrealizably small budget.
+        source_to_target = {}
+
+        def assign(target_idx, visited):
+            for source_idx in candidates[target_idx]:
+                if source_idx in visited:
+                    continue
+                visited.add(source_idx)
+                previous = source_to_target.get(source_idx)
+                if previous is None or assign(previous, visited):
+                    source_to_target[source_idx] = target_idx
+                    return True
+            return False
+
+        target_order = indices[:]
+        rng.shuffle(target_order)
+        target_order.sort(
+            key=lambda idx: replay[idx].get("minimum_budget", 0.0),
+            reverse=True,
+        )
+        for target_idx in target_order:
+            if not assign(target_idx, set()):
+                raise ValueError(
+                    "cannot construct a feasible shuffled-budget derangement; "
+                    f"target idx={target_idx} has minimum budget "
+                    f"{replay[target_idx].get('minimum_budget', 0.0):.6f}"
+                )
+        target_to_source = {
+            target_idx: source_idx
+            for source_idx, target_idx in source_to_target.items()
+        }
+        shuffled = {}
+        for target_idx in indices:
+            source_idx = target_to_source[target_idx]
+            shuffled[target_idx] = {
+                "budget": replay[source_idx]["budget"],
+                # Keep the target ID for alignment validation; source_idx records
+                # which sample donated the budget.
+                "id": replay[target_idx]["id"],
+                "source_idx": source_idx,
+            }
+        source_budgets = sorted(row["budget"] for row in replay.values())
+        shuffled_budgets = sorted(row["budget"] for row in shuffled.values())
+        if source_budgets != shuffled_budgets:
+            raise AssertionError("shuffled budget replay changed the budget multiset")
+        return shuffled
+
+    def _prepare_receiver_text(self, text, model_B):
+        if hasattr(self.evaluator, "tmath"):
+            msg = COMMUNICATION_MATH_MSG_TEMPLATE_B.format(
+                instruction=MATH_INSTRUCTION, question=text
+            )
+        elif hasattr(self.evaluator, "repobench"):
+            msg = COMMUNICATION_CODE_MSG_TEMPLATE_B.format(
+                instruction=CODE_INSTRUCTION, code_snippet=text
+            )
+        elif hasattr(self.evaluator, "sasum"):
+            msg = COMMUNICATION_SUMMARIZE_MSG_TEMPLATE_B.format(
+                instruction=SUMMARIZE_INSTRUCTION, content_part_2=text
+            )
+        else:
+            msg = COMMUNICATION_QA_MSG_TEMPLATE_B.format(
+                instruction=QA_INSTRUCTION, question=text
+            )
+        return apply_chat_template(self.evaluator, self.tokenizer, msg, model_B)
+
+    def prepare_scoring_input_ids(self, item, index, cv, correct_input_ids):
+        mode = self.query_condition_mode
+        self.last_scoring_source_idx = index
+        self.last_scoring_source_task = getattr(self.evaluator, "name", None)
+        if mode in {"correct", "sender_context_q", "query_free"}:
+            return correct_input_ids
+        if mode == "shuffled":
+            source_idx = self._shuffle_map[index]
+            source = self._condition_items[source_idx]
+        elif mode == "unrelated":
+            if self._unrelated_items is None or len(self._unrelated_items) == 0:
+                raise ValueError("unrelated mode requires a non-empty unrelated evaluator")
+            source_idx = index % len(self._unrelated_items)
+            source = self._unrelated_items[source_idx]
+            self.last_scoring_source_task = self._unrelated_task
+        elif mode == "sender_text_receiver_encoder":
+            source_idx = index
+            source = item
+        else:
+            raise AssertionError(f"unhandled query condition mode: {mode}")
+        self.last_scoring_source_idx = source_idx
+        text = (
+            source["prompt_A"]
+            if mode == "sender_text_receiver_encoder"
+            else source["prompt_B"]
+        )
+        scoring_ids = self._prepare_receiver_text(text, cv.B)
+        if scoring_ids.shape[-1] > self.max_input_length:
+            scoring_ids = scoring_ids[:, -self.max_input_length :]
+        return scoring_ids
+
+    def apply_replay_budget(self, cv, item, index, past_key_values):
+        self.last_replay_target_budget = None
+        self.last_replay_source_idx = None
+        if not self._budget_replay:
+            return
+        if index not in self._budget_replay:
+            raise ValueError(
+                f"budget replay is missing idx={index}: {self._budget_replay_path}"
+            )
+        anchor = self._budget_replay[index]
+        item_id = item.get("_id", item.get("id", None))
+        if (
+            anchor["id"] is not None
+            and item_id is not None
+            and str(anchor["id"]) != str(item_id)
+        ):
+            raise ValueError(
+                f"budget replay id mismatch at idx={index}: "
+                f"anchor={anchor['id']!r}, current={item_id!r}"
+            )
+        self.last_replay_target_budget = anchor["budget"]
+        self.last_replay_source_idx = anchor["source_idx"]
+        cv.set_replay_budget(anchor["budget"], past_key_values)
     
     def truncate_input(self, input_ids_A, input_ids_B):
         if input_ids_A.shape[-1] + input_ids_B.shape[-1] > self.max_input_length and self.evaluator.truncate_input:
@@ -305,7 +559,7 @@ class CommunicationEvaluator(SkylineEvaluator):
 
         return input_ids_A, input_ids_B
 
-    def inference(self, model, cv, item):
+    def inference(self, model, cv, item, index=0):
         input_ids_A, input_ids_B = self.prepare_input_ids(item, cv.A, cv.B)
 
         out_A = model(
@@ -314,11 +568,19 @@ class CommunicationEvaluator(SkylineEvaluator):
             return_dict=True
         )
         out_A_past_key_values = out_A.past_key_values
+        self.apply_replay_budget(
+            cv, item, index, out_A_past_key_values
+        )
+        scoring_input_ids = self.prepare_scoring_input_ids(
+            item, index, cv, input_ids_B
+        )
 
         # Receiver-aware scoring (Pass 1). The default path sends a query-only
         # Q sketch from B to A; receiver_oracle retains the old full-A-KV upper bound.
         if getattr(cv, "score_mode", "value_norm") in RECEIVER_AWARE_SCORE_MODES:
-            _compute_receiver_token_importance(cv, input_ids_B, out_A_past_key_values)
+            _compute_receiver_token_importance(
+                cv, scoring_input_ids, out_A_past_key_values
+            )
 
         output = cv.generate(
             input_ids_B, 
@@ -331,7 +593,7 @@ class CommunicationEvaluator(SkylineEvaluator):
         response = self.get_response(output, context_length)
         return response
 
-    def inference_with_cost(self, model, cv, item):
+    def inference_with_cost(self, model, cv, item, index=0):
         """Run one communication sample and return response plus timing/payload stats.
 
         This path is only used by --profile_cost. It mirrors inference() but
@@ -354,11 +616,19 @@ class CommunicationEvaluator(SkylineEvaluator):
         _sync_if_cuda(model)
         t_a_prefill = time.perf_counter() - t0
         out_A_past_key_values = out_A.past_key_values
+        self.apply_replay_budget(
+            cv, item, index, out_A_past_key_values
+        )
+        scoring_input_ids = self.prepare_scoring_input_ids(
+            item, index, cv, input_ids_B
+        )
 
         t_receiver_score = 0.0
         if getattr(cv, "score_mode", "value_norm") in RECEIVER_AWARE_SCORE_MODES:
             t0 = time.perf_counter()
-            _compute_receiver_token_importance(cv, input_ids_B, out_A_past_key_values)
+            _compute_receiver_token_importance(
+                cv, scoring_input_ids, out_A_past_key_values
+            )
             _sync_if_cuda(model)
             t_receiver_score = time.perf_counter() - t0
 
@@ -398,6 +668,11 @@ class CommunicationEvaluator(SkylineEvaluator):
             "peak_mem_gb": round(float(_peak_memory_gb(model)), 6) if _peak_memory_gb(model) is not None else None,
             "budget": round(float(getattr(cv, "last_kept_ratio")), 6) if getattr(cv, "last_kept_ratio", None) is not None else None,
             "query_budget": round(float(getattr(cv, "last_query_budget")), 6) if getattr(cv, "last_query_budget", None) is not None else None,
+            "query_condition_mode": self.query_condition_mode,
+            "scoring_source_idx": self.last_scoring_source_idx,
+            "scoring_source_task": self.last_scoring_source_task,
+            "replay_target_budget": self.last_replay_target_budget,
+            "budget_replay_source_idx": self.last_replay_source_idx,
         }
         for key, value in kv_cost.items():
             if isinstance(value, float):
@@ -415,7 +690,7 @@ class CommunicationEvaluator(SkylineEvaluator):
         for i, item in enumerate(progress_bar):
             if limit is not None and i >= limit:
                 break
-            response = self.inference(model_A, cv, item)
+            response = self.inference(model_A, cv, item, index=i)
 
             if do_calc_layer_importance:
                 cv.calc_attn_weights_from_qk()
@@ -434,6 +709,14 @@ class CommunicationEvaluator(SkylineEvaluator):
                 except AttributeError:
                     sid = None
                 row = {"idx": i, "id": sid, "score": round(float(score), 6)}
+                row["query_condition_mode"] = self.query_condition_mode
+                row["scoring_source_idx"] = self.last_scoring_source_idx
+                row["scoring_source_task"] = self.last_scoring_source_task
+                if self.last_replay_target_budget is not None:
+                    row["replay_target_budget"] = round(
+                        float(self.last_replay_target_budget), 6
+                    )
+                    row["budget_replay_source_idx"] = self.last_replay_source_idx
                 # achieved transmitted-KV fraction and per-query budget (budget-aware runs)
                 kept = getattr(cv, "last_kept_ratio", None)
                 if kept is not None:
@@ -500,6 +783,12 @@ class CommunicationEvaluator(SkylineEvaluator):
             "coverage_tau_mode": getattr(cv, "coverage_tau_mode", None),
             "coverage_tau_min": getattr(cv, "coverage_tau_min", None),
             "coverage_tau_max": getattr(cv, "coverage_tau_max", None),
+            "query_condition_mode": self.query_condition_mode,
+            "query_condition_seed": self.query_condition_seed,
+            "unrelated_task": self._unrelated_task,
+            "budget_replay_from": self._budget_replay_path,
+            "budget_replay_mode": self._budget_replay_mode,
+            "budget_replay_seed": self._budget_replay_seed,
             "n": len(per_sample),
         }
         path = os.path.join(run_dir, "per_sample.jsonl")
@@ -533,7 +822,9 @@ class CommunicationEvaluator(SkylineEvaluator):
         for i, item in enumerate(pbar):
             if total_needed is not None and i >= total_needed:
                 break
-            response, row = self.inference_with_cost(model_A, cv, item)
+            response, row = self.inference_with_cost(
+                model_A, cv, item, index=i
+            )
             if i < warmup:
                 pbar.set_description(f"{self.name} cost-profile warmup {i + 1}/{warmup}")
                 continue
