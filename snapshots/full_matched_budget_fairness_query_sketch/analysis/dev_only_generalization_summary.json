@@ -1,0 +1,18 @@
+{
+  "n_test_cells": 54,
+  "mean_global_fixed": 0.3907,
+  "mean_dev_selected": 0.4781,
+  "mean_brekv": 0.3961,
+  "mean_oracle": 0.4845,
+  "mean_gap_dev_vs_oracle": -0.0064,
+  "mean_gap_brekv_vs_oracle": -0.0884,
+  "mean_fixed_at_brekv_budget": 0.3922,
+  "mean_brekv_vs_budget_matched_fixed": 0.0038,
+  "cells_brekv_wins_budget_matched": 27,
+  "cells_brekv_loses_budget_matched": 27,
+  "dev_selected_r": 0.6,
+  "brekv_budget_mean": 0.3221,
+  "brekv_budget_min": 0.149,
+  "brekv_budget_max": 0.4357,
+  "brekv_budget_stdev": 0.0657
+}

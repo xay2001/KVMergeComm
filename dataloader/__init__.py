@@ -8,8 +8,11 @@ from .twowikimqa import TwoWikiMQAEvaluator
 from .tmath import TMathEvaluator
 from .repobench import RepoBenchEvaluator
 from .samsum import SAMSumEvaluator
+from .synthetic_jsonl import SyntheticJSONLEvaluator
 
 def get_evaluator(test_task: str):
+    if test_task == "synthetic_jsonl":
+        return SyntheticJSONLEvaluator()
     if test_task == "countries":
         return CountriesEvaluator()
     elif test_task == "tipsheets":

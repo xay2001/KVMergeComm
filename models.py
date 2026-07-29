@@ -53,6 +53,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         coverage_tau_max: float = 0.95,
         query_condition_mode: str = "correct",
         budget_replay_tolerance: float = 1e-3,
+        receiver_layer_fraction: float = 0.0,
+        receiver_layer_score: str = "topk_share",
     ) -> None:
         super().__init__(model_B.config)
         self.A = model_A
@@ -91,6 +93,14 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.coverage_tau_max = coverage_tau_max
         self.query_condition_mode = str(query_condition_mode).lower()
         self.budget_replay_tolerance = float(budget_replay_tolerance)
+        # Receiver-aware layer selection: aggregate the per-layer receiver token
+        # importance into a layer score and transmit only the top layers in full
+        # (layer granularity, receiver-conditioned). 0 disables the mode.
+        self.receiver_layer_fraction = float(receiver_layer_fraction)
+        self.receiver_layer_score = str(receiver_layer_score).lower()
+        if self.receiver_layer_score not in {"topk_share", "entropy", "max"}:
+            raise ValueError(f"unknown receiver_layer_score={receiver_layer_score}")
+        self.last_selected_layers = None
         self.replay_target_budget = None
         self.replay_layer_budget = {}
         self.layer_budget = {}        # {layer_idx: r_l}, recomputed per query
@@ -145,6 +155,8 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
     def _protocol_version(self) -> str:
         if self.query_condition_mode == "sender_context_q":
             return "sender_context_q_local_v1"
+        if not self.merge and self.receiver_layer_fraction > 0:
+            return f"receiver_layer_select_{self.query_sketch_mode}_v1"
         if self.score_mode == "receiver_oracle":
             return "full_kv_oracle_v1"
         if self.score_mode in {
@@ -234,10 +246,52 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
     def apply_A_attn_tracer(self):
         self._apply_attn_tracer(self.A)
 
+    def _select_receiver_layers(self, n_layers: int) -> None:
+        """Per-sample receiver-aware layer selection.
+
+        Uses the same B->A query sketch as ReKV, but aggregates the per-layer
+        token-importance vector into a single layer score and keeps whole
+        layers. The importance vectors are softmax-normalized over context
+        tokens (each sums to the number of sketch query rows), so the sum
+        carries no layer signal; the layer score therefore measures how much
+        the receiver's attention mass CONCENTRATES within the layer.
+        """
+        if not self.token_importance:
+            raise RuntimeError(
+                "receiver layer selection requires receiver token importance "
+                "(pass-1 query sketch scoring did not run)"
+            )
+        n_select = max(int(self.receiver_layer_fraction * n_layers), 1)
+        scores = {}
+        for l in range(n_layers):
+            imp = self.token_importance.get(l)
+            if imp is None or imp.numel() == 0:
+                scores[l] = float("-inf")
+                continue
+            s = imp.float().clamp_min(0)
+            total = s.sum()
+            if total <= 0:
+                scores[l] = float("-inf")
+                continue
+            p = s / total
+            if self.receiver_layer_score == "max":
+                scores[l] = float(p.max())
+            elif self.receiver_layer_score == "entropy":
+                # negative entropy: concentrated attention -> high score
+                scores[l] = float((p * (p + 1e-12).log()).sum())
+            else:  # topk_share: mass captured by the top 10% tokens
+                k = max(int(round(0.1 * p.numel())), 1)
+                scores[l] = float(p.topk(min(k, p.numel())).values.sum())
+        ranked = sorted(range(n_layers), key=lambda l: (-scores[l], l))
+        self.layers_list = sorted(ranked[:n_select])
+        self.last_selected_layers = list(self.layers_list)
+
     def prepare_key_cache(self, past_key_values):
         key_cache = past_key_values.key_cache
         value_cache = past_key_values.value_cache
         assert len(key_cache) == len(self.layer_map), "key_cache and layer_map must have the same length"
+        if not self.merge and self.receiver_layer_fraction > 0:
+            self._select_receiver_layers(len(key_cache))
         self._sync_tensor_device(key_cache[0])
         cache_prepare_start = time.perf_counter()
         past_key_values_new = DynamicCache()
@@ -290,6 +344,14 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                 )
         self.last_kv_cost = {
             "protocol_version": self.protocol_version,
+            **(
+                {
+                    "selected_layer_count": len(self.last_selected_layers),
+                    "selected_layers": list(self.last_selected_layers),
+                }
+                if (not self.merge and self.receiver_layer_fraction > 0 and self.last_selected_layers is not None)
+                else {}
+            ),
             "kv_tokens_sent": int(kept_tokens),
             "kv_tokens_total": int(total_tokens),
             "kv_token_ratio": float(kept_tokens / total_tokens) if total_tokens else None,

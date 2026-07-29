@@ -66,6 +66,12 @@ class AlignConfig:
     recv_window: int = 0  # Q-sketch tokens per layer: 0 = all query tokens, >0 = last N
     query_sketch_mode: str = "bf16"  # bf16 | int8 | token_ids
     receiver_layer_agg: str = "identity"  # receiver scoring layer aggregation: identity | last | mean | topK | lastK
+    # Receiver-aware LAYER selection (layer granularity, receiver-conditioned):
+    # per-sample, aggregate the ReKV query-sketch token importance into layer
+    # scores and transmit only the top fraction of layers in full. Requires a
+    # receiver-aware score_mode and merge=False. 0 disables.
+    receiver_layer_fraction: float = 0.0
+    receiver_layer_score: str = "topk_share"  # topk_share | entropy | max
     # Receiver-conditioning causal controls. Scoring may use a different query
     # from generation, while generation always receives the correct prompt_B.
     query_condition_mode: str = "correct"
@@ -313,6 +319,35 @@ def main(cfg: AlignConfig):
                 communication_evaluator.test_progressive(model_A, cv, ladder, limit=cfg.limit)
                 results = None
             elif cfg.profile_cost:
+                results = communication_evaluator.test_cost_profile(model_A, cv, limit=cfg.profile_limit, warmup=cfg.profile_warmup)
+            else:
+                results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+        elif cfg.receiver_layer_fraction > 0:
+            # Receiver-aware layer selection: same query sketch as ReKV, but the
+            # importance is aggregated per layer and whole layers are transmitted.
+            if cfg.score_mode not in RECEIVER_AWARE_SCORE_MODES:
+                raise ValueError(
+                    "--receiver_layer_fraction requires a receiver-aware score_mode"
+                )
+            cv = CVCommunicator(
+                model_A,
+                model_B,
+                cfg.layer_from,
+                cfg.layer_to,
+                layers_list=cfg.layers_list,
+                top_layers=0.0,
+                apply_attn_tracer=True,
+                shift_back=cfg.shift_back,
+                merge=False,
+                score_mode=cfg.score_mode,
+                recv_window=cfg.recv_window,
+                query_sketch_mode=cfg.query_sketch_mode,
+                receiver_layer_agg=cfg.receiver_layer_agg,
+                query_condition_mode=cfg.query_condition_mode,
+                receiver_layer_fraction=cfg.receiver_layer_fraction,
+                receiver_layer_score=cfg.receiver_layer_score,
+            ).to(cfg.device)
+            if cfg.profile_cost:
                 results = communication_evaluator.test_cost_profile(model_A, cv, limit=cfg.profile_limit, warmup=cfg.profile_warmup)
             else:
                 results = communication_evaluator.test(model_A, cv, limit=cfg.limit)

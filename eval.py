@@ -562,11 +562,15 @@ class CommunicationEvaluator(SkylineEvaluator):
     def inference(self, model, cv, item, index=0):
         input_ids_A, input_ids_B = self.prepare_input_ids(item, cv.A, cv.B)
 
-        out_A = model(
-            input_ids=input_ids_A, 
-            use_cache=True, 
-            return_dict=True
-        )
+        # Sender prefill only needs the KV cache: skip the full-sequence logits
+        # (~11 GiB at 48K context) and gradient bookkeeping.
+        with torch.no_grad():
+            out_A = model(
+                input_ids=input_ids_A,
+                use_cache=True,
+                return_dict=True,
+                logits_to_keep=1,
+            )
         out_A_past_key_values = out_A.past_key_values
         self.apply_replay_budget(
             cv, item, index, out_A_past_key_values
@@ -608,11 +612,13 @@ class CommunicationEvaluator(SkylineEvaluator):
         t_prepare = time.perf_counter() - t0
 
         t0 = time.perf_counter()
-        out_A = model(
-            input_ids=input_ids_A,
-            use_cache=True,
-            return_dict=True,
-        )
+        with torch.no_grad():
+            out_A = model(
+                input_ids=input_ids_A,
+                use_cache=True,
+                return_dict=True,
+                logits_to_keep=1,
+            )
         _sync_if_cuda(model)
         t_a_prefill = time.perf_counter() - t0
         out_A_past_key_values = out_A.past_key_values
@@ -737,6 +743,8 @@ class CommunicationEvaluator(SkylineEvaluator):
                 for key in (
                     "protocol_version",
                     "query_sketch_mode",
+                    "selected_layer_count",
+                    "selected_layers",
                     "kv_tokens_sent",
                     "kv_bytes_sent",
                     "query_sketch_bytes",
@@ -997,7 +1005,8 @@ class CommunicationEvaluator(SkylineEvaluator):
             if limit is not None and i >= limit:
                 break
             input_ids_A, input_ids_B = self.prepare_input_ids(item, cv.A, cv.B)
-            out_A = model_A(input_ids=input_ids_A, use_cache=True, return_dict=True)
+            with torch.no_grad():
+                out_A = model_A(input_ids=input_ids_A, use_cache=True, return_dict=True, logits_to_keep=1)
             base_pkv = out_A.past_key_values
             _compute_receiver_token_importance(cv, input_ids_B, base_pkv)  # once, r-independent
 
@@ -1070,7 +1079,8 @@ class CommunicationEvaluator(SkylineEvaluator):
             if limit is not None and i >= limit:
                 break
             input_ids_A, input_ids_B = self.prepare_input_ids(item, cv.A, cv.B)
-            out_A = model_A(input_ids=input_ids_A, use_cache=True, return_dict=True)
+            with torch.no_grad():
+                out_A = model_A(input_ids=input_ids_A, use_cache=True, return_dict=True, logits_to_keep=1)
             _compute_receiver_token_importance(cv, input_ids_B, out_A.past_key_values)
             feat = cv.compute_pass1_features()
             sid = item.get("_id", item.get("id", None)) if hasattr(item, "get") else None

@@ -1,0 +1,16 @@
+task,method,pareto_auc,points
+hotpotqa,kvcomm,0.4048,3
+hotpotqa,random_layer,0.2877,3
+hotpotqa,recv_layer,0.271,3
+hotpotqa,evict,0.4984,3
+hotpotqa,rekv,0.5233,3
+multifieldqa_en,kvcomm,0.2385,3
+multifieldqa_en,random_layer,0.1161,3
+multifieldqa_en,recv_layer,0.0509,3
+multifieldqa_en,evict,0.3017,3
+multifieldqa_en,rekv,0.4448,3
+musique,kvcomm,0.1688,3
+musique,random_layer,0.1129,3
+musique,recv_layer,0.0529,3
+musique,evict,0.3187,3
+musique,rekv,0.335,3
