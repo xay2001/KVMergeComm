@@ -1,0 +1,51 @@
+######## LAYER-VS-TOKEN START 2026-07-30 19:48:11 GPU=3 TASK=hotpotqa ########
+LIMIT=5 FRACTIONS=0.3 WINDOW=8
+==== [GPU3] hotpotqa query_page/query_page16_w8_r0.3 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 19:48:18,106 - root - INFO - Logging setup completed. Log file: snapshots/query_page_smoke/pair1_llama31_same/hotpotqa/query_page/query_page16_w8_r0.3_0730_1948/log.log
+2026-07-30 19:48:18,106 - root - INFO - Log level: INFO
+2026-07-30 19:48:18,106 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/query_page_smoke/pair1_llama31_same/hotpotqa/query_page', model_A='/sharedspace/models/Llama-3.1-8B-Instruct', model_B='/sharedspace/models/Llama-3.1-8B-Instruct', max_input_length=64000, layer_from=0, layer_to=31, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.3, merge_sink=4, merge_recent=8, merge_mode='evict', first_layer_mode='full', score_mode='receiver_page', recv_window=8, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='hotpotqa', task_name='', limit=5, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='query_page16_w8_r0.3', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 19:48:18,106 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/query_page_smoke/pair1_llama31_same/hotpotqa/query_page/query_page16_w8_r0.3_0730_1948
+2026-07-30 19:48:18,107 - root - INFO - Log level: INFO
+2026-07-30 19:48:18,244 - root - INFO - Number of GPU: 1
+2026-07-30 19:48:18,249 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 19:48:18,249 - root - INFO - CUDA_VISIBLE_DEVICES: 3
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.95s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.96s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.92s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.33s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.55s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.93s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.94s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.90s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.31s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.54s/it]
+2026-07-30 19:48:48,438 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/500 [00:00<?, ?it/s]communication result: 0.0000:   0%|          | 0/500 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 449, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 327, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 589, in inference
+    output = cv.generate(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 2625, in generate
+    result = self._sample(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 3606, in _sample
+    outputs = self(**model_inputs, return_dict=True)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/KVComm/models.py", line 1160, in forward
+    out_A_past_key_values = self.prepare_key_cache(out_A_past_key_values)
+  File "/home/xay/KVComm/models.py", line 328, in prepare_key_cache
+    key_cache_i, value_cache_i = self.compress_merge_layer(key_cache[i], value_cache[i], layer_idx=i)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/models.py", line 480, in compress_merge_layer
+    page_scores.scatter_add_(0, page_ids, recv_imp)
+UnboundLocalError: local variable 'recv_imp' referenced before assignment
+[FAIL] hotpotqa query_page/query_page16_w8_r0.3
+######## LAYER-VS-TOKEN DONE 2026-07-30 19:48:51 GPU=3 TASK=hotpotqa ########

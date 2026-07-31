@@ -14,6 +14,41 @@ from transformers.models.gemma3.modeling_gemma3 import Gemma3Attention, apply_ro
 from transformers.models.gemma3.configuration_gemma3 import Gemma3TextConfig
 
 
+def _expand_sparse_cache_mask(
+    attention_mask: Optional[torch.Tensor],
+    query_states: torch.Tensor,
+    key_states: torch.Tensor,
+) -> Optional[torch.Tensor]:
+    """Expand a layer-0-derived causal mask for a longer per-layer cache.
+
+    DynamicCache reports layer 0's sequence length to the model-level mask
+    builder. B-ReKV can retain more tokens in another layer, so that shared mask
+    can be shorter than the actual key tensor. Insert the missing past-token
+    columns immediately before the query-query causal block.
+    """
+    if attention_mask is None or attention_mask.ndim != 4:
+        return attention_mask
+    target_length = key_states.shape[-2]
+    mask_length = attention_mask.shape[-1]
+    if mask_length >= target_length:
+        return attention_mask
+
+    query_length = query_states.shape[-2]
+    missing = target_length - mask_length
+    fill_value = True if attention_mask.dtype == torch.bool else 0
+    padding = torch.full(
+        (*attention_mask.shape[:-1], missing),
+        fill_value,
+        dtype=attention_mask.dtype,
+        device=attention_mask.device,
+    )
+    split = max(mask_length - query_length, 0)
+    return torch.cat(
+        (attention_mask[..., :split], padding, attention_mask[..., split:]),
+        dim=-1,
+    )
+
+
 class LlamaAttentionTracer(LlamaAttention):
     def __init__(self, config: LlamaConfig, layer_idx: int):
         super().__init__(config, layer_idx)
@@ -42,6 +77,7 @@ class LlamaAttentionTracer(LlamaAttention):
             cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
             key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
 
+        attention_mask = _expand_sparse_cache_mask(attention_mask, query_states, key_states)
         attention_interface: Callable = eager_attention_forward_llama
         if self.config._attn_implementation != "eager":
             attention_interface = ALL_ATTENTION_FUNCTIONS[self.config._attn_implementation]
@@ -96,6 +132,7 @@ class Qwen2AttentionTracer(Qwen2Attention):
             cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
             key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
 
+        attention_mask = _expand_sparse_cache_mask(attention_mask, query_states, key_states)
         attention_interface: Callable = eager_attention_forward_qwen2
         if self.config._attn_implementation != "eager":
             attention_interface = ALL_ATTENTION_FUNCTIONS[self.config._attn_implementation]
@@ -154,6 +191,7 @@ class Gemma3AttentionTracer(Gemma3Attention):
             cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
             key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
 
+        attention_mask = _expand_sparse_cache_mask(attention_mask, query_states, key_states)
         attention_interface: Callable = eager_attention_forward_gemma3
         if self.config._attn_implementation != "eager":
             attention_interface = ALL_ATTENTION_FUNCTIONS[self.config._attn_implementation]

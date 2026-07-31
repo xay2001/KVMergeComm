@@ -1,0 +1,957 @@
+######## LAYER-VS-TOKEN START 2026-07-30 14:12:07 GPU=6 TASK=multifieldqa_en ########
+LIMIT=200 FRACTIONS=0.1 0.3 0.5 WINDOW=8
+==== [GPU6] multifieldqa_en skyline/skyline ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:12:13,568 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/skyline/skyline_0730_1412/log.log
+2026-07-30 14:12:13,568 - root - INFO - Log level: INFO
+2026-07-30 14:12:13,568 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/skyline', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=False, do_test_skyline=True, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='skyline', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:12:13,568 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/skyline/skyline_0730_1412
+2026-07-30 14:12:13,568 - root - INFO - Log level: INFO
+2026-07-30 14:12:13,718 - root - INFO - Number of GPU: 1
+2026-07-30 14:12:13,723 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:12:13,723 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.82s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.82s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.71s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.40s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.75s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.74s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+skyline result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]skyline result: 1.0000:   0%|          | 0/150 [00:04<?, ?it/s]skyline result: 1.0000:   1%|          | 1/150 [00:04<11:05,  4.47s/it]skyline result: 1.0000:   1%|          | 1/150 [00:04<11:11,  4.51s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 265, in main
+    results = skyline_evaluator.test(model_A, model_B, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 240, in test
+    result_A = self._test(model_A, limit)
+  File "/home/xay/KVComm/eval.py", line 227, in _test
+    response = self.inference(model, item)
+  File "/home/xay/KVComm/eval.py", line 211, in inference
+    output = model.generate(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 2625, in generate
+    result = self._sample(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 3606, in _sample
+    outputs = self(**model_inputs, return_dict=True)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 65.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.07 GiB memory in use. Of the allocated memory 28.62 GiB is allocated by PyTorch, and 140.67 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en skyline/skyline
+==== [GPU6] multifieldqa_en full_kv/full_kv ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:12:38,572 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/full_kv/full_kv_0730_1412/log.log
+2026-07-30 14:12:38,572 - root - INFO - Log level: INFO
+2026-07-30 14:12:38,572 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/full_kv', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='full_kv', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:12:38,572 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/full_kv/full_kv_0730_1412
+2026-07-30 14:12:38,572 - root - INFO - Log level: INFO
+2026-07-30 14:12:38,692 - root - INFO - Number of GPU: 1
+2026-07-30 14:12:38,697 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:12:38,697 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.83s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.83s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.72s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.41s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.76s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.74s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.64s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.14s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.35s/it]
+2026-07-30 14:12:51,173 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]communication result: 1.0000:   0%|          | 0/150 [00:04<?, ?it/s]communication result: 1.0000:   1%|          | 1/150 [00:04<11:33,  4.65s/it]communication result: 1.0000:   1%|          | 1/150 [00:04<11:39,  4.70s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 374, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 65.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.07 GiB memory in use. Of the allocated memory 28.62 GiB is allocated by PyTorch, and 141.32 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en full_kv/full_kv
+==== [GPU6] multifieldqa_en kvcomm/kvcomm_top0.1 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:13:03,827 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/kvcomm/kvcomm_top0.1_0730_1413/log.log
+2026-07-30 14:13:03,827 - root - INFO - Log level: INFO
+2026-07-30 14:13:03,828 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/kvcomm', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.1, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='kvcomm_top0.1', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:13:03,828 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/kvcomm/kvcomm_top0.1_0730_1413
+2026-07-30 14:13:03,828 - root - INFO - Log level: INFO
+2026-07-30 14:13:03,997 - root - INFO - Number of GPU: 1
+2026-07-30 14:13:04,002 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:13:04,002 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.80s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.83s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.71s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.40s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.78s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.74s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.63s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.14s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.35s/it]
+2026-07-30 14:13:24,689 - root - INFO - CVCommunicator initialized
+2026-07-30 14:13:29,833 - root - INFO - communication result: 1.0000, communication time: 5.13s
+2026-07-30 14:13:29,834 - root - INFO - Layer ranking: [22 26  5  4 14  8 23 24 11 16  9 17 27 25 12  6 21 19  7 20 15 10 13 18
+  0  1  2  3]
+2026-07-30 14:13:29,834 - root - INFO - Top 0.1 from 28 layers: [22 26  5  4 14  8 23 24 11 16  9 17 27 25 12  6 21 19  7 20 15 10 13 18
+  0  1  2  3]
+2026-07-30 14:13:29,834 - root - INFO - New layers list: [22 26]
+2026-07-30 14:13:29,838 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 374, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 252, in forward
+    hidden_states = self.mlp(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 48, in forward
+    down_proj = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 64.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 43.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.09 GiB memory in use. Of the allocated memory 28.65 GiB is allocated by PyTorch, and 125.94 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en kvcomm/kvcomm_top0.1
+==== [GPU6] multifieldqa_en random_layer/random_layer_top0.1 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:13:37,880 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_layer/random_layer_top0.1_0730_1413/log.log
+2026-07-30 14:13:37,880 - root - INFO - Log level: INFO
+2026-07-30 14:13:37,880 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_layer', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.1, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=True, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='random_layer_top0.1', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:13:37,880 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_layer/random_layer_top0.1_0730_1413
+2026-07-30 14:13:37,880 - root - INFO - Log level: INFO
+2026-07-30 14:13:38,036 - root - INFO - Number of GPU: 1
+2026-07-30 14:13:38,042 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:13:38,042 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.86s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.84s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.72s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.20s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.42s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.76s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.73s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.14s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.34s/it]
+2026-07-30 14:13:59,034 - root - INFO - CVCommunicator initialized
+2026-07-30 14:13:59,045 - root - INFO - Randomly selected layers list: [20, 3]
+2026-07-30 14:13:59,048 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]communication result: 0.0000:   0%|          | 0/150 [00:07<?, ?it/s]communication result: 0.0000:   1%|          | 1/150 [00:07<18:31,  7.46s/it]communication result: 0.0000:   1%|          | 1/150 [00:07<18:38,  7.51s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 374, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 83.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.05 GiB memory in use. Of the allocated memory 28.66 GiB is allocated by PyTorch, and 81.81 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en random_layer/random_layer_top0.1
+==== [GPU6] multifieldqa_en recv_layer/recv_layer_f0.1 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:14:14,499 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/recv_layer/recv_layer_f0.1_0730_1414/log.log
+2026-07-30 14:14:14,500 - root - INFO - Log level: INFO
+2026-07-30 14:14:14,500 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/recv_layer', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='receiver', recv_window=8, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.1, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='recv_layer_f0.1', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:14:14,500 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/recv_layer/recv_layer_f0.1_0730_1414
+2026-07-30 14:14:14,500 - root - INFO - Log level: INFO
+2026-07-30 14:14:14,647 - root - INFO - Number of GPU: 1
+2026-07-30 14:14:14,652 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:14:14,652 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.83s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.71s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.41s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.73s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.73s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+2026-07-30 14:14:35,480 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]communication result: 0.0000:   0%|          | 0/150 [00:06<?, ?it/s]communication result: 0.0000:   1%|          | 1/150 [00:06<17:04,  6.88s/it]communication result: 0.0000:   1%|          | 1/150 [00:06<17:11,  6.92s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 355, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 83.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.05 GiB memory in use. Of the allocated memory 28.66 GiB is allocated by PyTorch, and 81.62 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en recv_layer/recv_layer_f0.1
+==== [GPU6] multifieldqa_en evict/evict_r0.1 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:14:50,194 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/evict/evict_r0.1_0730_1414/log.log
+2026-07-30 14:14:50,195 - root - INFO - Log level: INFO
+2026-07-30 14:14:50,195 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/evict', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.1, merge_sink=4, merge_recent=8, merge_mode='evict', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='evict_r0.1', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:14:50,195 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/evict/evict_r0.1_0730_1414
+2026-07-30 14:14:50,195 - root - INFO - Log level: INFO
+2026-07-30 14:14:50,295 - root - INFO - Number of GPU: 1
+2026-07-30 14:14:50,299 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:14:50,300 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.79s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.81s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.69s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.18s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.39s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.74s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.71s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.12s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.32s/it]
+2026-07-30 14:15:02,482 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]2026-07-30 14:15:03,653 - root - INFO - [merge] mode=evict score=value_norm budget=uniform layer compress: L=1753 -> k=175 (r_eff=0.100, base_ratio=0.1, sink=4, recent=8)
+communication result: 0.0000:   0%|          | 0/150 [00:07<?, ?it/s]communication result: 0.0000:   1%|          | 1/150 [00:07<17:31,  7.06s/it]communication result: 0.0000:   1%|          | 1/150 [00:07<17:38,  7.11s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 326, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 65.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.07 GiB memory in use. Of the allocated memory 28.62 GiB is allocated by PyTorch, and 141.32 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en evict/evict_r0.1
+==== [GPU6] multifieldqa_en random_token/random_token_r0.1 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:15:17,396 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_token/random_token_r0.1_0730_1415/log.log
+2026-07-30 14:15:17,397 - root - INFO - Log level: INFO
+2026-07-30 14:15:17,397 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_token', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.1, merge_sink=4, merge_recent=8, merge_mode='evict', first_layer_mode='full', score_mode='random', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='random_token_r0.1', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:15:17,397 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_token/random_token_r0.1_0730_1415
+2026-07-30 14:15:17,397 - root - INFO - Log level: INFO
+2026-07-30 14:15:17,551 - root - INFO - Number of GPU: 1
+2026-07-30 14:15:17,556 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:15:17,556 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.79s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.81s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.70s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.39s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.73s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.71s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.12s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.32s/it]
+2026-07-30 14:15:29,799 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]2026-07-30 14:15:31,126 - root - INFO - [merge] mode=evict score=random budget=uniform layer compress: L=1753 -> k=175 (r_eff=0.100, base_ratio=0.1, sink=4, recent=8)
+communication result: 0.0000:   0%|          | 0/150 [00:07<?, ?it/s]communication result: 0.0000:   1%|          | 1/150 [00:07<17:53,  7.21s/it]communication result: 0.0000:   1%|          | 1/150 [00:07<17:59,  7.25s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 326, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 65.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.07 GiB memory in use. Of the allocated memory 28.62 GiB is allocated by PyTorch, and 141.32 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en random_token/random_token_r0.1
+==== [GPU6] multifieldqa_en rekv/rekv_w8_r0.1 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:15:44,918 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/rekv/rekv_w8_r0.1_0730_1415/log.log
+2026-07-30 14:15:44,919 - root - INFO - Log level: INFO
+2026-07-30 14:15:44,919 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/rekv', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.1, merge_sink=4, merge_recent=8, merge_mode='evict', first_layer_mode='full', score_mode='receiver', recv_window=8, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='rekv_w8_r0.1', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:15:44,919 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/rekv/rekv_w8_r0.1_0730_1415
+2026-07-30 14:15:44,919 - root - INFO - Log level: INFO
+2026-07-30 14:15:45,057 - root - INFO - Number of GPU: 1
+2026-07-30 14:15:45,062 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:15:45,062 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.81s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.82s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.70s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.18s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.40s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.74s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.71s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+2026-07-30 14:16:04,917 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]2026-07-30 14:16:06,108 - root - INFO - [merge] mode=evict score=receiver budget=uniform layer compress: L=1753 -> k=175 (r_eff=0.100, base_ratio=0.1, sink=4, recent=8)
+communication result: 0.0000:   0%|          | 0/150 [00:03<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 326, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 589, in inference
+    output = cv.generate(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 2625, in generate
+    result = self._sample(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 3609, in _sample
+    outputs = model_forward(**model_inputs, return_dict=True)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/KVComm/models.py", line 1164, in forward
+    out_B = self.B(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 236, in forward
+    hidden_states, self_attn_weights = self.self_attn(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/KVComm/model_attn.py", line 92, in forward
+    query_states, key_states = apply_rotary_pos_emb_qwen2(query_states, key_states, cos, sin)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 81, in apply_rotary_pos_emb
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 3.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.13 GiB memory in use. Of the allocated memory 28.52 GiB is allocated by PyTorch, and 298.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en rekv/rekv_w8_r0.1
+==== [GPU6] multifieldqa_en kvcomm/kvcomm_top0.3 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:16:16,337 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/kvcomm/kvcomm_top0.3_0730_1416/log.log
+2026-07-30 14:16:16,337 - root - INFO - Log level: INFO
+2026-07-30 14:16:16,338 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/kvcomm', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.3, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='kvcomm_top0.3', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:16:16,338 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/kvcomm/kvcomm_top0.3_0730_1416
+2026-07-30 14:16:16,338 - root - INFO - Log level: INFO
+2026-07-30 14:16:16,503 - root - INFO - Number of GPU: 1
+2026-07-30 14:16:16,507 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:16:16,508 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.83s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.71s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.41s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.74s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.73s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.62s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+2026-07-30 14:16:37,551 - root - INFO - CVCommunicator initialized
+2026-07-30 14:16:42,400 - root - INFO - communication result: 1.0000, communication time: 4.84s
+2026-07-30 14:16:42,401 - root - INFO - Layer ranking: [22 26  5  4 14  8 23 24 11 16  9 17 27 25 12  6 21 19  7 20 15 10 13 18
+  0  1  2  3]
+2026-07-30 14:16:42,401 - root - INFO - Top 0.3 from 28 layers: [22 26  5  4 14  8 23 24 11 16  9 17 27 25 12  6 21 19  7 20 15 10 13 18
+  0  1  2  3]
+2026-07-30 14:16:42,402 - root - INFO - New layers list: [22 26  5  4 14  8 23 24]
+2026-07-30 14:16:42,406 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 374, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 252, in forward
+    hidden_states = self.mlp(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 48, in forward
+    down_proj = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 64.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 43.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.09 GiB memory in use. Of the allocated memory 28.65 GiB is allocated by PyTorch, and 125.94 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en kvcomm/kvcomm_top0.3
+==== [GPU6] multifieldqa_en random_layer/random_layer_top0.3 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:16:50,270 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_layer/random_layer_top0.3_0730_1416/log.log
+2026-07-30 14:16:50,271 - root - INFO - Log level: INFO
+2026-07-30 14:16:50,271 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_layer', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.3, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=True, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='random_layer_top0.3', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:16:50,271 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_layer/random_layer_top0.3_0730_1416
+2026-07-30 14:16:50,271 - root - INFO - Log level: INFO
+2026-07-30 14:16:50,415 - root - INFO - Number of GPU: 1
+2026-07-30 14:16:50,419 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:16:50,420 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.81s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.82s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.69s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.18s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.39s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.76s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.72s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+2026-07-30 14:17:10,586 - root - INFO - CVCommunicator initialized
+2026-07-30 14:17:10,598 - root - INFO - Randomly selected layers list: [20, 3, 0, 23, 8, 7, 22, 4]
+2026-07-30 14:17:10,601 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]communication result: 0.0000:   0%|          | 0/150 [00:07<?, ?it/s]communication result: 0.0000:   1%|          | 1/150 [00:07<17:49,  7.18s/it]communication result: 0.0000:   1%|          | 1/150 [00:07<17:56,  7.23s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 374, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 19.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.11 GiB memory in use. Of the allocated memory 28.68 GiB is allocated by PyTorch, and 126.74 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en random_layer/random_layer_top0.3
+==== [GPU6] multifieldqa_en recv_layer/recv_layer_f0.3 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:17:25,738 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/recv_layer/recv_layer_f0.3_0730_1417/log.log
+2026-07-30 14:17:25,738 - root - INFO - Log level: INFO
+2026-07-30 14:17:25,739 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/recv_layer', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='receiver', recv_window=8, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.3, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='recv_layer_f0.3', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:17:25,739 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/recv_layer/recv_layer_f0.3_0730_1417
+2026-07-30 14:17:25,739 - root - INFO - Log level: INFO
+2026-07-30 14:17:25,862 - root - INFO - Number of GPU: 1
+2026-07-30 14:17:25,867 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:17:25,867 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.83s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.83s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.72s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.41s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.74s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.72s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+2026-07-30 14:17:46,478 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]communication result: 0.0000:   0%|          | 0/150 [00:06<?, ?it/s]communication result: 0.0000:   1%|          | 1/150 [00:06<17:03,  6.87s/it]communication result: 0.0000:   1%|          | 1/150 [00:06<17:10,  6.91s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 355, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 15.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.12 GiB memory in use. Of the allocated memory 28.68 GiB is allocated by PyTorch, and 127.13 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en recv_layer/recv_layer_f0.3
+==== [GPU6] multifieldqa_en evict/evict_r0.3 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:18:01,192 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/evict/evict_r0.3_0730_1418/log.log
+2026-07-30 14:18:01,193 - root - INFO - Log level: INFO
+2026-07-30 14:18:01,193 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/evict', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.3, merge_sink=4, merge_recent=8, merge_mode='evict', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='evict_r0.3', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:18:01,193 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/evict/evict_r0.3_0730_1418
+2026-07-30 14:18:01,193 - root - INFO - Log level: INFO
+2026-07-30 14:18:01,299 - root - INFO - Number of GPU: 1
+2026-07-30 14:18:01,304 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:18:01,304 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.80s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.82s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.70s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.40s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.74s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.71s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+2026-07-30 14:18:13,603 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]2026-07-30 14:18:14,740 - root - INFO - [merge] mode=evict score=value_norm budget=uniform layer compress: L=1753 -> k=526 (r_eff=0.300, base_ratio=0.3, sink=4, recent=8)
+communication result: 0.0000:   0%|          | 0/150 [00:06<?, ?it/s]communication result: 0.0000:   1%|          | 1/150 [00:06<17:12,  6.93s/it]communication result: 0.0000:   1%|          | 1/150 [00:06<17:18,  6.97s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 326, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 65.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.07 GiB memory in use. Of the allocated memory 28.62 GiB is allocated by PyTorch, and 141.32 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en evict/evict_r0.3
+==== [GPU6] multifieldqa_en random_token/random_token_r0.3 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:18:28,307 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_token/random_token_r0.3_0730_1418/log.log
+2026-07-30 14:18:28,307 - root - INFO - Log level: INFO
+2026-07-30 14:18:28,307 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_token', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.3, merge_sink=4, merge_recent=8, merge_mode='evict', first_layer_mode='full', score_mode='random', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='random_token_r0.3', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:18:28,307 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_token/random_token_r0.3_0730_1418
+2026-07-30 14:18:28,307 - root - INFO - Log level: INFO
+2026-07-30 14:18:28,467 - root - INFO - Number of GPU: 1
+2026-07-30 14:18:28,471 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:18:28,471 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.81s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.82s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.70s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.18s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.40s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.75s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.72s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:04<00:01,  1.61s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.13s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.33s/it]
+2026-07-30 14:18:40,704 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]2026-07-30 14:18:42,019 - root - INFO - [merge] mode=evict score=random budget=uniform layer compress: L=1753 -> k=526 (r_eff=0.300, base_ratio=0.3, sink=4, recent=8)
+communication result: 0.0000:   0%|          | 0/150 [00:07<?, ?it/s]communication result: 0.0000:   1%|          | 1/150 [00:07<18:39,  7.51s/it]communication result: 0.0000:   1%|          | 1/150 [00:07<18:46,  7.56s/it]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 326, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 233, in forward
+    hidden_states = self.input_layernorm(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 200, in forward
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 158.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 65.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.07 GiB memory in use. Of the allocated memory 28.62 GiB is allocated by PyTorch, and 141.32 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en random_token/random_token_r0.3
+==== [GPU6] multifieldqa_en rekv/rekv_w8_r0.3 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:18:56,779 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/rekv/rekv_w8_r0.3_0730_1418/log.log
+2026-07-30 14:18:56,779 - root - INFO - Log level: INFO
+2026-07-30 14:18:56,780 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/rekv', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.3, merge_sink=4, merge_recent=8, merge_mode='evict', first_layer_mode='full', score_mode='receiver', recv_window=8, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='rekv_w8_r0.3', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:18:56,780 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/rekv/rekv_w8_r0.3_0730_1418
+2026-07-30 14:18:56,780 - root - INFO - Log level: INFO
+2026-07-30 14:18:56,925 - root - INFO - Number of GPU: 1
+2026-07-30 14:18:56,929 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:18:56,930 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.85s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.87s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.75s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.22s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.44s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.78s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.77s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.67s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.17s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.37s/it]
+2026-07-30 14:19:18,254 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]2026-07-30 14:19:19,810 - root - INFO - [merge] mode=evict score=receiver budget=uniform layer compress: L=1753 -> k=526 (r_eff=0.300, base_ratio=0.3, sink=4, recent=8)
+communication result: 0.0000:   0%|          | 0/150 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 326, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 589, in inference
+    output = cv.generate(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 2625, in generate
+    result = self._sample(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 3609, in _sample
+    outputs = model_forward(**model_inputs, return_dict=True)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/KVComm/models.py", line 1141, in forward
+    out_A_past_key_values = self.prepare_key_cache(out_A_past_key_values)
+  File "/home/xay/KVComm/models.py", line 326, in prepare_key_cache
+    key_cache_i, value_cache_i = self.compress_merge_layer(key_cache[i], value_cache[i], layer_idx=i)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/models.py", line 489, in compress_merge_layer
+    Vk = V[:, :, keep, :].clone()
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 3.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.13 GiB memory in use. Of the allocated memory 28.53 GiB is allocated by PyTorch, and 295.28 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en rekv/rekv_w8_r0.3
+==== [GPU6] multifieldqa_en kvcomm/kvcomm_top0.5 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:19:28,008 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/kvcomm/kvcomm_top0.5_0730_1419/log.log
+2026-07-30 14:19:28,008 - root - INFO - Log level: INFO
+2026-07-30 14:19:28,008 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/kvcomm', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.5, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='kvcomm_top0.5', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:19:28,008 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/kvcomm/kvcomm_top0.5_0730_1419
+2026-07-30 14:19:28,008 - root - INFO - Log level: INFO
+2026-07-30 14:19:28,129 - root - INFO - Number of GPU: 1
+2026-07-30 14:19:28,133 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:19:28,133 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.85s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.85s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.73s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.20s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.42s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.77s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.75s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.64s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.14s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.35s/it]
+2026-07-30 14:19:49,586 - root - INFO - CVCommunicator initialized
+2026-07-30 14:19:54,284 - root - INFO - communication result: 1.0000, communication time: 4.69s
+2026-07-30 14:19:54,285 - root - INFO - Layer ranking: [22 26  5  4 14  8 23 24 11 16  9 17 27 25 12  6 21 19  7 20 15 10 13 18
+  0  1  2  3]
+2026-07-30 14:19:54,285 - root - INFO - Top 0.5 from 28 layers: [22 26  5  4 14  8 23 24 11 16  9 17 27 25 12  6 21 19  7 20 15 10 13 18
+  0  1  2  3]
+2026-07-30 14:19:54,286 - root - INFO - New layers list: [22 26  5  4 14  8 23 24 11 16  9 17 27 25]
+2026-07-30 14:19:54,289 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 374, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 568, in inference
+    out_A = model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 544, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 432, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 252, in forward
+    hidden_states = self.mlp(hidden_states)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 48, in forward
+    down_proj = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 64.00 MiB. GPU 0 has a total capacity of 47.54 GiB of which 43.69 MiB is free. Process 2489850 has 9.30 GiB memory in use. Process 2531212 has 9.09 GiB memory in use. Including non-PyTorch memory, this process has 29.09 GiB memory in use. Of the allocated memory 28.65 GiB is allocated by PyTorch, and 125.94 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[FAIL] multifieldqa_en kvcomm/kvcomm_top0.5
+==== [GPU6] multifieldqa_en random_layer/random_layer_top0.5 ====
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 14:20:02,529 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_layer/random_layer_top0.5_0730_1420/log.log
+2026-07-30 14:20:02,530 - root - INFO - Log level: INFO
+2026-07-30 14:20:02,530 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_layer', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.5, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=True, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='multifieldqa_en', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='random_layer_top0.5', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 14:20:02,530 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/multifieldqa_en/random_layer/random_layer_top0.5_0730_1420
+2026-07-30 14:20:02,530 - root - INFO - Log level: INFO
+2026-07-30 14:20:02,652 - root - INFO - Number of GPU: 1
+2026-07-30 14:20:02,657 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 14:20:02,657 - root - INFO - CUDA_VISIBLE_DEVICES: 6
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.84s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.85s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.73s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.20s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.42s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.92s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.83s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.69s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.19s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.41s/it]
+2026-07-30 14:20:22,889 - root - INFO - CVCommunicator initialized
+2026-07-30 14:20:22,896 - root - INFO - Randomly selected layers list: [20, 3, 0, 23, 8, 7, 22, 4, 26, 17, 2, 13, 1, 25]
+2026-07-30 14:20:22,899 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/150 [00:00<?, ?it/s]communication result: 0.0000:   0%|          | 0/150 [00:04<?, ?it/s]communication result: 0.0000:   1%|          | 1/150 [00:04<11:43,  4.72s/it]communication result: 0.0000:   1%|          | 1/150 [00:07<11:43,  4.72s/it]communication result: 0.0000:   1%|▏         | 2/150 [00:07<09:02,  3.67s/it]communication result: 0.0000:   1%|▏         | 2/150 [00:09<09:02,  3.67s/it]communication result: 0.0000:   2%|▏         | 3/150 [00:09<07:16,  2.97s/it]communication result: 0.0000:   2%|▏         | 3/150 [00:12<07:16,  2.97s/it]communication result: 0.0000:   3%|▎         | 4/150 [00:12<07:14,  2.97s/it]communication result: 0.0000:   3%|▎         | 4/150 [00:16<07:14,  2.97s/it]communication result: 0.0000:   3%|▎         | 5/150 [00:16<07:53,  3.26s/it]communication result: 0.0000:   3%|▎         | 5/150 [00:21<07:53,  3.26s/it]communication result: 0.0000:   4%|▍         | 6/150 [00:21<09:02,  3.77s/it]communication result: 0.0000:   4%|▍         | 6/150 [00:23<09:02,  3.77s/it]communication result: 0.0000:   5%|▍         | 7/150 [00:23<07:42,  3.24s/it]communication result: 0.0000:   5%|▍         | 7/150 [00:24<07:42,  3.24s/it]communication result: 0.0000:   5%|▌         | 8/150 [00:24<06:08,  2.60s/it]communication result: 0.0000:   5%|▌         | 8/150 [00:26<06:08,  2.60s/it]communication result: 0.0000:   6%|▌         | 9/150 [00:26<05:17,  2.25s/it]communication result: 0.0000:   6%|▌         | 9/150 [00:32<05:17,  2.25s/it]communication result: 0.0000:   7%|▋         | 10/150 [00:32<07:57,  3.41s/it]communication result: 0.0909:   7%|▋         | 10/150 [00:35<07:57,  3.41s/it]communication result: 0.0909:   7%|▋         | 11/150 [00:35<07:35,  3.28s/it]communication result: 0.0833:   7%|▋         | 11/150 [00:37<07:35,  3.28s/it]communication result: 0.0833:   8%|▊         | 12/150 [00:37<06:48,  2.96s/it]communication result: 0.0769:   8%|▊         | 12/150 [00:41<06:48,  2.96s/it]communication result: 0.0769:   9%|▊         | 13/150 [00:41<07:25,  3.25s/it]communication result: 0.0714:   9%|▊         | 13/150 [00:42<07:25,  3.25s/it]communication result: 0.0714:   9%|▉         | 14/150 [00:42<06:18,  2.78s/it]communication result: 0.0667:   9%|▉         | 14/150 [00:47<06:18,  2.78s/it]communication result: 0.0667:  10%|█         | 15/150 [00:47<07:36,  3.38s/it]communication result: 0.0625:  10%|█         | 15/150 [00:50<07:36,  3.38s/it]communication result: 0.0625:  11%|█         | 16/150 [00:50<07:05,  3.17s/it]communication result: 0.0588:  11%|█         | 16/150 [00:54<07:05,  3.17s/it]communication result: 0.0588:  11%|█▏        | 17/150 [00:54<07:32,  3.40s/it]communication result: 0.0556:  11%|█▏        | 17/150 [00:58<07:32,  3.40s/it]communication result: 0.0556:  12%|█▏        | 18/150 [00:58<08:01,  3.65s/it]communication result: 0.1053:  12%|█▏        | 18/150 [01:01<08:01,  3.65s/it]communication result: 0.1053:  13%|█▎        | 19/150 [01:01<07:12,  3.30s/it]communication result: 0.1000:  13%|█▎        | 19/150 [01:04<07:12,  3.30s/it]communication result: 0.1000:  13%|█▎        | 20/150 [01:04<06:55,  3.19s/it]communication result: 0.1429:  13%|█▎        | 20/150 [01:04<06:55,  3.19s/it]communication result: 0.1429:  14%|█▍        | 21/150 [01:04<05:24,  2.52s/it]communication result: 0.1364:  14%|█▍        | 21/150 [01:07<05:24,  2.52s/it]communication result: 0.1364:  15%|█▍        | 22/150 [01:07<05:20,  2.50s/it]communication result: 0.1304:  15%|█▍        | 22/150 [01:09<05:20,  2.50s/it]communication result: 0.1304:  15%|█▌        | 23/150 [01:09<04:49,  2.28s/it]communication result: 0.1250:  15%|█▌        | 23/150 [01:10<04:49,  2.28s/it]communication result: 0.1250:  16%|█▌        | 24/150 [01:10<04:21,  2.07s/it]communication result: 0.1200:  16%|█▌        | 24/150 [01:15<04:21,  2.07s/it]communication result: 0.1200:  17%|█▋        | 25/150 [01:15<06:05,  2.92s/it]communication result: 0.1154:  17%|█▋        | 25/150 [01:18<06:05,  2.92s/it]communication result: 0.1154:  17%|█▋        | 26/150 [01:18<05:59,  2.90s/it]communication result: 0.1111:  17%|█▋        | 26/150 [01:21<05:59,  2.90s/it]communication result: 0.1111:  18%|█▊        | 27/150 [01:21<05:47,  2.82s/it]communication result: 0.1071:  18%|█▊        | 27/150 [01:24<05:47,  2.82s/it]communication result: 0.1071:  19%|█▊        | 28/150 [01:24<06:15,  3.07s/it]communication result: 0.1034:  19%|█▊        | 28/150 [01:27<06:15,  3.07s/it]communication result: 0.1034:  19%|█▉        | 29/150 [01:27<05:41,  2.82s/it]communication result: 0.1000:  19%|█▉        | 29/150 [01:28<05:41,  2.82s/it]communication result: 0.1000:  20%|██        | 30/150 [01:28<05:04,  2.53s/it]communication result: 0.0968:  20%|██        | 30/150 [01:30<05:04,  2.53s/it]communication result: 0.0968:  21%|██        | 31/150 [01:30<04:19,  2.18s/it]communication result: 0.0938:  21%|██        | 31/150 [01:32<04:19,  2.18s/it]communication result: 0.0938:  21%|██▏       | 32/150 [01:32<04:15,  2.17s/it]communication result: 0.0909:  21%|██▏       | 32/150 [01:34<04:15,  2.17s/it]communication result: 0.0909:  22%|██▏       | 33/150 [01:34<04:25,  2.27s/it]communication result: 0.0882:  22%|██▏       | 33/150 [01:38<04:25,  2.27s/it]communication result: 0.0882:  23%|██▎       | 34/150 [01:38<05:04,  2.62s/it]communication result: 0.0857:  23%|██▎       | 34/150 [01:40<05:04,  2.62s/it]communication result: 0.0857:  23%|██▎       | 35/150 [01:40<04:43,  2.46s/it]communication result: 0.1111:  23%|██▎       | 35/150 [01:44<04:43,  2.46s/it]communication result: 0.1111:  24%|██▍       | 36/150 [01:44<05:24,  2.84s/it]communication result: 0.1081:  24%|██▍       | 36/150 [01:46<05:24,  2.84s/it]communication result: 0.1081:  25%|██▍       | 37/150 [01:46<04:47,  2.55s/it]communication result: 0.1053:  25%|██▍       | 37/150 [01:50<04:47,  2.55s/it]communication result: 0.1053:  25%|██▌       | 38/150 [01:50<05:46,  3.09s/it]communication result: 0.1026:  25%|██▌       | 38/150 [01:53<05:46,  3.09s/it]communication result: 0.1026:  26%|██▌       | 39/150 [01:53<05:57,  3.22s/it]communication result: 0.1000:  26%|██▌       | 39/150 [01:55<05:57,  3.22s/it]communication result: 0.1000:  27%|██▋       | 40/150 [01:55<04:51,  2.65s/it]communication result: 0.0976:  27%|██▋       | 40/150 [01:56<04:51,  2.65s/it]communication result: 0.0976:  27%|██▋       | 41/150 [01:56<04:10,  2.30s/it]communication result: 0.1190:  27%|██▋       | 41/150 [01:57<04:10,  2.30s/it]communication result: 0.1190:  28%|██▊       | 42/150 [01:57<03:21,  1.87s/it]communication result: 0.1163:  28%|██▊       | 42/150 [01:59<03:21,  1.87s/it]communication result: 0.1163:  29%|██▊       | 43/150 [01:59<03:33,  1.99s/it]communication result: 0.1136:  29%|██▊       | 43/150 [02:03<03:33,  1.99s/it]communication result: 0.1136:  29%|██▉       | 44/150 [02:03<04:37,  2.62s/it]communication result: 0.1111:  29%|██▉       | 44/150 [02:06<04:37,  2.62s/it]communication result: 0.1111:  30%|███       | 45/150 [02:06<04:29,  2.56s/it]communication result: 0.1087:  30%|███       | 45/150 [02:09<04:29,  2.56s/it]communication result: 0.1087:  31%|███       | 46/150 [02:09<04:49,  2.79s/it]communication result: 0.1064:  31%|███       | 46/150 [02:12<04:49,  2.79s/it]communication result: 0.1064:  31%|███▏      | 47/150 [02:12<04:34,  2.66s/it]communication result: 0.1042:  31%|███▏      | 47/150 [02:16<04:34,  2.66s/it]communication result: 0.1042:  32%|███▏      | 48/150 [02:16<05:09,  3.04s/it]communication result: 0.1020:  32%|███▏      | 48/150 [02:17<05:09,  3.04s/it]communication result: 0.1020:  33%|███▎      | 49/150 [02:17<04:14,  2.52s/it]communication result: 0.1000:  33%|███▎      | 49/150 [02:20<04:14,  2.52s/it]communication result: 0.1000:  33%|███▎      | 50/150 [02:20<04:29,  2.69s/it]communication result: 0.0980:  33%|███▎      | 50/150 [02:22<04:29,  2.69s/it]communication result: 0.0980:  34%|███▍      | 51/150 [02:22<04:15,  2.58s/it]communication result: 0.0962:  34%|███▍      | 51/150 [02:27<04:15,  2.58s/it]communication result: 0.0962:  35%|███▍      | 52/150 [02:27<05:29,  3.36s/it]communication result: 0.0943:  35%|███▍      | 52/150 [02:32<05:29,  3.36s/it]communication result: 0.0943:  35%|███▌      | 53/150 [02:32<05:51,  3.62s/it]communication result: 0.0926:  35%|███▌      | 53/150 [02:33<05:51,  3.62s/it]communication result: 0.0926:  36%|███▌      | 54/150 [02:33<04:49,  3.01s/it]communication result: 0.0909:  36%|███▌      | 54/150 [02:35<04:49,  3.01s/it]communication result: 0.0909:  37%|███▋      | 55/150 [02:35<04:02,  2.56s/it]communication result: 0.1071:  37%|███▋      | 55/150 [02:36<04:02,  2.56s/it]communication result: 0.1071:  37%|███▋      | 56/150 [02:36<03:19,  2.12s/it]communication result: 0.1053:  37%|███▋      | 56/150 [02:37<03:19,  2.12s/it]communication result: 0.1053:  38%|███▊      | 57/150 [02:37<03:01,  1.95s/it]communication result: 0.1034:  38%|███▊      | 57/150 [02:39<03:01,  1.95s/it]communication result: 0.1034:  39%|███▊      | 58/150 [02:39<02:37,  1.71s/it]communication result: 0.1017:  39%|███▊      | 58/150 [02:40<02:37,  1.71s/it]communication result: 0.1017:  39%|███▉      | 59/150 [02:40<02:23,  1.58s/it]communication result: 0.1167:  39%|███▉      | 59/150 [02:41<02:23,  1.58s/it]communication result: 0.1167:  40%|████      | 60/150 [02:41<02:16,  1.52s/it]communication result: 0.1148:  40%|████      | 60/150 [02:45<02:16,  1.52s/it]communication result: 0.1148:  41%|████      | 61/150 [02:45<03:06,  2.09s/it]communication result: 0.1129:  41%|████      | 61/150 [02:49<03:06,  2.09s/it]communication result: 0.1129:  41%|████▏     | 62/150 [02:49<04:03,  2.76s/it]

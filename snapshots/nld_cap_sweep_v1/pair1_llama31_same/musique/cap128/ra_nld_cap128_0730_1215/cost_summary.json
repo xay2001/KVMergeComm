@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "dataset": "musique",
+    "method": "nld",
+    "sender_aware": false,
+    "receiver_aware": true,
+    "max_tokens_phase_1": 128,
+    "warmup": 3,
+    "n": 50
+  },
+  "score_mean": 0.52,
+  "ctx_tokens_A_mean": 375.68,
+  "query_tokens_B_mean": 76.74,
+  "nld_answer_tokens_A_mean": 110.9,
+  "nld_answer_tokens_B_initial_mean": 20.36,
+  "nld_refine_input_tokens_mean": 232.04,
+  "nld_text_payload_tokens_mean": 110.9,
+  "nld_text_payload_bytes_mean": 522.9,
+  "output_tokens_mean": 9.82,
+  "t_prepare_inputs_mean": 0.002596,
+  "t_model_a_phase1_mean": 3.908893,
+  "t_model_b_phase1_mean": 0.699109,
+  "t_prepare_refine_mean": 0.001515,
+  "t_model_b_refine_mean": 0.36359,
+  "t_total_mean": 4.975704,
+  "peak_mem_gb_mean": 30.013311
+}

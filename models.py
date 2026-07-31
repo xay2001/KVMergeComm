@@ -55,6 +55,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         budget_replay_tolerance: float = 1e-3,
         receiver_layer_fraction: float = 0.0,
         receiver_layer_score: str = "topk_share",
+        first_layer_mode: str = "full",
     ) -> None:
         super().__init__(model_B.config)
         self.A = model_A
@@ -100,6 +101,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         self.receiver_layer_score = str(receiver_layer_score).lower()
         if self.receiver_layer_score not in {"topk_share", "entropy", "max"}:
             raise ValueError(f"unknown receiver_layer_score={receiver_layer_score}")
+        self.first_layer_mode = str(first_layer_mode).lower()
+        if self.first_layer_mode not in {"full", "uniform", "half", "query"}:
+            raise ValueError(f"unknown first_layer_mode={first_layer_mode}")
         self.last_selected_layers = None
         self.replay_target_budget = None
         self.replay_layer_budget = {}
@@ -153,21 +157,27 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         logging.info(f"CVCommunicator initialized")
 
     def _protocol_version(self) -> str:
+        layer_suffix = (
+            "" if self.first_layer_mode == "full"
+            else f"_l1-{self.first_layer_mode}"
+        )
         if self.query_condition_mode == "sender_context_q":
-            return "sender_context_q_local_v1"
+            return f"sender_context_q_local{layer_suffix}_v1"
         if not self.merge and self.receiver_layer_fraction > 0:
             return f"receiver_layer_select_{self.query_sketch_mode}_v1"
         if self.score_mode == "receiver_oracle":
-            return "full_kv_oracle_v1"
+            return f"full_kv_oracle{layer_suffix}_v1"
         if self.score_mode in {
             "receiver",
+            "receiver_page",
             "receiver_x_value_norm",
             "receiver_value_norm",
             "receiver_recency",
             "receiver_recency_prior",
         }:
-            return f"query_sketch_{self.query_sketch_mode}_v1"
-        return "query_agnostic_kv_v1"
+            selector_suffix = "_page16" if self.score_mode == "receiver_page" else ""
+            return f"query_sketch_{self.query_sketch_mode}{selector_suffix}{layer_suffix}_v1"
+        return f"query_agnostic_kv{layer_suffix}_v1"
 
     def set_replay_budget(self, target: float, past_key_values) -> None:
         """Build per-layer ratios whose realized total-KV ratio matches target."""
@@ -310,9 +320,9 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
             )
             if self.merge:
                 # Merge-then-Communicate: keep all layers, compress tokens within each
-                # layer by merging (instead of dropping whole layers). Layer 0 is kept
-                # full to anchor the receiver's position indexing.
-                if i == 0:
+                # layer by merging (instead of dropping whole layers). The default
+                # keeps layer 0 full; ablations can compress it explicitly.
+                if i == 0 and self.first_layer_mode == "full":
                     key_cache_i, value_cache_i = key_cache[i], value_cache[i]
                 else:
                     key_cache_i, value_cache_i = self.compress_merge_layer(key_cache[i], value_cache[i], layer_idx=i)
@@ -433,7 +443,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         # token importance score
         value_norm = V.float().norm(dim=-1).mean(dim=1)[0]  # [L]
         if (
-            self.score_mode in {"receiver", "receiver_oracle", "receiver_x_value_norm", "receiver_value_norm", "receiver_recency", "receiver_recency_prior"}
+            self.score_mode in {"receiver", "receiver_page", "receiver_oracle", "receiver_x_value_norm", "receiver_value_norm", "receiver_recency", "receiver_recency_prior"}
             and self.token_importance is not None
             and layer_idx in self.token_importance
             and self.token_importance[layer_idx].numel() == L
@@ -460,7 +470,25 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
         if self.merge_recent > 0:
             imp[L - self.merge_recent :] = big
 
-        keep = torch.topk(imp, k).indices
+        if self.score_mode == "receiver_page":
+            # QUEST-style query-aware page selector: rank contiguous 16-token
+            # pages by receiver-query attention mass, then transmit whole pages.
+            page_size = 16
+            num_pages = (L + page_size - 1) // page_size
+            page_scores = torch.zeros(num_pages, device=imp.device, dtype=imp.dtype)
+            page_ids = torch.arange(L, device=imp.device) // page_size
+            selector_scores = recv_imp if "recv_imp" in locals() else value_norm
+            page_scores.scatter_add_(0, page_ids, selector_scores)
+            pages_to_keep = min(num_pages, max(1, math.ceil(k / page_size)))
+            selected_pages = torch.topk(page_scores, pages_to_keep).indices
+            keep_mask = torch.isin(page_ids, selected_pages)
+            if self.merge_sink > 0:
+                keep_mask[: self.merge_sink] = True
+            if self.merge_recent > 0:
+                keep_mask[L - self.merge_recent :] = True
+            keep = torch.nonzero(keep_mask, as_tuple=False).squeeze(-1)
+        else:
+            keep = torch.topk(imp, k).indices
         keep, _ = torch.sort(keep)
         if (
             self.budget_mode in {"coverage", "strict_coverage"}
@@ -496,6 +524,27 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
     def _effective_ratio(self, layer_idx: int) -> float:
         """Per-layer keep ratio. Falls back to the global merge_ratio unless a
         budget-aware allocation has been computed for this query/layer."""
+        if layer_idx == 0:
+            if self.first_layer_mode == "half":
+                return 0.5
+            if self.first_layer_mode == "uniform":
+                return self.merge_ratio
+            if (
+                self.first_layer_mode == "query"
+                and self.budget_mode in {"coverage", "strict_coverage"}
+                and self.token_importance
+                and layer_idx in self.token_importance
+            ):
+                if self.budget_mode == "strict_coverage":
+                    target = self.last_coverage_target
+                    if target is None:
+                        target = self.coverage_tau
+                    return self._strict_coverage_ratio(
+                        self.token_importance[layer_idx], target
+                    )
+                return self._coverage_ratio(
+                    self.token_importance[layer_idx], self.last_coverage_target
+                )
         if layer_idx in self.replay_layer_budget:
             return self.replay_layer_budget[layer_idx]
         if self.budget_mode == "uniform" or not self.layer_budget:

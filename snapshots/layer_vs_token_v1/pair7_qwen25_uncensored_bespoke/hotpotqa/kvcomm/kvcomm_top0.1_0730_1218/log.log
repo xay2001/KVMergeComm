@@ -1,0 +1,18 @@
+2026-07-30 12:18:16,664 - root - INFO - Logging setup completed. Log file: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/hotpotqa/kvcomm/kvcomm_top0.1_0730_1218/log.log
+2026-07-30 12:18:16,664 - root - INFO - Log level: INFO
+2026-07-30 12:18:16,664 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/hotpotqa/kvcomm', model_A='/sharedspace/models/Qwen2.5-7B-Instruct-Uncensored', model_B='/sharedspace/models/Bespoke-Stratos-7B', max_input_length=64000, layer_from=0, layer_to=27, layers_list=[-1], top_layers=0.1, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=False, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='merge', first_layer_mode='full', score_mode='value_norm', recv_window=0, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='uniform', budget_min=0.05, budget_max=0.5, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.9, coverage_scale=1.0, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='hotpotqa', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='kvcomm_top0.1', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 12:18:16,664 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/hotpotqa/kvcomm/kvcomm_top0.1_0730_1218
+2026-07-30 12:18:16,665 - root - INFO - Log level: INFO
+2026-07-30 12:18:16,824 - root - INFO - Number of GPU: 1
+2026-07-30 12:18:16,829 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 12:18:16,829 - root - INFO - CUDA_VISIBLE_DEVICES: 4
+2026-07-30 12:18:37,834 - root - INFO - CVCommunicator initialized
+2026-07-30 12:18:42,008 - root - INFO - communication result: 0.0000, communication time: 4.17s
+2026-07-30 12:18:42,010 - root - INFO - Layer ranking: [ 5 26  4 22 14  8 24 11 23 17  9  6 16 12 27 25 15  7 10 21 19 20 13 18
+  2  1  0  3]
+2026-07-30 12:18:42,011 - root - INFO - Top 0.1 from 28 layers: [ 5 26  4 22 14  8 24 11 23 17  9  6 16 12 27 25 15  7 10 21 19 20 13 18
+  2  1  0  3]
+2026-07-30 12:18:42,011 - root - INFO - New layers list: [ 5 26]
+2026-07-30 12:18:42,016 - root - INFO - CVCommunicator initialized
+2026-07-30 12:23:57,284 - root - INFO - per-sample scores written to /home/xay/KVComm/snapshots/layer_vs_token_v1/pair7_qwen25_uncensored_bespoke/hotpotqa/kvcomm/kvcomm_top0.1_0730_1218/per_sample.jsonl
+2026-07-30 12:23:57,285 - root - INFO - communication result: 0.0000, communication time: 315.26s

@@ -8,7 +8,9 @@ set -uo pipefail
 #   layer x query-free : kvcomm (calibrated) / random_layer
 #   layer x receiver   : recv_layer (NEW: query-sketch layer selection)
 #   token x query-free : evict (value_norm)
-#   token x receiver   : rekv (correct) / rekv_shuffled (causal control)
+#   token x query-free : random_token
+#   page  x receiver   : query_page (QUEST-style contiguous page selection)
+#   token x receiver   : rekv (correct) / B-ReKV / rekv_shuffled (causal control)
 #   upper bound        : full_kv + skyline
 #
 # Usage: GPU=0 TASK=hotpotqa bash scripts/run_layer_vs_token_gpu.sh
@@ -26,6 +28,12 @@ FRACTIONS=${FRACTIONS:-"0.1 0.3 0.5"}
 WINDOW=${WINDOW:-8}
 N_LAYERS_MINUS1=${N_LAYERS_MINUS1:-31}
 ROOT=${ROOT:-snapshots/layer_vs_token_v1}
+# Optional whitespace-separated shard, e.g. METHODS="evict random_token".
+METHODS=${METHODS:-"skyline full_kv kvcomm random_layer recv_layer evict random_token query_page rekv brekv rekv_shuffled"}
+
+method_enabled() {
+  [[ " ${METHODS} " == *" $1 "* ]]
+}
 
 timestamp=$(date +"%m%d_%H%M")
 LOG_DIR="${ROOT}/logs"
@@ -38,6 +46,11 @@ run_com() {
   shift 2
   local parent="${ROOT}/${PAIR}/${TASK}/${method}"
   if compgen -G "${parent}/${run_name}_*/per_sample.jsonl" > /dev/null; then
+    echo "[skip] ${TASK} ${method}/${run_name}"
+    return
+  fi
+  if [[ "${method}" == "skyline" ]] &&
+     rg -l "skyline result B:" "${parent}/${run_name}_"*/log.log >/dev/null 2>&1; then
     echo "[skip] ${TASK} ${method}/${run_name}"
     return
   fi
@@ -61,40 +74,80 @@ run_com() {
   echo "LIMIT=${LIMIT} FRACTIONS=${FRACTIONS} WINDOW=${WINDOW}"
 
   # 0) Skyline reference (receiver reads raw context; recovered-score denominator)
-  run_com skyline "skyline" --do_test_skyline
+  if method_enabled skyline; then
+    run_com skyline "skyline" --do_test_skyline
+  fi
 
   # 1) Full KV upper bound (all layers, all tokens)
-  run_com full_kv "full_kv" --do_test
+  if method_enabled full_kv; then
+    run_com full_kv "full_kv" --do_test
+  fi
 
   for f in ${FRACTIONS}; do
     # 2) KVComm calibrated layer selection (query-free layer granularity)
-    run_com kvcomm "kvcomm_top${f}" --do_test --top_layers "${f}" --calib_size 1
+    if method_enabled kvcomm; then
+      run_com kvcomm "kvcomm_top${f}" --do_test --top_layers "${f}" --calib_size 1
+    fi
 
     # 3) Random layer selection
-    run_com random_layer "random_layer_top${f}" --do_test --top_layers "${f}" --random_selection
+    if method_enabled random_layer; then
+      run_com random_layer "random_layer_top${f}" --do_test --top_layers "${f}" --random_selection
+    fi
 
     # 4) Receiver-aware layer selection (receiver-conditioned layer granularity)
-    run_com recv_layer "recv_layer_f${f}" --do_test \
-      --receiver_layer_fraction "${f}" --score_mode receiver \
-      --recv_window "${WINDOW}" --query_sketch_mode bf16
+    if method_enabled recv_layer; then
+      run_com recv_layer "recv_layer_f${f}" --do_test \
+        --receiver_layer_fraction "${f}" --score_mode receiver \
+        --recv_window "${WINDOW}" --query_sketch_mode bf16
+    fi
 
     # 5) Query-free token selection (value-norm evict)
-    run_com evict "evict_r${f}" --do_test \
-      --merge --merge_mode evict --score_mode value_norm --recv_window 0 \
-      --merge_ratio "${f}"
+    if method_enabled evict; then
+      run_com evict "evict_r${f}" --do_test \
+        --merge --merge_mode evict --score_mode value_norm --recv_window 0 \
+        --merge_ratio "${f}"
+    fi
 
-    # 6) ReKV correct receiver query (receiver-conditioned token granularity)
-    run_com rekv "rekv_w${WINDOW}_r${f}" --do_test \
-      --merge --merge_mode evict --score_mode receiver \
-      --recv_window "${WINDOW}" --query_sketch_mode bf16 \
-      --merge_ratio "${f}"
+    # 6) Random-token selection under the identical sparse-injection path
+    if method_enabled random_token; then
+      run_com random_token "random_token_r${f}" --do_test \
+        --merge --merge_mode evict --score_mode random --recv_window 0 \
+        --merge_ratio "${f}"
+    fi
+
+    # 7) QUEST-style receiver-query page selection (16-token pages)
+    if method_enabled query_page; then
+      run_com query_page "query_page16_w${WINDOW}_r${f}" --do_test \
+        --merge --merge_mode evict --score_mode receiver_page \
+        --recv_window "${WINDOW}" --query_sketch_mode bf16 \
+        --merge_ratio "${f}"
+    fi
+
+    # 8) ReKV correct receiver query (receiver-conditioned token granularity)
+    if method_enabled rekv; then
+      run_com rekv "rekv_w${WINDOW}_r${f}" --do_test \
+        --merge --merge_mode evict --score_mode receiver \
+        --recv_window "${WINDOW}" --query_sketch_mode bf16 \
+        --merge_ratio "${f}"
+    fi
   done
 
-  # 7) ReKV shuffled receiver query (causal control, single mid point)
-  run_com rekv_shuffled "rekv_shuffled_w${WINDOW}_r0.3" --do_test \
-    --merge --merge_mode evict --score_mode receiver \
-    --recv_window "${WINDOW}" --query_sketch_mode bf16 \
-    --merge_ratio 0.3 --query_condition_mode shuffled
+  # 9) B-ReKV query-dependent coverage allocation
+  if method_enabled brekv; then
+    run_com brekv "brekv_t0.95_s0.75_w${WINDOW}" --do_test \
+      --merge --merge_mode evict --score_mode receiver \
+      --recv_window "${WINDOW}" --query_sketch_mode bf16 \
+      --budget_mode coverage --budget_min 0.05 --budget_max 0.70 \
+      --coverage_tau 0.95 --coverage_scale 0.75
+  fi
+
+  # 10) ReKV shuffled receiver query (causal control, single mid point)
+  if method_enabled rekv_shuffled; then
+    run_com rekv_shuffled "rekv_shuffled_w${WINDOW}_r0.3" --do_test \
+      --merge --merge_mode evict --score_mode receiver \
+      --recv_window "${WINDOW}" --query_sketch_mode bf16 \
+      --merge_ratio 0.3 --query_condition_mode shuffled
+  fi
 
   echo "######## LAYER-VS-TOKEN DONE $(date '+%F %T') GPU=${GPU} TASK=${TASK} ########"
 } 2>&1 | tee "${LOG_FILE}"

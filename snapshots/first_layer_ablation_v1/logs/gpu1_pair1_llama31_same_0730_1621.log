@@ -1,0 +1,75 @@
+First-layer ablation: GPU=1 PAIR=pair1_llama31_same LIMIT=200
+[GPU1] pair1_llama31_same hotpotqa brekv_l1-half
+/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/fuzzywuzzy/fuzz.py:11: UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning
+  warnings.warn('Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning')
+2026-07-30 16:22:03,102 - root - INFO - Logging setup completed. Log file: snapshots/first_layer_ablation_v1/pair1_llama31_same/hotpotqa/brekv/brekv_l1-half_0730_1622/log.log
+2026-07-30 16:22:03,103 - root - INFO - Log level: INFO
+2026-07-30 16:22:03,103 - root - INFO - Configuration: AlignConfig(device='cuda:0', seed=42, snapshot_path='snapshots/first_layer_ablation_v1/pair1_llama31_same/hotpotqa/brekv', model_A='/sharedspace/models/Llama-3.1-8B-Instruct', model_B='/sharedspace/models/Llama-3.1-8B-Instruct', max_input_length=64000, layer_from=0, layer_to=26, layers_list=[-1], top_layers=0.0, calib_size=1, do_layer_curve=False, alpha=1.0, mu=0.5, sigma=10.0, random_selection=False, shift_back=False, merge=True, merge_ratio=0.2, merge_sink=4, merge_recent=8, merge_mode='evict', first_layer_mode='half', score_mode='receiver', recv_window=8, query_sketch_mode='bf16', receiver_layer_agg='identity', receiver_layer_fraction=0.0, receiver_layer_score='topk_share', query_condition_mode='correct', query_condition_seed=42, query_unrelated_task='', budget_replay_from='', budget_replay_mode='aligned', budget_replay_seed=42, budget_replay_tolerance=0.001, budget_mode='coverage', budget_min=0.05, budget_max=0.7, budget_tau=1.0, budget_floor=0.02, coverage_tau=0.95, coverage_scale=0.75, coverage_tau_mode='fixed', coverage_tau_min=0.8, coverage_tau_max=0.95, progressive=False, prog_ladder='0.1,0.2,0.3,0.5', dump_pass1_features=False, profile_cost=False, profile_limit=50, profile_warmup=5, test_task='hotpotqa', task_name='', limit=200, do_test=True, do_test_skyline=False, do_test_baseline=False, do_test_ac=False, do_test_nld=False, do_test_text_retrieval=False, do_test_cipher=False, nld_max_tokens_model_A_and_B_phase1=128, sender_aware=False, nld_receiver_aware=False, text_retrieval_top_k=4, text_retrieval_chunk_tokens=128, text_retrieval_chunk_stride=96, text_retrieval_bm25_k1=1.5, text_retrieval_bm25_b=0.75, f='replace', layer_k=26, layer_j=26, run_name='brekv_l1-half', use_wandb=False, wandb_project='', wandb_entity='', wandb_tags='', log_level='INFO')
+2026-07-30 16:22:03,103 - root - INFO - All files (logs, models, metrics) will be saved to: snapshots/first_layer_ablation_v1/pair1_llama31_same/hotpotqa/brekv/brekv_l1-half_0730_1622
+2026-07-30 16:22:03,103 - root - INFO - Log level: INFO
+2026-07-30 16:22:03,239 - root - INFO - Number of GPU: 1
+2026-07-30 16:22:03,244 - root - INFO - Using GPU: NVIDIA RTX A6000
+2026-07-30 16:22:03,244 - root - INFO - CUDA_VISIBLE_DEVICES: 1
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.99s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.94s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.87s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.31s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:06<00:00,  1.53s/it]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:01<00:05,  1.83s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:03<00:03,  1.84s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:05<00:01,  1.80s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.26s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:05<00:00,  1.46s/it]
+2026-07-30 16:22:34,949 - root - INFO - CVCommunicator initialized
+communication result: 0.0000:   0%|          | 0/500 [00:00<?, ?it/s]2026-07-30 16:22:35,958 - root - INFO - [merge] mode=evict score=receiver budget=coverage layer compress: L=182 -> k=91 (r_eff=0.500, base_ratio=0.2, sink=4, recent=8)
+communication result: 0.0000:   0%|          | 0/500 [00:04<?, ?it/s]communication result: 0.0000:   0%|          | 1/500 [00:04<36:35,  4.40s/it]communication result: 0.5000:   0%|          | 1/500 [00:04<36:35,  4.40s/it]communication result: 0.5000:   0%|          | 2/500 [00:04<16:22,  1.97s/it]communication result: 0.6667:   0%|          | 2/500 [00:04<16:22,  1.97s/it]communication result: 0.6667:   1%|          | 3/500 [00:04<09:40,  1.17s/it]communication result: 0.7500:   1%|          | 3/500 [00:05<09:40,  1.17s/it]communication result: 0.7500:   1%|          | 4/500 [00:05<06:44,  1.23it/s]communication result: 0.6000:   1%|          | 4/500 [00:05<06:44,  1.23it/s]communication result: 0.6000:   1%|          | 5/500 [00:05<05:11,  1.59it/s]communication result: 0.6667:   1%|          | 5/500 [00:05<05:11,  1.59it/s]communication result: 0.6667:   1%|          | 6/500 [00:05<04:00,  2.06it/s]communication result: 0.7143:   1%|          | 6/500 [00:06<04:00,  2.06it/s]communication result: 0.7143:   1%|▏         | 7/500 [00:06<03:39,  2.25it/s]communication result: 0.6250:   1%|▏         | 7/500 [00:06<03:39,  2.25it/s]communication result: 0.6250:   2%|▏         | 8/500 [00:06<03:05,  2.65it/s]communication result: 0.6667:   2%|▏         | 8/500 [00:06<03:05,  2.65it/s]communication result: 0.6667:   2%|▏         | 9/500 [00:06<02:38,  3.11it/s]communication result: 0.6000:   2%|▏         | 9/500 [00:07<02:38,  3.11it/s]communication result: 0.6000:   2%|▏         | 10/500 [00:07<03:11,  2.55it/s]communication result: 0.5455:   2%|▏         | 10/500 [00:07<03:11,  2.55it/s]communication result: 0.5455:   2%|▏         | 11/500 [00:07<03:49,  2.13it/s]communication result: 0.5833:   2%|▏         | 11/500 [00:07<03:49,  2.13it/s]communication result: 0.5833:   2%|▏         | 12/500 [00:07<03:23,  2.40it/s]communication result: 0.5833:   2%|▏         | 12/500 [00:08<05:28,  1.49it/s]
+Traceback (most recent call last):
+  File "/home/xay/KVComm/com.py", line 448, in <module>
+    main(config)
+  File "/home/xay/KVComm/com.py", line 326, in main
+    results = communication_evaluator.test(model_A, cv, limit=cfg.limit)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/KVComm/eval.py", line 816, in test
+    result = self._test(model_A, cv, limit, do_calc_layer_importance)
+  File "/home/xay/KVComm/eval.py", line 699, in _test
+    response = self.inference(model_A, cv, item, index=i)
+  File "/home/xay/KVComm/eval.py", line 589, in inference
+    output = cv.generate(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 2625, in generate
+    result = self._sample(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/generation/utils.py", line 3606, in _sample
+    outputs = self(**model_inputs, return_dict=True)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/KVComm/models.py", line 1164, in forward
+    out_B = self.B(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 553, in forward
+    outputs: BaseModelOutputWithPast = self.model(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 441, in forward
+    layer_outputs = decoder_layer(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/modeling_layers.py", line 83, in __call__
+    return super().__call__(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 290, in forward
+    hidden_states, self_attn_weights = self.self_attn(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/xay/KVComm/model_attn.py", line 61, in forward
+    attn_output, attn_weights = attention_interface(
+  File "/home/xay/.conda/envs/kvcomm/lib/python3.10/site-packages/transformers/integrations/sdpa_attention.py", line 66, in sdpa_attention_forward
+    attn_output = torch.nn.functional.scaled_dot_product_attention(
+RuntimeError: The expanded size of the tensor (133) must match the existing size (132) at non-singleton dimension 3.  Target sizes: [1, 32, 69, 133].  Tensor sizes: [1, 1, 69, 132]

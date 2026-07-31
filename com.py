@@ -27,6 +27,7 @@ import random
 
 RECEIVER_AWARE_SCORE_MODES = {
     "receiver",
+    "receiver_page",
     "receiver_oracle",
     "receiver_x_value_norm",
     "receiver_value_norm",
@@ -62,6 +63,7 @@ class AlignConfig:
     merge_sink: int = 4
     merge_recent: int = 8
     merge_mode: str = "merge"  # "merge" (normalized value merge) or "evict" (drop only)
+    first_layer_mode: str = "full"  # full | uniform | half | query
     score_mode: str = "value_norm"  # "receiver" = deployable Q sketch; "receiver_oracle" = full-A-KV upper bound
     recv_window: int = 0  # Q-sketch tokens per layer: 0 = all query tokens, >0 = last N
     query_sketch_mode: str = "bf16"  # bf16 | int8 | token_ids
@@ -294,6 +296,7 @@ def main(cfg: AlignConfig):
                 merge_sink=cfg.merge_sink,
                 merge_recent=cfg.merge_recent,
                 merge_mode=cfg.merge_mode,
+                first_layer_mode=cfg.first_layer_mode,
                 score_mode=cfg.score_mode,
                 recv_window=cfg.recv_window,
                 query_sketch_mode=cfg.query_sketch_mode,
